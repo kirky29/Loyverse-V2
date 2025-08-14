@@ -32,7 +32,8 @@ export default function AccountManager({
   const [formData, setFormData] = useState({
     name: '',
     apiToken: '',
-    storeId: ''
+    storeId: '',
+    isActive: false
   })
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -45,7 +46,7 @@ export default function AccountManager({
       onAddAccount(formData)
     }
     
-    setFormData({ name: '', apiToken: '', storeId: '' })
+    setFormData({ name: '', apiToken: '', storeId: '', isActive: false })
     setShowAddForm(false)
   }
 
@@ -54,7 +55,8 @@ export default function AccountManager({
     setFormData({
       name: account.name,
       apiToken: account.apiToken,
-      storeId: account.storeId
+      storeId: account.storeId,
+      isActive: account.isActive
     })
     setShowAddForm(true)
   }
@@ -62,7 +64,7 @@ export default function AccountManager({
   const handleCancel = () => {
     setShowAddForm(false)
     setEditingAccount(null)
-    setFormData({ name: '', apiToken: '', storeId: '' })
+    setFormData({ name: '', apiToken: '', storeId: '', isActive: false })
   }
 
   return (
