@@ -4,7 +4,7 @@ import { DailyTaking, LoyverseReceipt } from '../../types'
 export async function GET(request: NextRequest) {
   try {
     const apiToken = process.env.LOYVERSE_API_TOKEN
-    const locationId = process.env.LOYVERSE_LOCATION_ID
+    const storeId = process.env.LOYVERSE_LOCATION_ID // We'll keep the env var name but use it as store_id
 
     if (!apiToken) {
       return NextResponse.json(
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    if (!locationId) {
+    if (!storeId) {
       return NextResponse.json(
         { error: 'LOYVERSE_LOCATION_ID environment variable is not set' },
         { status: 500 }
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
     const fromDate = thirtyDaysAgo.toISOString().split('T')[0]
 
-    const url = `https://api.loyverse.com/v1.0/receipts?location_id=${locationId}&created_at_min=${fromDate}T00:00:00Z&limit=250`
+    const url = `https://api.loyverse.com/v1.0/receipts?store_id=${storeId}&created_at_min=${fromDate}T00:00:00Z&limit=250`
 
     const response = await fetch(url, {
       headers: {
@@ -45,23 +45,29 @@ export async function GET(request: NextRequest) {
     const dailyTakingsMap = new Map<string, DailyTaking>()
 
     receipts.forEach(receipt => {
-      if (receipt.status === 'VOIDED' || receipt.status === 'CANCELLED') {
+      // Check if receipt is voided or cancelled (handle both possible field names)
+      if (receipt.status === 'VOIDED' || receipt.status === 'CANCELLED' || 
+          receipt.cancelled_at !== null) {
         return
       }
 
-      const date = receipt.created_at.split('T')[0]
+      // Use receipt_date if available, otherwise fall back to created_at
+      const date = receipt.receipt_date ? 
+        receipt.receipt_date.split('T')[0] : 
+        receipt.created_at.split('T')[0]
+      
       const existing = dailyTakingsMap.get(date)
 
       if (existing) {
-        existing.total += receipt.total
+        existing.total += receipt.total_money || receipt.total || 0
         existing.receiptCount += 1
         existing.averageReceipt = existing.total / existing.receiptCount
       } else {
         dailyTakingsMap.set(date, {
           date,
-          total: receipt.total,
+          total: receipt.total_money || receipt.total || 0,
           receiptCount: 1,
-          averageReceipt: receipt.total,
+          averageReceipt: receipt.total_money || receipt.total || 0,
         })
       }
     })
