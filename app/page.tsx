@@ -24,6 +24,7 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'accounts'>('dashboard')
   const [accounts, setAccounts] = useState<LoyverseAccount[]>([])
   const [activeAccount, setActiveAccount] = useState<LoyverseAccount | null>(null)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => {
     loadAccounts()
@@ -33,7 +34,6 @@ export default function Dashboard() {
     if (activeAccount) {
       fetchDailyTakings()
     } else if (accounts.length === 0) {
-      // If no accounts exist, stop loading
       setLoading(false)
     }
   }, [activeAccount, accounts.length])
@@ -45,15 +45,11 @@ export default function Dashboard() {
         const parsedAccounts = JSON.parse(savedAccounts)
         setAccounts(parsedAccounts)
         
-        // Set the first active account as default
         const firstActive = parsedAccounts.find((acc: LoyverseAccount) => acc.isActive)
         if (firstActive) {
           setActiveAccount(firstActive)
         }
       } else {
-        // Check if environment variables are set and create a default account
-        // Note: We can't access process.env in client-side code, so we'll create a default account
-        // that the user can fill in manually
         setLoading(false)
       }
     } catch (error) {
@@ -78,7 +74,6 @@ export default function Dashboard() {
       isActive: true
     }
     
-    // Deactivate other accounts
     const updatedAccounts = accounts.map(acc => ({ ...acc, isActive: false }))
     updatedAccounts.push(newAccount)
     
@@ -146,11 +141,9 @@ export default function Dashboard() {
     }
   }
 
-  // Safe number calculations with null checks
   const totalTakings = dailyTakings.reduce((sum, day) => sum + (day.total || 0), 0)
   const averageTakings = dailyTakings.length > 0 ? totalTakings / dailyTakings.length : 0
 
-  // Safe number formatting function
   const formatCurrency = (value: number | null | undefined): string => {
     if (value === null || value === undefined || isNaN(value)) {
       return '£0.00'
@@ -158,62 +151,30 @@ export default function Dashboard() {
     return `£${value.toFixed(2)}`
   }
 
-  if (activeTab === 'accounts') {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <header className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center py-6">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Loyverse Dashboard</h1>
-                <p className="text-gray-600">Account Management</p>
-              </div>
-              <button
-                onClick={() => setActiveTab('dashboard')}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Back to Dashboard
-              </button>
-            </div>
-          </div>
-        </header>
-
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <AccountManager
-            accounts={accounts}
-            onAddAccount={addAccount}
-            onUpdateAccount={updateAccount}
-            onDeleteAccount={deleteAccount}
-            onSwitchAccount={switchAccount}
-            activeAccount={activeAccount}
-          />
-        </main>
-      </div>
-    )
-  }
-
+  // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading dashboard...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent mx-auto"></div>
+          <p className="mt-6 text-lg text-gray-600 font-medium">Loading dashboard...</p>
         </div>
       </div>
     )
   }
 
+  // Error state
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-red-600 text-6xl mb-4">⚠️</div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Dashboard</h1>
-          <p className="text-gray-600 mb-4">{error}</p>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <div className="text-red-500 text-6xl mb-6">⚠️</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-3">Error Loading Dashboard</h1>
+          <p className="text-gray-600 mb-6">{error}</p>
           <div className="space-y-3">
             <button
               onClick={fetchDailyTakings}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              className="w-full bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition-all duration-200 font-medium"
             >
               Try Again
             </button>
@@ -222,7 +183,7 @@ export default function Dashboard() {
                 setError(null)
                 setActiveTab('accounts')
               }}
-              className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors ml-3"
+              className="w-full bg-gray-600 text-white px-6 py-3 rounded-xl hover:bg-gray-700 transition-all duration-200 font-medium"
             >
               Manage Accounts
             </button>
@@ -232,41 +193,178 @@ export default function Dashboard() {
     )
   }
 
+  // No account state
   if (!activeAccount) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-blue-600 text-6xl mb-4">🏪</div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Welcome to Loyverse Dashboard</h1>
-          <p className="text-gray-600 mb-4">You need to add your first Loyverse account to get started</p>
-          <div className="space-y-3">
-            <button
-              onClick={() => setActiveTab('accounts')}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors text-lg"
-            >
-              Add Your First Account
-            </button>
-            <p className="text-sm text-gray-500">
-              You'll need your Loyverse API token and store ID
-            </p>
-          </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <div className="text-blue-500 text-6xl mb-6">🏪</div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-3">Welcome to Loyverse</h1>
+          <p className="text-gray-600 mb-8 text-lg">Add your first account to start tracking your daily takings</p>
+          <button
+            onClick={() => setActiveTab('accounts')}
+            className="bg-blue-600 text-white px-8 py-4 rounded-xl hover:bg-blue-700 transition-all duration-200 text-lg font-semibold shadow-lg hover:shadow-xl"
+          >
+            Add Your First Account
+          </button>
+          <p className="text-sm text-gray-500 mt-4">
+            You'll need your Loyverse API token and store ID
+          </p>
         </div>
       </div>
     )
   }
 
+  // Accounts management view
+  if (activeTab === 'accounts') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="mb-8">
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium mb-4"
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to Dashboard
+            </button>
+            <h1 className="text-3xl font-bold text-gray-900">Account Management</h1>
+            <p className="text-gray-600 mt-2">Manage your Loyverse accounts and API settings</p>
+          </div>
+          
+          <AccountManager
+            accounts={accounts}
+            onAddAccount={addAccount}
+            onUpdateAccount={updateAccount}
+            onDeleteAccount={deleteAccount}
+            onSwitchAccount={switchAccount}
+            activeAccount={activeAccount}
+          />
+        </div>
+      </div>
+    )
+  }
+
+  // Main dashboard view
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Loyverse Dashboard</h1>
-              <p className="text-gray-600">
-                {activeAccount.name} • Daily takings overview
-              </p>
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}>
+        <div className="flex flex-col h-full">
+          {/* Logo */}
+          <div className="flex items-center px-6 py-8 border-b border-gray-200">
+            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center mr-3">
+              <span className="text-white text-xl font-bold">L</span>
             </div>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">Loyverse</h1>
+              <p className="text-sm text-gray-500">Dashboard</p>
+            </div>
+          </div>
+
+          {/* Account Switcher */}
+          <div className="px-6 py-4 border-b border-gray-200">
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+              Active Account
+            </label>
+            <div className="space-y-2">
+              {accounts.map((account) => (
+                <button
+                  key={account.id}
+                  onClick={() => switchAccount(account)}
+                  className={`w-full text-left p-3 rounded-lg transition-all duration-200 ${
+                    account.isActive
+                      ? 'bg-blue-50 border border-blue-200 text-blue-900'
+                      : 'hover:bg-gray-50 text-gray-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className={`w-2 h-2 rounded-full mr-3 ${
+                        account.isActive ? 'bg-blue-500' : 'bg-gray-300'
+                      }`} />
+                      <span className="font-medium truncate">{account.name}</span>
+                    </div>
+                    {account.isActive && (
+                      <svg className="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+            
+            <button
+              onClick={() => setActiveTab('accounts')}
+              className="w-full mt-3 p-3 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200 font-medium text-sm"
+            >
+              + Add Account
+            </button>
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 px-6 py-4">
+            <div className="space-y-2">
+              <button
+                onClick={() => setActiveTab('dashboard')}
+                className="w-full flex items-center px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg"
+              >
+                <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+                </svg>
+                Dashboard
+              </button>
+              
+              <button
+                onClick={() => setActiveTab('accounts')}
+                className="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors duration-200"
+              >
+                <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Settings
+              </button>
+            </div>
+          </nav>
+
+          {/* Account Info */}
+          <div className="px-6 py-4 border-t border-gray-200">
+            <div className="text-sm">
+              <p className="text-gray-900 font-medium">{activeAccount.name}</p>
+              <p className="text-gray-500">Store ID: {activeAccount.storeId.substring(0, 8)}...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="lg:ml-64">
+        {/* Top Bar */}
+        <div className="bg-white shadow-sm border-b border-gray-200">
+          <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            
             <div className="flex items-center space-x-4">
               <div className="text-right">
                 <p className="text-sm text-gray-500">Last updated</p>
@@ -274,112 +372,110 @@ export default function Dashboard() {
                   {new Date().toLocaleDateString()}
                 </p>
               </div>
-              <button
-                onClick={() => setActiveTab('accounts')}
-                className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
-              >
-                Manage Accounts
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                </svg>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Takings</p>
-                <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalTakings)}</p>
-                {activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2' && dailyTakings.length > 0 && (
-                  <div className="mt-2 text-xs text-gray-500">
-                    <div>Combined from all locations</div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Average Daily</p>
-                <p className="text-2xl font-bold text-gray-900">{formatCurrency(averageTakings)}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Days Tracked</p>
-                <p className="text-2xl font-bold text-gray-900">{dailyTakings.length}</p>
-              </div>
             </div>
           </div>
         </div>
 
-        {/* Location Breakdown for Multi-Store Accounts */}
-        {activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2' && dailyTakings.length > 0 && (
-          <div className="bg-white rounded-lg shadow p-6 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Location Breakdown</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-blue-50 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-blue-900 mb-2">Shop</h3>
-                <p className="text-3xl font-bold text-blue-600">
-                  {formatCurrency(dailyTakings.reduce((sum, day) => {
-                    const shopId = 'd5a7267b-ca6f-4490-9d66-b5ba46cc563c'
-                    return sum + (day.locationBreakdown?.[shopId] || 0)
-                  }, 0))}
-                </p>
-                <p className="text-sm text-blue-600 mt-1">Total from Shop location</p>
+        {/* Dashboard Content */}
+        <main className="px-4 sm:px-6 lg:px-8 py-8">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
+            <p className="text-gray-600">Daily takings overview for {activeAccount.name}</p>
+          </div>
+
+          {/* Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
+              <div className="flex items-center">
+                <div className="p-3 bg-blue-100 rounded-xl">
+                  <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                  </svg>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Total Takings</p>
+                  <p className="text-3xl font-bold text-gray-900">{formatCurrency(totalTakings)}</p>
+                  {activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2' && dailyTakings.length > 0 && (
+                    <p className="text-xs text-gray-500 mt-1">Combined from all locations</p>
+                  )}
+                </div>
               </div>
-              <div className="bg-green-50 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-green-900 mb-2">Cafe</h3>
-                <p className="text-3xl font-bold text-green-600">
-                  {formatCurrency(dailyTakings.reduce((sum, day) => {
-                    const cafeId = 'e2aa143e-3e91-433e-a6d8-5a5538d429e2'
-                    return sum + (day.locationBreakdown?.[cafeId] || 0)
-                  }, 0))}
-                </p>
-                <p className="text-sm text-green-600 mt-1">Total from Cafe location</p>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
+              <div className="flex items-center">
+                <div className="p-3 bg-green-100 rounded-xl">
+                  <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Average Daily</p>
+                  <p className="text-3xl font-bold text-gray-900">{formatCurrency(averageTakings)}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
+              <div className="flex items-center">
+                <div className="p-3 bg-purple-100 rounded-xl">
+                  <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Days Tracked</p>
+                  <p className="text-3xl font-bold text-gray-900">{dailyTakings.length}</p>
+                </div>
               </div>
             </div>
           </div>
-        )}
 
-        {/* Chart */}
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Daily Takings Trend</h2>
-          <DailyTakingsChart data={dailyTakings} />
-        </div>
+          {/* Location Breakdown for Multi-Store Accounts */}
+          {activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2' && dailyTakings.length > 0 && (
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-8">
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">Location Breakdown</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200">
+                  <h3 className="text-lg font-semibold text-blue-900 mb-3">Shop</h3>
+                  <p className="text-4xl font-bold text-blue-600">
+                    {formatCurrency(dailyTakings.reduce((sum, day) => {
+                      const shopId = 'd5a7267b-ca6f-4490-9d66-b5ba46cc563c'
+                      return sum + (day.locationBreakdown?.[shopId] || 0)
+                    }, 0))}
+                  </p>
+                  <p className="text-sm text-blue-600 mt-2">Total from Shop location</p>
+                </div>
+                <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 border border-green-200">
+                  <h3 className="text-lg font-semibold text-green-900 mb-3">Cafe</h3>
+                  <p className="text-4xl font-bold text-green-600">
+                    {formatCurrency(dailyTakings.reduce((sum, day) => {
+                      const cafeId = 'e2aa143e-3e91-433e-a6d8-5a5538d429e2'
+                      return sum + (day.locationBreakdown?.[cafeId] || 0)
+                    }, 0))}
+                  </p>
+                  <p className="text-sm text-green-600 mt-2">Total from Cafe location</p>
+                </div>
+              </div>
+            </div>
+          )}
 
-        {/* Table */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900">Daily Breakdown</h2>
+          {/* Chart */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">Daily Takings Trend</h2>
+            <DailyTakingsChart data={dailyTakings} />
           </div>
-          <DailyTakingsTable data={dailyTakings} />
-        </div>
-      </main>
+
+          {/* Table */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-xl font-semibold text-gray-900">Daily Breakdown</h2>
+            </div>
+            <DailyTakingsTable data={dailyTakings} />
+          </div>
+        </main>
+      </div>
     </div>
   )
 }
