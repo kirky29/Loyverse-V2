@@ -561,9 +561,8 @@ export default function Home() {
                   padding: '8px 16px',
                   borderRadius: '6px',
                   fontSize: '14px',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  fontWeight: '600'
+                  fontWeight: '600',
+                  cursor: 'pointer'
                 }}
               >
                 ⚙️ Admin
