@@ -30,8 +30,17 @@ export default function Dashboard() {
     }
   }
 
-  const totalTakings = dailyTakings.reduce((sum, day) => sum + day.total, 0)
+  // Safe number calculations with null checks
+  const totalTakings = dailyTakings.reduce((sum, day) => sum + (day.total || 0), 0)
   const averageTakings = dailyTakings.length > 0 ? totalTakings / dailyTakings.length : 0
+
+  // Safe number formatting function
+  const formatCurrency = (value: number | null | undefined): string => {
+    if (value === null || value === undefined || isNaN(value)) {
+      return '$0.00'
+    }
+    return `$${value.toFixed(2)}`
+  }
 
   if (loading) {
     return (
@@ -95,7 +104,7 @@ export default function Dashboard() {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total Takings</p>
-                <p className="text-2xl font-bold text-gray-900">${totalTakings.toFixed(2)}</p>
+                <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalTakings)}</p>
               </div>
             </div>
           </div>
@@ -109,7 +118,7 @@ export default function Dashboard() {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Average Daily</p>
-                <p className="text-2xl font-bold text-gray-900">${averageTakings.toFixed(2)}</p>
+                <p className="text-2xl font-bold text-gray-900">{formatCurrency(averageTakings)}</p>
               </div>
             </div>
           </div>

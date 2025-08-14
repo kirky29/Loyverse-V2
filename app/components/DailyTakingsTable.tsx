@@ -15,6 +15,14 @@ export default function DailyTakingsTable({ data }: DailyTakingsTableProps) {
     )
   }
 
+  // Safe number formatting function
+  const formatCurrency = (value: number | null | undefined): string => {
+    if (value === null || value === undefined || isNaN(value)) {
+      return '$0.00'
+    }
+    return `$${value.toFixed(2)}`
+  }
+
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-200">
@@ -70,17 +78,17 @@ export default function DailyTakingsTable({ data }: DailyTakingsTableProps) {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm font-bold text-gray-900">
-                    ${day.total.toFixed(2)}
+                    {formatCurrency(day.total)}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">
-                    {day.receiptCount}
+                    {day.receiptCount || 0}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">
-                    ${day.averageReceipt.toFixed(2)}
+                    {formatCurrency(day.averageReceipt)}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
