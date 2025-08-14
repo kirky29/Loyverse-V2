@@ -165,29 +165,83 @@ export default function Home() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        color: 'white'
+        color: 'white',
+        position: 'relative',
+        overflow: 'hidden'
       }}>
-        <div style={{ textAlign: 'center' }}>
+        {/* Animated background elements */}
+        <div style={{
+          position: 'absolute',
+          top: '-50%',
+          left: '-50%',
+          width: '200%',
+          height: '200%',
+          background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
+          animation: 'pulse 4s ease-in-out infinite'
+        }}></div>
+        
+        <div style={{
+          position: 'absolute',
+          top: '20%',
+          right: '10%',
+          width: '200px',
+          height: '200px',
+          background: 'linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))',
+          borderRadius: '50%',
+          animation: 'float 6s ease-in-out infinite'
+        }}></div>
+        
+        <div style={{
+          position: 'absolute',
+          bottom: '20%',
+          left: '10%',
+          width: '150px',
+          height: '150px',
+          background: 'linear-gradient(45deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))',
+          borderRadius: '50%',
+          animation: 'float 8s ease-in-out infinite reverse'
+        }}></div>
+        
+        <div style={{ textAlign: 'center', zIndex: 10, position: 'relative' }}>
           <div style={{
-            width: '80px',
-            height: '80px',
+            width: '120px',
+            height: '120px',
             border: '4px solid rgba(255,255,255,0.3)',
             borderTop: '4px solid white',
             borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-            margin: '0 auto 32px'
+            animation: 'spin 1.5s linear infinite',
+            margin: '0 auto 40px',
+            boxShadow: '0 0 30px rgba(255,255,255,0.3)'
           }}></div>
-          <h2 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '16px' }}>
+          <h2 style={{ 
+            fontSize: '36px', 
+            fontWeight: 'bold', 
+            marginBottom: '20px',
+            textShadow: '0 4px 20px rgba(0,0,0,0.3)'
+          }}>
             Loading your dashboard
           </h2>
-          <p style={{ fontSize: '18px', opacity: 0.8 }}>
+          <p style={{ 
+            fontSize: '20px', 
+            opacity: 0.9,
+            textShadow: '0 2px 10px rgba(0,0,0,0.3)'
+          }}>
             Preparing your business insights...
           </p>
         </div>
+        
         <style jsx>{`
           @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+          }
+          @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+          }
+          @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
           }
         `}</style>
       </div>
@@ -207,21 +261,22 @@ export default function Home() {
       }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{
-            width: '80px',
-            height: '80px',
+            width: '100px',
+            height: '100px',
             background: 'rgba(255,255,255,0.2)',
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            margin: '0 auto 32px'
+            margin: '0 auto 32px',
+            boxShadow: '0 0 30px rgba(255,255,255,0.3)'
           }}>
-            <span style={{ fontSize: '40px' }}>⚠️</span>
+            <span style={{ fontSize: '50px' }}>⚠️</span>
           </div>
-          <h2 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '16px' }}>
+          <h2 style={{ fontSize: '36px', fontWeight: 'bold', marginBottom: '20px' }}>
             Something went wrong
           </h2>
-          <p style={{ fontSize: '18px', marginBottom: '32px', opacity: 0.8 }}>
+          <p style={{ fontSize: '20px', marginBottom: '40px', opacity: 0.9 }}>
             {error}
           </p>
           <button
@@ -230,20 +285,23 @@ export default function Home() {
               background: 'rgba(255,255,255,0.2)',
               border: '2px solid rgba(255,255,255,0.3)',
               color: 'white',
-              padding: '16px 32px',
-              borderRadius: '12px',
+              padding: '20px 40px',
+              borderRadius: '16px',
               fontSize: '18px',
               fontWeight: 'bold',
               cursor: 'pointer',
-              transition: 'all 0.3s ease'
+              transition: 'all 0.3s ease',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
             }}
             onMouseOver={(e) => {
               e.currentTarget.style.background = 'rgba(255,255,255,0.3)'
-              e.currentTarget.style.transform = 'translateY(-2px)'
+              e.currentTarget.style.transform = 'translateY(-4px)'
+              e.currentTarget.style.boxShadow = '0 12px 40px rgba(0,0,0,0.3)'
             }}
             onMouseOut={(e) => {
               e.currentTarget.style.background = 'rgba(255,255,255,0.2)'
               e.currentTarget.style.transform = 'translateY(0)'
+              e.currentTarget.style.boxShadow = '0 8px 32px rgba(0,0,0,0.2)'
             }}
           >
             Try Again
@@ -262,58 +320,114 @@ export default function Home() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        color: 'white'
+        color: 'white',
+        position: 'relative',
+        overflow: 'hidden'
       }}>
-        <div style={{ textAlign: 'center', maxWidth: '600px', padding: '40px' }}>
+        {/* Animated background elements */}
+        <div style={{
+          position: 'absolute',
+          top: '0',
+          left: '0',
+          width: '100%',
+          height: '100%',
+          background: 'radial-gradient(circle at 20% 80%, rgba(255,255,255,0.1) 0%, transparent 50%)',
+          animation: 'pulse 6s ease-in-out infinite'
+        }}></div>
+        
+        <div style={{
+          position: 'absolute',
+          top: '10%',
+          right: '5%',
+          width: '300px',
+          height: '300px',
+          background: 'linear-gradient(45deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))',
+          borderRadius: '50%',
+          animation: 'float 10s ease-in-out infinite'
+        }}></div>
+        
+        <div style={{ textAlign: 'center', maxWidth: '700px', padding: '60px', zIndex: 10, position: 'relative' }}>
           <div style={{
-            width: '120px',
-            height: '120px',
-            background: 'rgba(255,255,255,0.2)',
+            width: '160px',
+            height: '160px',
+            background: 'rgba(255,255,255,0.15)',
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            margin: '0 auto 40px'
+            margin: '0 auto 50px',
+            boxShadow: '0 0 50px rgba(255,255,255,0.2)',
+            animation: 'pulse 3s ease-in-out infinite'
           }}>
-            <span style={{ fontSize: '60px' }}>🏪</span>
+            <span style={{ fontSize: '80px' }}>🏪</span>
           </div>
-          <h1 style={{ fontSize: '48px', fontWeight: 'bold', marginBottom: '24px' }}>
+          <h1 style={{ 
+            fontSize: '56px', 
+            fontWeight: 'bold', 
+            marginBottom: '30px',
+            textShadow: '0 4px 20px rgba(0,0,0,0.3)'
+          }}>
             Welcome to Loyverse
           </h1>
-          <p style={{ fontSize: '20px', marginBottom: '40px', opacity: 0.9, lineHeight: '1.6' }}>
+          <p style={{ 
+            fontSize: '24px', 
+            marginBottom: '50px', 
+            opacity: 0.95, 
+            lineHeight: '1.6',
+            textShadow: '0 2px 10px rgba(0,0,0,0.3)'
+          }}>
             Connect your first store to start tracking daily takings and gain valuable business insights
           </p>
           <button
             onClick={() => setActiveTab('accounts')}
             style={{
               background: 'rgba(255,255,255,0.2)',
-              border: '2px solid rgba(255,255,255,0.3)',
+              border: '3px solid rgba(255,255,255,0.4)',
               color: 'white',
-              padding: '20px 40px',
-              borderRadius: '16px',
-              fontSize: '20px',
+              padding: '24px 48px',
+              borderRadius: '20px',
+              fontSize: '22px',
               fontWeight: 'bold',
               cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+              transition: 'all 0.4s ease',
+              boxShadow: '0 12px 40px rgba(0,0,0,0.2)',
+              backdropFilter: 'blur(20px)'
             }}
             onMouseOver={(e) => {
               e.currentTarget.style.background = 'rgba(255,255,255,0.3)'
-              e.currentTarget.style.transform = 'translateY(-4px)'
-              e.currentTarget.style.boxShadow = '0 12px 40px rgba(0,0,0,0.2)'
+              e.currentTarget.style.transform = 'translateY(-6px) scale(1.05)'
+              e.currentTarget.style.boxShadow = '0 20px 60px rgba(0,0,0,0.3)'
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.6)'
             }}
             onMouseOut={(e) => {
               e.currentTarget.style.background = 'rgba(255,255,255,0.2)'
-              e.currentTarget.style.transform = 'translateY(0)'
-              e.currentTarget.style.boxShadow = '0 8px 32px rgba(0,0,0,0.1)'
+              e.currentTarget.style.transform = 'translateY(0) scale(1)'
+              e.currentTarget.style.boxShadow = '0 12px 40px rgba(0,0,0,0.2)'
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.4)'
             }}
           >
             Connect Your Store
           </button>
-          <p style={{ fontSize: '16px', marginTop: '24px', opacity: 0.7 }}>
+          <p style={{ 
+            fontSize: '18px', 
+            marginTop: '30px', 
+            opacity: 0.8,
+            textShadow: '0 2px 10px rgba(0,0,0,0.3)'
+          }}>
             You'll need your Loyverse API token and store ID
           </p>
         </div>
+        
+        <style jsx>{`
+          @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.3; }
+            50% { transform: scale(1.1); opacity: 0.6; }
+          }
+          @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(180deg); }
+          }
+        `}</style>
       </div>
     )
   }
@@ -378,14 +492,53 @@ export default function Home() {
 
   // Main dashboard view
   return (
-    <div style={{ minHeight: '100vh', background: '#f8fafc' }}>
+    <div style={{ 
+      minHeight: '100vh', 
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      {/* Animated background elements */}
+      <div style={{
+        position: 'fixed',
+        top: '0',
+        left: '0',
+        width: '100%',
+        height: '100%',
+        background: 'radial-gradient(circle at 20% 80%, rgba(255,255,255,0.05) 0%, transparent 50%)',
+        animation: 'pulse 8s ease-in-out infinite'
+      }}></div>
+      
+      <div style={{
+        position: 'fixed',
+        top: '10%',
+        right: '5%',
+        width: '400px',
+        height: '400px',
+        background: 'linear-gradient(45deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))',
+        borderRadius: '50%',
+        animation: 'float 12s ease-in-out infinite'
+      }}></div>
+      
+      <div style={{
+        position: 'fixed',
+        bottom: '20%',
+        left: '5%',
+        width: '300px',
+        height: '300px',
+        background: 'linear-gradient(45deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))',
+        borderRadius: '50%',
+        animation: 'float 15s ease-in-out infinite reverse'
+      }}></div>
+
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div 
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(0,0,0,0.5)',
+            background: 'rgba(0,0,0,0.6)',
+            backdropFilter: 'blur(10px)',
             zIndex: 40
           }}
           onClick={() => setSidebarOpen(false)}
@@ -400,46 +553,48 @@ export default function Home() {
         bottom: 0,
         width: '320px',
         background: 'rgba(255,255,255,0.95)',
-        backdropFilter: 'blur(20px)',
-        borderRight: '1px solid rgba(0,0,0,0.1)',
+        backdropFilter: 'blur(30px)',
+        borderRight: '1px solid rgba(255,255,255,0.3)',
         transform: sidebarOpen ? 'translateX(0)' : 'translateX(-100%)',
-        transition: 'transform 0.3s ease',
+        transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
         zIndex: 50,
-        boxShadow: '4px 0 20px rgba(0,0,0,0.1)'
+        boxShadow: '8px 0 40px rgba(0,0,0,0.2)'
       }}>
         <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
           {/* Logo */}
           <div style={{
             padding: '40px 32px',
-            borderBottom: '1px solid rgba(0,0,0,0.1)',
+            borderBottom: '1px solid rgba(255,255,255,0.3)',
             display: 'flex',
-            alignItems: 'center'
+            alignItems: 'center',
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))'
           }}>
             <div style={{
-              width: '48px',
-              height: '48px',
+              width: '56px',
+              height: '56px',
               background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              borderRadius: '16px',
+              borderRadius: '20px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              marginRight: '16px',
-              boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)'
+              marginRight: '20px',
+              boxShadow: '0 12px 40px rgba(102, 126, 234, 0.4)',
+              animation: 'pulse 3s ease-in-out infinite'
             }}>
-              <span style={{ color: 'white', fontSize: '24px', fontWeight: 'bold' }}>L</span>
+              <span style={{ color: 'white', fontSize: '28px', fontWeight: 'bold' }}>L</span>
             </div>
             <div>
-              <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1e293b', margin: 0 }}>
+              <h1 style={{ fontSize: '28px', fontWeight: 'bold', color: '#1e293b', margin: 0 }}>
                 Loyverse
               </h1>
-              <p style={{ fontSize: '14px', color: '#64748b', margin: 0, fontWeight: '500' }}>
+              <p style={{ fontSize: '16px', color: '#64748b', margin: 0, fontWeight: '500' }}>
                 Business Intelligence
               </p>
             </div>
           </div>
 
           {/* Account Switcher */}
-          <div style={{ padding: '24px 32px', borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
+          <div style={{ padding: '24px 32px', borderBottom: '1px solid rgba(255,255,255,0.3)' }}>
             <label style={{
               display: 'block',
               fontSize: '12px',
@@ -467,7 +622,8 @@ export default function Home() {
                       background: 'linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)',
                       border: '2px solid #818cf8',
                       color: '#3730a3',
-                      boxShadow: '0 8px 32px rgba(99, 102, 241, 0.2)'
+                      boxShadow: '0 8px 32px rgba(99, 102, 241, 0.3)',
+                      transform: 'scale(1.02)'
                     } : {
                       background: 'transparent',
                       color: '#475569'
@@ -475,14 +631,16 @@ export default function Home() {
                   }}
                   onMouseOver={(e) => {
                     if (!account.isActive) {
-                      e.currentTarget.style.background = 'rgba(0,0,0,0.05)'
+                      e.currentTarget.style.background = 'rgba(255,255,255,0.1)'
                       e.currentTarget.style.transform = 'translateY(-2px)'
+                      e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.1)'
                     }
                   }}
                   onMouseOut={(e) => {
                     if (!account.isActive) {
                       e.currentTarget.style.background = 'transparent'
                       e.currentTarget.style.transform = 'translateY(0)'
+                      e.currentTarget.style.boxShadow = 'none'
                     }
                   }}
                 >
@@ -495,7 +653,7 @@ export default function Home() {
                         marginRight: '12px',
                         ...(account.isActive ? {
                           background: '#6366f1',
-                          boxShadow: '0 0 0 4px rgba(99, 102, 241, 0.2)'
+                          boxShadow: '0 0 0 4px rgba(99, 102, 241, 0.3)'
                         } : {
                           background: '#cbd5e1'
                         })
@@ -517,7 +675,7 @@ export default function Home() {
                 marginTop: '16px',
                 padding: '16px',
                 color: '#6366f1',
-                background: 'transparent',
+                background: 'rgba(99, 102, 241, 0.1)',
                 border: '2px dashed #c7d2fe',
                 borderRadius: '16px',
                 cursor: 'pointer',
@@ -526,14 +684,16 @@ export default function Home() {
                 transition: 'all 0.3s ease'
               }}
               onMouseOver={(e) => {
-                e.currentTarget.style.background = 'rgba(99, 102, 241, 0.05)'
+                e.currentTarget.style.background = 'rgba(99, 102, 241, 0.15)'
                 e.currentTarget.style.borderColor = '#818cf8'
                 e.currentTarget.style.transform = 'translateY(-2px)'
+                e.currentTarget.style.boxShadow = '0 8px 24px rgba(99, 102, 241, 0.2)'
               }}
               onMouseOut={(e) => {
-                e.currentTarget.style.background = 'transparent'
+                e.currentTarget.style.background = 'rgba(99, 102, 241, 0.1)'
                 e.currentTarget.style.borderColor = '#c7d2fe'
                 e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = 'none'
               }}
             >
               + Add New Store
@@ -556,10 +716,11 @@ export default function Home() {
                   background: 'linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)',
                   borderRadius: '12px',
                   border: '1px solid #818cf8',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 16px rgba(99, 102, 241, 0.2)'
                 }}
               >
-                <span style={{ marginRight: '12px' }}>📊</span>
+                <span style={{ marginRight: '12px', fontSize: '18px' }}>📊</span>
                 Dashboard
               </button>
               
@@ -580,27 +741,30 @@ export default function Home() {
                   transition: 'all 0.3s ease'
                 }}
                 onMouseOver={(e) => {
-                  e.currentTarget.style.background = 'rgba(0,0,0,0.05)'
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.1)'
                   e.currentTarget.style.transform = 'translateY(-2px)'
+                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.1)'
                 }}
                 onMouseOut={(e) => {
                   e.currentTarget.style.background = 'transparent'
                   e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = 'none'
                 }}
               >
-                <span style={{ marginRight: '12px' }}>⚙️</span>
+                <span style={{ marginRight: '12px', fontSize: '18px' }}>⚙️</span>
                 Store Settings
               </button>
             </div>
           </nav>
 
           {/* Account Info */}
-          <div style={{ padding: '24px 32px', borderTop: '1px solid rgba(0,0,0,0.1)' }}>
+          <div style={{ padding: '24px 32px', borderTop: '1px solid rgba(255,255,255,0.3)' }}>
             <div style={{
-              background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)',
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))',
               borderRadius: '16px',
               padding: '16px',
-              border: '1px solid rgba(0,0,0,0.1)'
+              border: '1px solid rgba(255,255,255,0.2)',
+              backdropFilter: 'blur(20px)'
             }}>
               <div style={{ fontSize: '14px' }}>
                 <p style={{ color: '#1e293b', fontWeight: '600', margin: '0 0 4px 0' }}>
@@ -620,9 +784,9 @@ export default function Home() {
         {/* Top Bar */}
         <div style={{
           background: 'rgba(255,255,255,0.95)',
-          backdropFilter: 'blur(20px)',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-          borderBottom: '1px solid rgba(0,0,0,0.1)'
+          backdropFilter: 'blur(30px)',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+          borderBottom: '1px solid rgba(255,255,255,0.3)'
         }}>
           <div style={{
             display: 'flex',
@@ -666,11 +830,22 @@ export default function Home() {
         {/* Dashboard Content */}
         <main style={{ padding: '40px 32px' }}>
           {/* Header */}
-          <div style={{ marginBottom: '40px' }}>
-            <h1 style={{ fontSize: '48px', fontWeight: 'bold', color: '#1e293b', margin: '0 0 16px 0' }}>
+          <div style={{ marginBottom: '40px', textAlign: 'center' }}>
+            <h1 style={{ 
+              fontSize: '56px', 
+              fontWeight: 'bold', 
+              color: 'white', 
+              margin: '0 0 20px 0',
+              textShadow: '0 4px 20px rgba(0,0,0,0.3)'
+            }}>
               Business Dashboard
             </h1>
-            <p style={{ fontSize: '24px', color: '#64748b', margin: 0 }}>
+            <p style={{ 
+              fontSize: '24px', 
+              color: 'rgba(255,255,255,0.9)', 
+              margin: 0,
+              textShadow: '0 2px 10px rgba(0,0,0,0.3)'
+            }}>
               Daily takings overview for {activeAccount?.name || 'your store'}
             </p>
           </div>
@@ -678,46 +853,78 @@ export default function Home() {
           {/* Summary Cards */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
             gap: '32px',
             marginBottom: '40px'
           }}>
             <div style={{
               background: 'rgba(255,255,255,0.95)',
-              backdropFilter: 'blur(20px)',
+              backdropFilter: 'blur(30px)',
               borderRadius: '24px',
-              boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
-              border: '1px solid rgba(0,0,0,0.1)',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+              border: '1px solid rgba(255,255,255,0.3)',
               padding: '32px',
-              transition: 'all 0.3s ease'
+              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+              position: 'relative',
+              overflow: 'hidden'
             }}
             onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'translateY(-8px)'
-              e.currentTarget.style.boxShadow = '0 32px 64px rgba(0,0,0,0.15)'
+              e.currentTarget.style.transform = 'translateY(-12px) scale(1.02)'
+              e.currentTarget.style.boxShadow = '0 32px 80px rgba(0,0,0,0.25)'
             }}
             onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)'
-              e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,0,0,0.1)'
+              e.currentTarget.style.transform = 'translateY(0) scale(1)'
+              e.currentTarget.style.boxShadow = '0 20px 60px rgba(0,0,0,0.15)'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center' }}>
+              {/* Background glow effect */}
+              <div style={{
+                position: 'absolute',
+                top: '-50%',
+                left: '-50%',
+                width: '200%',
+                height: '200%',
+                background: 'radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%)',
+                animation: 'pulse 4s ease-in-out infinite'
+              }}></div>
+              
+              <div style={{ display: 'flex', alignItems: 'center', position: 'relative', zIndex: 10 }}>
                 <div style={{
-                  padding: '16px',
+                  padding: '20px',
                   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  borderRadius: '16px',
-                  boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)',
-                  marginRight: '24px'
+                  borderRadius: '20px',
+                  boxShadow: '0 12px 40px rgba(102, 126, 234, 0.4)',
+                  marginRight: '24px',
+                  animation: 'pulse 3s ease-in-out infinite'
                 }}>
-                  <span style={{ fontSize: '32px' }}>💰</span>
+                  <span style={{ fontSize: '36px' }}>💰</span>
                 </div>
                 <div>
-                  <p style={{ fontSize: '14px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 8px 0' }}>
+                  <p style={{ 
+                    fontSize: '14px', 
+                    fontWeight: '700', 
+                    color: '#64748b', 
+                    textTransform: 'uppercase', 
+                    letterSpacing: '0.1em', 
+                    margin: '0 0 12px 0' 
+                  }}>
                     Total Revenue
                   </p>
-                  <p style={{ fontSize: '48px', fontWeight: 'bold', color: '#1e293b', margin: 0 }}>
+                  <p style={{ 
+                    fontSize: '48px', 
+                    fontWeight: 'bold', 
+                    color: '#1e293b', 
+                    margin: '0 0 8px 0',
+                    textShadow: '0 2px 10px rgba(0,0,0,0.1)'
+                  }}>
                     {formatCurrency(totalTakings)}
                   </p>
                   {activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2' && dailyTakings.length > 0 && (
-                    <p style={{ fontSize: '14px', color: '#64748b', margin: '8px 0 0 0' }}>
+                    <p style={{ 
+                      fontSize: '14px', 
+                      color: '#64748b', 
+                      margin: 0,
+                      fontWeight: '500'
+                    }}>
                       Combined from all locations
                     </p>
                   )}
@@ -727,36 +934,63 @@ export default function Home() {
 
             <div style={{
               background: 'rgba(255,255,255,0.95)',
-              backdropFilter: 'blur(20px)',
+              backdropFilter: 'blur(30px)',
               borderRadius: '24px',
-              boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
-              border: '1px solid rgba(0,0,0,0.1)',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+              border: '1px solid rgba(255,255,255,0.3)',
               padding: '32px',
-              transition: 'all 0.3s ease'
+              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+              position: 'relative',
+              overflow: 'hidden'
             }}
             onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'translateY(-8px)'
-              e.currentTarget.style.boxShadow = '0 32px 64px rgba(0,0,0,0.15)'
+              e.currentTarget.style.transform = 'translateY(-12px) scale(1.02)'
+              e.currentTarget.style.boxShadow = '0 32px 80px rgba(0,0,0,0.25)'
             }}
             onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)'
-              e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,0,0,0.1)'
+              e.currentTarget.style.transform = 'translateY(0) scale(1)'
+              e.currentTarget.style.boxShadow = '0 20px 60px rgba(0,0,0,0.15)'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center' }}>
+              {/* Background glow effect */}
+              <div style={{
+                position: 'absolute',
+                top: '-50%',
+                left: '-50%',
+                width: '200%',
+                height: '200%',
+                background: 'radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%)',
+                animation: 'pulse 4s ease-in-out infinite'
+              }}></div>
+              
+              <div style={{ display: 'flex', alignItems: 'center', position: 'relative', zIndex: 10 }}>
                 <div style={{
-                  padding: '16px',
+                  padding: '20px',
                   background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                  borderRadius: '16px',
-                  boxShadow: '0 8px 32px rgba(16, 185, 129, 0.3)',
-                  marginRight: '24px'
+                  borderRadius: '20px',
+                  boxShadow: '0 12px 40px rgba(16, 185, 129, 0.4)',
+                  marginRight: '24px',
+                  animation: 'pulse 3s ease-in-out infinite'
                 }}>
-                  <span style={{ fontSize: '32px' }}>📈</span>
+                  <span style={{ fontSize: '36px' }}>📈</span>
                 </div>
                 <div>
-                  <p style={{ fontSize: '14px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 8px 0' }}>
+                  <p style={{ 
+                    fontSize: '14px', 
+                    fontWeight: '700', 
+                    color: '#64748b', 
+                    textTransform: 'uppercase', 
+                    letterSpacing: '0.1em', 
+                    margin: '0 0 12px 0' 
+                  }}>
                     Daily Average
                   </p>
-                  <p style={{ fontSize: '48px', fontWeight: 'bold', color: '#1e293b', margin: 0 }}>
+                  <p style={{ 
+                    fontSize: '48px', 
+                    fontWeight: 'bold', 
+                    color: '#1e293b', 
+                    margin: 0,
+                    textShadow: '0 2px 10px rgba(0,0,0,0.1)'
+                  }}>
                     {formatCurrency(averageTakings)}
                   </p>
                 </div>
@@ -765,36 +999,63 @@ export default function Home() {
 
             <div style={{
               background: 'rgba(255,255,255,0.95)',
-              backdropFilter: 'blur(20px)',
+              backdropFilter: 'blur(30px)',
               borderRadius: '24px',
-              boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
-              border: '1px solid rgba(0,0,0,0.1)',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+              border: '1px solid rgba(255,255,255,0.3)',
               padding: '32px',
-              transition: 'all 0.3s ease'
+              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+              position: 'relative',
+              overflow: 'hidden'
             }}
             onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'translateY(-8px)'
-              e.currentTarget.style.boxShadow = '0 32px 64px rgba(0,0,0,0.15)'
+              e.currentTarget.style.transform = 'translateY(-12px) scale(1.02)'
+              e.currentTarget.style.boxShadow = '0 32px 80px rgba(0,0,0,0.25)'
             }}
             onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)'
-              e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,0,0,0.1)'
+              e.currentTarget.style.transform = 'translateY(0) scale(1)'
+              e.currentTarget.style.boxShadow = '0 20px 60px rgba(0,0,0,0.15)'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center' }}>
+              {/* Background glow effect */}
+              <div style={{
+                position: 'absolute',
+                top: '-50%',
+                left: '-50%',
+                width: '200%',
+                height: '200%',
+                background: 'radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%)',
+                animation: 'pulse 4s ease-in-out infinite'
+              }}></div>
+              
+              <div style={{ display: 'flex', alignItems: 'center', position: 'relative', zIndex: 10 }}>
                 <div style={{
-                  padding: '16px',
+                  padding: '20px',
                   background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
-                  borderRadius: '16px',
-                  boxShadow: '0 8px 32px rgba(139, 92, 246, 0.3)',
-                  marginRight: '24px'
+                  borderRadius: '20px',
+                  boxShadow: '0 12px 40px rgba(139, 92, 246, 0.4)',
+                  marginRight: '24px',
+                  animation: 'pulse 3s ease-in-out infinite'
                 }}>
-                  <span style={{ fontSize: '32px' }}>📅</span>
+                  <span style={{ fontSize: '36px' }}>📅</span>
                 </div>
                 <div>
-                  <p style={{ fontSize: '14px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 8px 0' }}>
+                  <p style={{ 
+                    fontSize: '14px', 
+                    fontWeight: '700', 
+                    color: '#64748b', 
+                    textTransform: 'uppercase', 
+                    letterSpacing: '0.1em', 
+                    margin: '0 0 12px 0' 
+                  }}>
                     Days Tracked
                   </p>
-                  <p style={{ fontSize: '48px', fontWeight: 'bold', color: '#1e293b', margin: 0 }}>
+                  <p style={{ 
+                    fontSize: '48px', 
+                    fontWeight: 'bold', 
+                    color: '#1e293b', 
+                    margin: 0,
+                    textShadow: '0 2px 10px rgba(0,0,0,0.1)'
+                  }}>
                     {dailyTakings.length}
                   </p>
                 </div>
