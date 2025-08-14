@@ -438,50 +438,194 @@ export default function Home() {
     )
   }
 
-  // Account management view
+  // Account management view (EPOS Style)
   if (activeTab === 'accounts') {
     return (
-      <div style={{
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        padding: '40px 20px'
-      }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <button
-            onClick={() => setActiveTab('dashboard')}
-            style={{
-              background: 'rgba(255,255,255,0.2)',
-              border: '2px solid rgba(255,255,255,0.3)',
-              color: 'white',
-              padding: '12px 24px',
-              borderRadius: '12px',
-              fontSize: '16px',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              marginBottom: '40px',
-              transition: 'all 0.3s ease'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.background = 'rgba(255,255,255,0.3)'
-              e.currentTarget.style.transform = 'translateY(-2px)'
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.background = 'rgba(255,255,255,0.2)'
-              e.currentTarget.style.transform = 'translateY(0)'
-            }}
-          >
-            ← Back to Dashboard
-          </button>
-          
-          <h1 style={{
-            fontSize: '48px',
-            fontWeight: 'bold',
-            color: 'white',
-            textAlign: 'center',
-            marginBottom: '40px'
+      <div style={{ minHeight: '100vh', background: '#f8f9fa' }}>
+        {/* Header */}
+        <header style={{ 
+          background: '#ffffff',
+          borderBottom: '1px solid #e9ecef',
+          padding: '12px 24px',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        }}>
+          <div style={{ 
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            maxWidth: '1400px',
+            margin: '0 auto'
           }}>
-            Store Management
-          </h1>
+            {/* Logo */}
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <div style={{
+                width: '50px',
+                height: '50px',
+                background: '#ff6b35',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: '12px',
+                boxShadow: '0 4px 8px rgba(255, 107, 53, 0.3)'
+              }}>
+                <span style={{ color: 'white', fontSize: '24px', fontWeight: 'bold' }}>L</span>
+              </div>
+              <div>
+                <h1 style={{ fontSize: '18px', fontWeight: 'bold', color: '#333', margin: 0 }}>
+                  {activeAccount?.name || 'LOYVERSE'}
+                </h1>
+                <p style={{ fontSize: '12px', color: '#666', margin: 0 }}>EPOS</p>
+              </div>
+            </div>
+
+            {/* Navigation */}
+            <nav style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <button
+                onClick={() => setActiveTab('dashboard')}
+                style={{
+                  background: '#6c757d',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer'
+                }}
+              >
+                🏠 Dashboard
+              </button>
+              <button
+                style={{
+                  background: '#007bff',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer'
+                }}
+              >
+                🔍 Find Students
+              </button>
+              <button
+                style={{
+                  background: '#6f42c1',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer'
+                }}
+              >
+                📦 Find Products
+              </button>
+              <button
+                style={{
+                  background: '#e83e8c',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer'
+                }}
+              >
+                🛒 Saved Baskets
+              </button>
+              <button
+                style={{
+                  background: '#fd7e14',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer'
+                }}
+              >
+                📊 Sales Reports
+              </button>
+              <button
+                onClick={() => setActiveTab('accounts')}
+                style={{
+                  background: '#20c997',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  fontWeight: '600'
+                }}
+              >
+                ⚙️ Admin
+              </button>
+              <button
+                style={{
+                  background: '#dc3545',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer'
+                }}
+              >
+                🚪 Logout
+              </button>
+            </nav>
+
+            <div style={{ fontSize: '14px', color: '#666' }}>
+              {new Date().toLocaleDateString()}
+            </div>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main style={{ 
+          padding: '24px',
+          maxWidth: '1400px',
+          margin: '0 auto'
+        }}>
+          <div style={{ marginBottom: '24px' }}>
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              style={{
+                background: '#6c757d',
+                color: 'white',
+                border: 'none',
+                padding: '8px 16px',
+                borderRadius: '6px',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                marginBottom: '20px'
+              }}
+            >
+              ← Back to Dashboard
+            </button>
+            
+            <h1 style={{
+              fontSize: '32px',
+              fontWeight: 'bold',
+              color: '#333',
+              margin: 0
+            }}>
+              Store Management
+            </h1>
+            <p style={{ color: '#666', marginTop: '8px', fontSize: '16px' }}>
+              Manage your Loyverse store connections and settings
+            </p>
+          </div>
           
           <AccountManager
             accounts={accounts}
@@ -491,480 +635,482 @@ export default function Home() {
             onSwitchAccount={switchAccount}
             activeAccount={activeAccount}
           />
-        </div>
+        </main>
       </div>
     )
   }
 
-  // Main dashboard view
+  // Main dashboard view (EPOS Style)
   return (
-    <div style={{ minHeight: '100vh', background: '#f6f7fb' }}>
-      
-
-      
-
-      {/* Sidebar */}
-      <div style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        bottom: 0,
-        width: '320px',
-        background: 'rgba(255,255,255,0.95)',
-        backdropFilter: 'blur(30px)',
-        borderRight: '1px solid rgba(255,255,255,0.3)',
-        transform: sidebarOpen ? 'translateX(0)' : 'translateX(-100%)',
-        transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-        zIndex: 50,
-        boxShadow: '8px 0 40px rgba(0,0,0,0.2)',
-        display: 'none'
+    <div style={{ minHeight: '100vh', background: '#f8f9fa' }}>
+      {/* Header */}
+      <header style={{ 
+        background: '#ffffff',
+        borderBottom: '1px solid #e9ecef',
+        padding: '12px 24px',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
       }}>
-        <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ 
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          maxWidth: '1400px',
+          margin: '0 auto'
+        }}>
           {/* Logo */}
-          <div style={{
-            padding: '40px 32px',
-            borderBottom: '1px solid rgba(255,255,255,0.3)',
-            display: 'flex',
-            alignItems: 'center',
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))'
-          }}>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
             <div style={{
-              width: '56px',
-              height: '56px',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              borderRadius: '20px',
+              width: '50px',
+              height: '50px',
+              background: '#ff6b35',
+              borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              marginRight: '20px',
-              boxShadow: '0 12px 40px rgba(102, 126, 234, 0.4)',
-              animation: 'pulse 3s ease-in-out infinite'
+              marginRight: '12px',
+              boxShadow: '0 4px 8px rgba(255, 107, 53, 0.3)'
             }}>
-              <span style={{ color: 'white', fontSize: '28px', fontWeight: 'bold' }}>L</span>
+              <span style={{ color: 'white', fontSize: '24px', fontWeight: 'bold' }}>L</span>
             </div>
             <div>
-              <h1 style={{ fontSize: '28px', fontWeight: 'bold', color: '#1e293b', margin: 0 }}>
-                Loyverse
+              <h1 style={{ fontSize: '18px', fontWeight: 'bold', color: '#333', margin: 0 }}>
+                {activeAccount?.name || 'LOYVERSE'}
               </h1>
-              <p style={{ fontSize: '16px', color: '#64748b', margin: 0, fontWeight: '500' }}>
-                Business Intelligence
-              </p>
+              <p style={{ fontSize: '12px', color: '#666', margin: 0 }}>EPOS</p>
             </div>
-          </div>
-
-          {/* Account Switcher */}
-          <div style={{ padding: '24px 32px', borderBottom: '1px solid rgba(255,255,255,0.3)' }}>
-            <label style={{
-              display: 'block',
-              fontSize: '12px',
-              fontWeight: '600',
-              color: '#64748b',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em',
-              marginBottom: '16px'
-            }}>
-              Active Store
-            </label>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {accounts.map((account) => (
-                <button
-                  key={account.id}
-                  onClick={() => switchAccount(account)}
-                  style={{
-                    width: '100%',
-                    textAlign: 'left',
-                    padding: '16px',
-                    borderRadius: '16px',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    ...(account.isActive ? {
-                      background: 'linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)',
-                      border: '2px solid #818cf8',
-                      color: '#3730a3',
-                      boxShadow: '0 8px 32px rgba(99, 102, 241, 0.3)',
-                      transform: 'scale(1.02)'
-                    } : {
-                      background: 'transparent',
-                      color: '#475569'
-                    })
-                  }}
-                  onMouseOver={(e) => {
-                    if (!account.isActive) {
-                      e.currentTarget.style.background = 'rgba(255,255,255,0.1)'
-                      e.currentTarget.style.transform = 'translateY(-2px)'
-                      e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.1)'
-                    }
-                  }}
-                  onMouseOut={(e) => {
-                    if (!account.isActive) {
-                      e.currentTarget.style.background = 'transparent'
-                      e.currentTarget.style.transform = 'translateY(0)'
-                      e.currentTarget.style.boxShadow = 'none'
-                    }
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <div style={{
-                        width: '12px',
-                        height: '12px',
-                        borderRadius: '50%',
-                        marginRight: '12px',
-                        ...(account.isActive ? {
-                          background: '#6366f1',
-                          boxShadow: '0 0 0 4px rgba(99, 102, 241, 0.3)'
-                        } : {
-                          background: '#cbd5e1'
-                        })
-                      }} />
-                      <span style={{ fontWeight: '600' }}>{account.name}</span>
-                    </div>
-                    {account.isActive && (
-                      <span style={{ fontSize: '16px' }}>✓</span>
-                    )}
-                  </div>
-                </button>
-              ))}
-            </div>
-            
-            <button
-              onClick={() => setActiveTab('accounts')}
-              style={{
-                width: '100%',
-                marginTop: '16px',
-                padding: '16px',
-                color: '#6366f1',
-                background: 'rgba(99, 102, 241, 0.1)',
-                border: '2px dashed #c7d2fe',
-                borderRadius: '16px',
-                cursor: 'pointer',
-                fontWeight: '600',
-                fontSize: '14px',
-                transition: 'all 0.3s ease'
-              }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.background = 'rgba(99, 102, 241, 0.15)'
-                e.currentTarget.style.borderColor = '#818cf8'
-                e.currentTarget.style.transform = 'translateY(-2px)'
-                e.currentTarget.style.boxShadow = '0 8px 24px rgba(99, 102, 241, 0.2)'
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.background = 'rgba(99, 102, 241, 0.1)'
-                e.currentTarget.style.borderColor = '#c7d2fe'
-                e.currentTarget.style.transform = 'translateY(0)'
-                e.currentTarget.style.boxShadow = 'none'
-              }}
-            >
-              + Add New Store
-            </button>
           </div>
 
           {/* Navigation */}
-          <nav style={{ flex: 1, padding: '24px 32px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <button
-                onClick={() => setActiveTab('dashboard')}
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  padding: '16px',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  color: '#6366f1',
-                  background: 'linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)',
-                  borderRadius: '12px',
-                  border: '1px solid #818cf8',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 16px rgba(99, 102, 241, 0.2)'
-                }}
-              >
-                <span style={{ marginRight: '12px', fontSize: '18px' }}>📊</span>
-                Dashboard
-              </button>
-              
-              <button
-                onClick={() => setActiveTab('accounts')}
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  padding: '16px',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  color: '#475569',
-                  background: 'transparent',
-                  borderRadius: '12px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.1)'
-                  e.currentTarget.style.transform = 'translateY(-2px)'
-                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.1)'
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.background = 'transparent'
-                  e.currentTarget.style.transform = 'translateY(0)'
-                  e.currentTarget.style.boxShadow = 'none'
-                }}
-              >
-                <span style={{ marginRight: '12px', fontSize: '18px' }}>⚙️</span>
-                Store Settings
-              </button>
-            </div>
-          </nav>
-
-          {/* Account Info */}
-          <div style={{ padding: '24px 32px', borderTop: '1px solid rgba(255,255,255,0.3)' }}>
-            <div style={{
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))',
-              borderRadius: '16px',
-              padding: '16px',
-              border: '1px solid rgba(255,255,255,0.2)',
-              backdropFilter: 'blur(20px)'
-            }}>
-              <div style={{ fontSize: '14px' }}>
-                <p style={{ color: '#1e293b', fontWeight: '600', margin: '0 0 4px 0' }}>
-                  {activeAccount?.name || 'Unknown Store'}
-                </p>
-                <p style={{ color: '#64748b', margin: 0, fontSize: '12px' }}>
-                  ID: {activeAccount?.storeId?.substring(0, 8) || 'Unknown'}...
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div style={{ marginLeft: 0 }}>
-        {/* Top Bar */}
-        <div style={{ background: '#ffffff', borderBottom: '1px solid #e5e7eb' }}>
-          <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '20px 24px'
-          }}>
+          <nav style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
             <button
-              onClick={() => setSidebarOpen(true)}
+              onClick={() => setActiveTab('dashboard')}
               style={{
-                display: 'none',
-                padding: '12px',
-                borderRadius: '12px',
-                color: '#64748b',
-                background: 'transparent',
+                background: activeTab === 'dashboard' ? '#6c757d' : '#6c757d',
+                color: 'white',
                 border: 'none',
+                padding: '8px 16px',
+                borderRadius: '6px',
+                fontSize: '14px',
+                fontWeight: '500',
                 cursor: 'pointer',
-                transition: 'all 0.3s ease'
+                transition: 'all 0.2s ease'
               }}
               onMouseOver={(e) => {
-                e.currentTarget.style.background = 'rgba(0,0,0,0.05)'
+                e.currentTarget.style.background = '#5a6268'
               }}
               onMouseOut={(e) => {
-                e.currentTarget.style.background = 'transparent'
+                e.currentTarget.style.background = activeTab === 'dashboard' ? '#6c757d' : '#6c757d'
               }}
             >
-              ☰
+              🏠 Dashboard
             </button>
-            
-            <div style={{ textAlign: 'right', color: '#6b7280', fontSize: '14px' }}>{new Date().toLocaleDateString()}</div>
+            <button
+              style={{
+                background: '#007bff',
+                color: 'white',
+                border: 'none',
+                padding: '8px 16px',
+                borderRadius: '6px',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer'
+              }}
+            >
+              🔍 Find Students
+            </button>
+            <button
+              style={{
+                background: '#6f42c1',
+                color: 'white',
+                border: 'none',
+                padding: '8px 16px',
+                borderRadius: '6px',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer'
+              }}
+            >
+              📦 Find Products
+            </button>
+            <button
+              style={{
+                background: '#e83e8c',
+                color: 'white',
+                border: 'none',
+                padding: '8px 16px',
+                borderRadius: '6px',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer'
+              }}
+            >
+              🛒 Saved Baskets
+            </button>
+            <button
+              style={{
+                background: '#fd7e14',
+                color: 'white',
+                border: 'none',
+                padding: '8px 16px',
+                borderRadius: '6px',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer'
+              }}
+            >
+              📊 Sales Reports
+            </button>
+            <button
+              onClick={() => setActiveTab('accounts')}
+              style={{
+                background: '#20c997',
+                color: 'white',
+                border: 'none',
+                padding: '8px 16px',
+                borderRadius: '6px',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer'
+              }}
+            >
+              ⚙️ Admin
+            </button>
+            <button
+              style={{
+                background: '#dc3545',
+                color: 'white',
+                border: 'none',
+                padding: '8px 16px',
+                borderRadius: '6px',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer'
+              }}
+            >
+              🚪 Logout
+            </button>
+          </nav>
+
+          <div style={{ fontSize: '14px', color: '#666' }}>
+            {new Date().toLocaleDateString()}
           </div>
         </div>
+      </header>
 
-        {/* Dashboard Content */}
-        <main style={{ padding: '40px 32px' }}>
-          {/* Header */}
-          <div style={{ marginBottom: '24px' }}>
-            <h1 style={{ fontSize: '28px', fontWeight: 700, letterSpacing: -0.2, color: '#0f172a', margin: 0 }}>
-              Business Dashboard
-            </h1>
-            <p style={{ fontSize: '14px', color: '#6b7280', marginTop: '6px' }}>
-              Overview for {activeAccount?.name || 'your store'}
-            </p>
-          </div>
-
-          {/* Quick account switcher */}
-          {accounts.length > 0 && (
+      {/* Main Content */}
+      <main style={{ 
+        padding: '24px',
+        maxWidth: '1400px',
+        margin: '0 auto'
+      }}>
+        <div style={{ 
+          display: 'grid',
+          gridTemplateColumns: '2fr 1fr',
+          gap: '24px',
+          minHeight: '80vh'
+        }}>
+          {/* Left Column - Add Items */}
+          <div>
+            {/* Add Items Header */}
             <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
+              background: 'white',
+              borderRadius: '8px',
+              padding: '20px',
               marginBottom: '20px',
-              gap: '12px'
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
             }}>
-              <div style={{
-                display: 'flex',
-                overflowX: 'auto',
-                WebkitOverflowScrolling: 'touch',
-                gap: '8px',
-                paddingBottom: '4px'
-              }}>
-                {accounts.map((acc) => (
-                  <button
-                    key={acc.id}
-                    onClick={() => switchAccount(acc)}
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  background: '#8B4513',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginRight: '12px'
+                }}>
+                  <span style={{ color: 'white', fontSize: '18px' }}>🛒</span>
+                </div>
+                <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#333', margin: 0 }}>
+                  Add Items
+                </h2>
+              </div>
+
+              {/* Search Section */}
+              <div style={{ marginBottom: '24px' }}>
+                <h3 style={{ 
+                  fontSize: '16px', 
+                  color: '#666', 
+                  marginBottom: '12px',
+                  fontWeight: '500'
+                }}>
+                  Search Existing Products
+                </h3>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                  <input
+                    type="text"
+                    placeholder="Search products by name, code, category, or any words... (e.g., 'Flower Shop')"
                     style={{
-                      whiteSpace: 'nowrap',
-                      padding: '8px 14px',
-                      borderRadius: '9999px',
-                      fontSize: '13px',
-                      fontWeight: 600,
+                      flex: 1,
+                      padding: '12px 16px',
+                      border: '2px solid #e9ecef',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      outline: 'none'
+                    }}
+                  />
+                  <button
+                    style={{
+                      background: '#007bff',
+                      color: 'white',
+                      border: 'none',
+                      padding: '12px 24px',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      fontWeight: '600',
                       cursor: 'pointer',
-                      border: '1px solid #e5e7eb',
-                      background: acc.isActive ? '#111827' : '#ffffff',
-                      color: acc.isActive ? '#ffffff' : '#111827'
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
                     }}
                   >
-                    {acc.name}
+                    📦 Browse All
                   </button>
-                ))}
+                </div>
               </div>
-              <button
-                onClick={() => setActiveTab('accounts')}
-                style={{
-                  padding: '8px 12px',
-                  borderRadius: '8px',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  border: '1px solid #e5e7eb',
-                  background: '#ffffff',
-                  color: '#111827',
-                  cursor: 'pointer'
-                }}
-              >
-                Manage accounts
-              </button>
-            </div>
-          )}
 
-          {/* Summary Cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-            <div style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '20px', boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }}>
-              <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: 600, textTransform: 'uppercase', marginBottom: '8px' }}>Total Revenue</div>
-              <div style={{ fontSize: '28px', fontWeight: 700, color: '#0f172a' }}>{formatCurrency(totalTakings)}</div>
-              {activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2' && dailyTakings.length > 0 && (
-                <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '6px' }}>Combined from all locations</div>
-              )}
+              {/* Custom Item Section */}
+              <div>
+                <h3 style={{ 
+                  fontSize: '16px', 
+                  color: '#666', 
+                  marginBottom: '12px',
+                  fontWeight: '500'
+                }}>
+                  Add Custom Item
+                </h3>
+                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 100px', gap: '12px', marginBottom: '16px' }}>
+                  <div>
+                    <label style={{ 
+                      display: 'block',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      color: '#333',
+                      marginBottom: '4px'
+                    }}>
+                      Item Name *
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g., Special Service"
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        border: '1px solid #ced4da',
+                        borderRadius: '4px',
+                        fontSize: '14px'
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ 
+                      display: 'block',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      color: '#333',
+                      marginBottom: '4px'
+                    }}>
+                      Price (£) *
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="e.g., 10.50"
+                      step="0.01"
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        border: '1px solid #ced4da',
+                        borderRadius: '4px',
+                        fontSize: '14px'
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ 
+                      display: 'block',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      color: '#333',
+                      marginBottom: '4px'
+                    }}>
+                      Quantity
+                    </label>
+                    <input
+                      type="number"
+                      defaultValue="1"
+                      min="1"
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        border: '1px solid #ced4da',
+                        borderRadius: '4px',
+                        fontSize: '14px'
+                      }}
+                    />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <button
+                    style={{
+                      background: '#28a745',
+                      color: 'white',
+                      border: 'none',
+                      padding: '10px 20px',
+                      borderRadius: '4px',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    ➕ Add to Basket
+                  </button>
+                  <button
+                    style={{
+                      background: '#6c757d',
+                      color: 'white',
+                      border: 'none',
+                      padding: '10px 20px',
+                      borderRadius: '4px',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
             </div>
 
-            <div style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '20px', boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }}>
-              <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: 600, textTransform: 'uppercase', marginBottom: '8px' }}>Daily Average</div>
-              <div style={{ fontSize: '28px', fontWeight: 700, color: '#0f172a' }}>{formatCurrency(averageTakings)}</div>
-            </div>
-
-            <div style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '20px', boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }}>
-              <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: 600, textTransform: 'uppercase', marginBottom: '8px' }}>Days Tracked</div>
-              <div style={{ fontSize: '28px', fontWeight: 700, color: '#0f172a' }}>{dailyTakings.length}</div>
+            {/* Quick Stats */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+              <div style={{ 
+                background: 'white', 
+                padding: '20px', 
+                borderRadius: '8px',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+              }}>
+                <div style={{ fontSize: '12px', color: '#666', fontWeight: '600', marginBottom: '8px' }}>
+                  TOTAL REVENUE
+                </div>
+                <div style={{ fontSize: '24px', fontWeight: '700', color: '#333' }}>
+                  {formatCurrency(totalTakings)}
+                </div>
+              </div>
+              <div style={{ 
+                background: 'white', 
+                padding: '20px', 
+                borderRadius: '8px',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+              }}>
+                <div style={{ fontSize: '12px', color: '#666', fontWeight: '600', marginBottom: '8px' }}>
+                  DAILY AVERAGE
+                </div>
+                <div style={{ fontSize: '24px', fontWeight: '700', color: '#333' }}>
+                  {formatCurrency(averageTakings)}
+                </div>
+              </div>
+              <div style={{ 
+                background: 'white', 
+                padding: '20px', 
+                borderRadius: '8px',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+              }}>
+                <div style={{ fontSize: '12px', color: '#666', fontWeight: '600', marginBottom: '8px' }}>
+                  DAYS TRACKED
+                </div>
+                <div style={{ fontSize: '24px', fontWeight: '700', color: '#333' }}>
+                  {dailyTakings.length}
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Location Breakdown for Multi-Store Accounts */}
-          {activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2' && dailyTakings.length > 0 && (
+          {/* Right Column - Basket */}
+          <div>
             <div style={{
-              background: 'rgba(255,255,255,0.95)',
-              backdropFilter: 'blur(20px)',
-              borderRadius: '24px',
-              boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
-              border: '1px solid rgba(0,0,0,0.1)',
-              padding: '32px',
-              marginBottom: '40px'
+              background: 'white',
+              borderRadius: '8px',
+              padding: '20px',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+              height: 'fit-content'
             }}>
-              <h2 style={{ fontSize: '32px', fontWeight: 'bold', color: '#1e293b', margin: '0 0 32px 0' }}>
-                Location Performance
+              <h2 style={{ 
+                fontSize: '20px', 
+                fontWeight: 'bold', 
+                color: '#333', 
+                margin: '0 0 20px 0',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}>
+                Basket 
+                <span style={{ 
+                  fontSize: '16px', 
+                  color: '#666',
+                  fontWeight: 'normal'
+                }}>(0)</span>
               </h2>
+              
+              {/* Total Section */}
               <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-                gap: '32px'
+                background: 'linear-gradient(135deg, #ffc107 0%, #ffca28 100%)',
+                borderRadius: '8px',
+                padding: '24px',
+                textAlign: 'center',
+                marginBottom: '20px',
+                boxShadow: '0 4px 8px rgba(255, 193, 7, 0.3)'
+              }}>
+                <div style={{ 
+                  fontSize: '16px', 
+                  fontWeight: '600',
+                  color: '#333',
+                  marginBottom: '8px'
+                }}>
+                  Total
+                </div>
+                <div style={{ 
+                  fontSize: '36px', 
+                  fontWeight: 'bold',
+                  color: '#333'
+                }}>
+                  £0.00
+                </div>
+              </div>
+
+              {/* Empty basket message */}
+              <div style={{
+                textAlign: 'center',
+                padding: '40px 20px',
+                color: '#666'
               }}>
                 <div style={{
-                  background: 'linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)',
-                  borderRadius: '24px',
-                  padding: '32px',
-                  border: '1px solid #818cf8'
-                }}>
-                  <h3 style={{ fontSize: '24px', fontWeight: 'bold', color: '#3730a3', margin: '0 0 16px 0' }}>
-                    Shop Location
-                  </h3>
-                  <p style={{ fontSize: '60px', fontWeight: 'bold', color: '#4338ca', margin: '0 0 12px 0' }}>
-                    {formatCurrency(dailyTakings.reduce((sum, day) => {
-                      const shopId = 'd5a7267b-ca6f-4490-9d66-b5ba46cc563c'
-                      return sum + (day.locationBreakdown?.[shopId] || 0)
-                    }, 0))}
-                  </p>
-                  <p style={{ color: '#4338ca', fontWeight: '500', margin: 0 }}>
-                    Total revenue from Shop
-                  </p>
-                </div>
-                <div style={{
-                  background: 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)',
-                  borderRadius: '24px',
-                  padding: '32px',
-                  border: '1px solid #34d399'
-                }}>
-                  <h3 style={{ fontSize: '24px', fontWeight: 'bold', color: '#065f46', margin: '0 0 16px 0' }}>
-                    Cafe Location
-                  </h3>
-                  <p style={{ fontSize: '60px', fontWeight: 'bold', color: '#047857', margin: '0 0 12px 0' }}>
-                    {formatCurrency(dailyTakings.reduce((sum, day) => {
-                      const cafeId = 'e2aa143e-3e91-433e-a6d8-5a5538d429e2'
-                      return sum + (day.locationBreakdown?.[cafeId] || 0)
-                    }, 0))}
-                  </p>
-                  <p style={{ color: '#047857', fontWeight: '500', margin: 0 }}>
-                    Total revenue from Cafe
-                  </p>
-                </div>
+                  fontSize: '48px',
+                  marginBottom: '12px'
+                }}>🛒</div>
+                <p style={{ margin: 0, fontSize: '14px' }}>
+                  Your basket is empty.<br />
+                  Add items to get started.
+                </p>
               </div>
             </div>
-          )}
-
-          {/* Chart */}
-          <div style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '20px', marginBottom: '24px', boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }}>
-            <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#0f172a', margin: 0, marginBottom: '12px' }}>
-              Revenue Trends
-            </h2>
-            <DailyTakingsChart data={dailyTakings} />
           </div>
-
-          {/* Table */}
-          <div style={{
-            background: 'rgba(255,255,255,0.95)',
-            backdropFilter: 'blur(20px)',
-            borderRadius: '24px',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
-            border: '1px solid rgba(0,0,0,0.1)',
-            overflow: 'hidden'
-          }}>
-            <div style={{
-              padding: '24px 32px',
-              background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)',
-              borderBottom: '1px solid rgba(0,0,0,0.1)'
-            }}>
-              <h2 style={{ fontSize: '32px', fontWeight: 'bold', color: '#1e293b', margin: '0 0 8px 0' }}>
-                Daily Breakdown
-              </h2>
-              <p style={{ color: '#64748b', margin: 0, fontSize: '18px' }}>
-                Detailed view of your daily performance
-              </p>
-            </div>
-            <DailyTakingsTable data={dailyTakings} />
-          </div>
-        </main>
-      </div>
-
-      {/* Mobile responsive styles */}
-      <style jsx>{`
-        @media (max-width: 1024px) {
-          div[style*="margin-left: 320px"] {
-            margin-left: 0;
-          }
-          div[style*="width: 320px"] {
-            display: block;
-          }
-        }
-      `}</style>
+        </div>
+      </main>
     </div>
   )
 }
