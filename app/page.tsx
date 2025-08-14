@@ -28,15 +28,26 @@ export default function Dashboard() {
 
   useEffect(() => {
     loadAccounts()
+    
+    // Fallback timeout to prevent infinite loading
+    const timeout = setTimeout(() => {
+      if (loading) {
+        console.log('Loading timeout reached, forcing loading to false')
+        setLoading(false)
+      }
+    }, 5000)
+    
+    return () => clearTimeout(timeout)
   }, [])
 
   useEffect(() => {
     if (activeAccount) {
       fetchDailyTakings()
-    } else if (accounts.length === 0) {
+    } else if (accounts.length === 0 && !loading) {
+      // If no accounts exist and we're not loading, stop loading
       setLoading(false)
     }
-  }, [activeAccount, accounts.length])
+  }, [activeAccount, accounts.length, loading])
 
   const loadAccounts = () => {
     try {
@@ -48,8 +59,11 @@ export default function Dashboard() {
         const firstActive = parsedAccounts.find((acc: LoyverseAccount) => acc.isActive)
         if (firstActive) {
           setActiveAccount(firstActive)
+        } else {
+          setLoading(false)
         }
       } else {
+        // No accounts exist, show welcome screen
         setLoading(false)
       }
     } catch (error) {
