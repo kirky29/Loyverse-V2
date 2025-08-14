@@ -88,7 +88,7 @@ export default function AccountManager({
 
       {/* Add/Edit Form */}
       {showAddForm && (
-        <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-slate-200/50 p-10">
+        <div className="bg-white bg-opacity-80 backdrop-blur-xl rounded-3xl shadow-2xl border border-slate-200 border-opacity-50 p-10">
           <div className="flex items-center justify-between mb-8">
             <h3 className="text-2xl font-bold text-slate-900">
               {editingAccount ? 'Update Store Connection' : 'Connect New Store'}
@@ -114,7 +114,7 @@ export default function AccountManager({
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-6 py-4 border-2 border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 text-lg"
+                  className="w-full px-6 py-4 border-2 border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-20 focus:border-blue-500 transition-all duration-200 text-lg"
                   placeholder="e.g., Main Store, Online Shop"
                   required
                 />
@@ -129,7 +129,7 @@ export default function AccountManager({
                   id="storeId"
                   value={formData.storeId}
                   onChange={(e) => setFormData({ ...formData, storeId: e.target.value })}
-                  className="w-full px-6 py-4 border-2 border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 text-lg"
+                  className="w-full px-6 py-4 border-2 border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-20 focus:border-blue-500 transition-all duration-200 text-lg"
                   placeholder="Your Loyverse store ID"
                   required
                 />
@@ -145,7 +145,7 @@ export default function AccountManager({
                 id="apiToken"
                 value={formData.apiToken}
                 onChange={(e) => setFormData({ ...formData, apiToken: e.target.value })}
-                className="w-full px-6 py-4 border-2 border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 text-lg"
+                className="w-full px-6 py-4 border-2 border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-20 focus:border-blue-500 transition-all duration-200 text-lg"
                 placeholder="Your Loyverse API token"
                 required
               />
@@ -171,8 +171,8 @@ export default function AccountManager({
       )}
 
       {/* Accounts List */}
-      <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-slate-200/50 overflow-hidden">
-        <div className="px-8 py-8 border-b border-slate-200/50 bg-gradient-to-r from-slate-50 to-blue-50">
+      <div className="bg-white bg-opacity-80 backdrop-blur-xl rounded-3xl shadow-2xl border border-slate-200 border-opacity-50 overflow-hidden">
+        <div className="px-8 py-8 border-b border-slate-200 border-opacity-50 bg-gradient-to-r from-slate-50 to-blue-50">
           <h3 className="text-2xl font-bold text-slate-900 mb-2">Your Store Connections</h3>
           <p className="text-slate-600 text-lg">Manage your connected Loyverse stores</p>
         </div>
@@ -197,9 +197,9 @@ export default function AccountManager({
             </button>
           </div>
         ) : (
-          <div className="divide-y divide-slate-200/50">
+          <div className="divide-y divide-slate-200 divide-opacity-50">
             {accounts.map((account) => (
-              <div key={account.id} className="px-8 py-8 hover:bg-slate-50/50 transition-all duration-300">
+              <div key={account.id} className="px-8 py-8 hover:bg-slate-50 hover:bg-opacity-50 transition-all duration-300">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-6">
                     <div className={`w-4 h-4 rounded-full ${account.isActive ? 'bg-blue-500 shadow-lg' : 'bg-slate-300'}`} />
@@ -277,7 +277,7 @@ export default function AccountManager({
       </div>
 
       {/* Instructions */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-100 rounded-3xl p-10 border border-blue-200/50">
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-100 rounded-3xl p-10 border border-blue-200 border-opacity-50">
         <div className="flex items-start space-x-6">
           <div className="flex-shrink-0">
             <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
@@ -295,7 +295,7 @@ export default function AccountManager({
               <li>Find your store ID from the API</li>
               <li>Add the store details above</li>
             </ol>
-            <div className="mt-6 p-4 bg-blue-200/50 rounded-2xl border border-blue-300/50">
+            <div className="mt-6 p-4 bg-blue-200 bg-opacity-50 rounded-2xl border border-blue-300 border-opacity-50">
               <p className="text-blue-800 font-semibold">
                 🔒 <strong>Security Note:</strong> Keep your API tokens secure and never share them publicly.
               </p>

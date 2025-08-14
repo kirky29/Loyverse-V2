@@ -279,18 +279,18 @@ export default function Dashboard() {
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+          className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-80 bg-white/80 backdrop-blur-xl border-r border-slate-200/50 transform transition-all duration-500 ease-out lg:translate-x-0 lg:static lg:inset-0 ${
+      <div className={`fixed inset-y-0 left-0 z-50 w-80 bg-white bg-opacity-80 backdrop-blur-xl border-r border-slate-200 border-opacity-50 transform transition-all duration-500 ease-out lg:translate-x-0 lg:static lg:inset-0 ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center px-8 py-10 border-b border-slate-200/50">
+          <div className="flex items-center px-8 py-10 border-b border-slate-200 border-opacity-50">
             <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center mr-4 shadow-lg">
               <span className="text-white text-2xl font-bold">L</span>
             </div>
@@ -301,7 +301,7 @@ export default function Dashboard() {
           </div>
 
           {/* Account Switcher */}
-          <div className="px-8 py-6 border-b border-slate-200/50">
+          <div className="px-8 py-6 border-b border-slate-200 border-opacity-50">
             <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">
               Active Store
             </label>
@@ -313,7 +313,7 @@ export default function Dashboard() {
                   className={`w-full text-left p-4 rounded-2xl transition-all duration-300 ${
                     account.isActive
                       ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 text-blue-900 shadow-lg'
-                      : 'hover:bg-slate-50 text-slate-700 hover:shadow-md transform hover:-translate-y-1'
+                      : 'hover:bg-slate-50 hover:shadow-md transform hover:-translate-y-1'
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -349,7 +349,7 @@ export default function Dashboard() {
                 className="w-full flex items-center px-4 py-3 text-sm font-semibold text-blue-600 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200"
               >
                 <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 Dashboard
               </button>
@@ -368,8 +368,8 @@ export default function Dashboard() {
           </nav>
 
           {/* Account Info */}
-          <div className="px-8 py-6 border-t border-slate-200/50">
-            <div className="bg-gradient-to-r from-slate-50 to-blue-50 rounded-2xl p-4 border border-slate-200/50">
+          <div className="px-8 py-6 border-t border-slate-200 border-opacity-50">
+            <div className="bg-gradient-to-r from-slate-50 to-blue-50 rounded-2xl p-4 border border-slate-200 border-opacity-50">
               <div className="text-sm">
                 <p className="text-slate-900 font-semibold mb-1">{activeAccount.name}</p>
                 <p className="text-slate-500">ID: {activeAccount.storeId.substring(0, 8)}...</p>
@@ -382,7 +382,7 @@ export default function Dashboard() {
       {/* Main Content */}
       <div className="lg:ml-80">
         {/* Top Bar */}
-        <div className="bg-white/80 backdrop-blur-xl shadow-sm border-b border-slate-200/50">
+        <div className="bg-white bg-opacity-80 backdrop-blur-xl shadow-sm border-b border-slate-200 border-opacity-50">
           <div className="flex items-center justify-between px-6 lg:px-8 py-6">
             <button
               onClick={() => setSidebarOpen(true)}
@@ -414,7 +414,7 @@ export default function Dashboard() {
 
           {/* Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
-            <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl border border-slate-200/50 p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+            <div className="bg-white bg-opacity-80 backdrop-blur-xl rounded-3xl shadow-xl border border-slate-200 border-opacity-50 p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
               <div className="flex items-center">
                 <div className="p-4 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg">
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -431,7 +431,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl border border-slate-200/50 p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+            <div className="bg-white bg-opacity-80 backdrop-blur-xl rounded-3xl shadow-xl border border-slate-200 border-opacity-50 p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
               <div className="flex items-center">
                 <div className="p-4 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl shadow-lg">
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -445,7 +445,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl border border-slate-200/50 p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+            <div className="bg-white bg-opacity-80 backdrop-blur-xl rounded-3xl shadow-xl border border-slate-200 border-opacity-50 p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
               <div className="flex items-center">
                 <div className="p-4 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl shadow-lg">
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -462,10 +462,10 @@ export default function Dashboard() {
 
           {/* Location Breakdown for Multi-Store Accounts */}
           {activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2' && dailyTakings.length > 0 && (
-            <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl border border-slate-200/50 p-8 mb-10">
+            <div className="bg-white bg-opacity-80 backdrop-blur-xl rounded-3xl shadow-xl border border-slate-200 border-opacity-50 p-8 mb-10">
               <h2 className="text-2xl font-bold text-slate-900 mb-8">Location Performance</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-3xl p-8 border border-blue-200/50">
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-3xl p-8 border border-blue-200 border-opacity-50">
                   <h3 className="text-xl font-bold text-blue-900 mb-4">Shop Location</h3>
                   <p className="text-5xl font-bold text-blue-600 mb-3">
                     {formatCurrency(dailyTakings.reduce((sum, day) => {
@@ -475,7 +475,7 @@ export default function Dashboard() {
                   </p>
                   <p className="text-blue-700 font-medium">Total revenue from Shop</p>
                 </div>
-                <div className="bg-gradient-to-br from-emerald-50 to-teal-100 rounded-3xl p-8 border border-emerald-200/50">
+                <div className="bg-gradient-to-br from-emerald-50 to-teal-100 rounded-3xl p-8 border border-emerald-200 border-opacity-50">
                   <h3 className="text-xl font-bold text-emerald-900 mb-4">Cafe Location</h3>
                   <p className="text-5xl font-bold text-emerald-600 mb-3">
                     {formatCurrency(dailyTakings.reduce((sum, day) => {
@@ -490,14 +490,14 @@ export default function Dashboard() {
           )}
 
           {/* Chart */}
-          <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl border border-slate-200/50 p-8 mb-10">
+          <div className="bg-white bg-opacity-80 backdrop-blur-xl rounded-3xl shadow-xl border border-slate-200 border-opacity-50 p-8 mb-10">
             <h2 className="text-2xl font-bold text-slate-900 mb-8">Revenue Trends</h2>
             <DailyTakingsChart data={dailyTakings} />
           </div>
 
           {/* Table */}
-          <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl border border-slate-200/50 overflow-hidden">
-            <div className="px-8 py-6 border-b border-slate-200/50 bg-gradient-to-r from-slate-50 to-blue-50">
+          <div className="bg-white bg-opacity-80 backdrop-blur-xl rounded-3xl shadow-xl border border-slate-200 border-opacity-50 overflow-hidden">
+            <div className="px-8 py-6 border-b border-slate-200 border-opacity-50 bg-gradient-to-r from-slate-50 to-blue-50">
               <h2 className="text-2xl font-bold text-slate-900">Daily Breakdown</h2>
               <p className="text-slate-600 mt-1">Detailed view of your daily performance</p>
             </div>
