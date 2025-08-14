@@ -643,13 +643,13 @@ export default function Home() {
             <button
               onClick={() => setActiveTab('dashboard')}
               style={{
-                background: activeTab === 'dashboard' ? '#0056b3' : '#007bff',
+                background: '#007bff',
                 color: 'white',
                 border: 'none',
                 padding: '8px 16px',
                 borderRadius: '6px',
                 fontSize: '14px',
-                fontWeight: activeTab === 'dashboard' ? '600' : '500',
+                fontWeight: '600',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease'
               }}
@@ -659,13 +659,13 @@ export default function Home() {
             <button
               onClick={() => setActiveTab('accounts')}
               style={{
-                background: activeTab === 'accounts' ? '#1a7338' : '#20c997',
+                background: '#20c997',
                 color: 'white',
                 border: 'none',
                 padding: '8px 16px',
                 borderRadius: '6px',
                 fontSize: '14px',
-                fontWeight: activeTab === 'accounts' ? '600' : '500',
+                fontWeight: '500',
                 cursor: 'pointer'
               }}
             >
