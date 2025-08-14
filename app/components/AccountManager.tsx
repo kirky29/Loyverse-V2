@@ -114,7 +114,7 @@ export default function AccountManager({
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-6 py-4 border-2 border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-20 focus:border-blue-500 transition-all duration-200 text-lg"
+                  className="w-full px-6 py-4 border-2 border-slate-200 rounded-2xl transition-all duration-200 text-lg"
                   placeholder="e.g., Main Store, Online Shop"
                   required
                 />
@@ -129,7 +129,7 @@ export default function AccountManager({
                   id="storeId"
                   value={formData.storeId}
                   onChange={(e) => setFormData({ ...formData, storeId: e.target.value })}
-                  className="w-full px-6 py-4 border-2 border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-20 focus:border-blue-500 transition-all duration-200 text-lg"
+                  className="w-full px-6 py-4 border-2 border-slate-200 rounded-2xl transition-all duration-200 text-lg"
                   placeholder="Your Loyverse store ID"
                   required
                 />
@@ -145,7 +145,7 @@ export default function AccountManager({
                 id="apiToken"
                 value={formData.apiToken}
                 onChange={(e) => setFormData({ ...formData, apiToken: e.target.value })}
-                className="w-full px-6 py-4 border-2 border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-20 focus:border-blue-500 transition-all duration-200 text-lg"
+                className="w-full px-6 py-4 border-2 border-slate-200 rounded-2xl transition-all duration-200 text-lg"
                 placeholder="Your Loyverse API token"
                 required
               />

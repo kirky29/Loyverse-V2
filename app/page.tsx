@@ -492,58 +492,10 @@ export default function Home() {
 
   // Main dashboard view
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      position: 'relative',
-      overflow: 'hidden'
-    }}>
-      {/* Animated background elements */}
-      <div style={{
-        position: 'fixed',
-        top: '0',
-        left: '0',
-        width: '100%',
-        height: '100%',
-        background: 'radial-gradient(circle at 20% 80%, rgba(255,255,255,0.05) 0%, transparent 50%)',
-        animation: 'pulse 8s ease-in-out infinite'
-      }}></div>
+    <div style={{ minHeight: '100vh', background: '#f6f7fb' }}>
       
-      <div style={{
-        position: 'fixed',
-        top: '10%',
-        right: '5%',
-        width: '400px',
-        height: '400px',
-        background: 'linear-gradient(45deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))',
-        borderRadius: '50%',
-        animation: 'float 12s ease-in-out infinite'
-      }}></div>
-      
-      <div style={{
-        position: 'fixed',
-        bottom: '20%',
-        left: '5%',
-        width: '300px',
-        height: '300px',
-        background: 'linear-gradient(45deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))',
-        borderRadius: '50%',
-        animation: 'float 15s ease-in-out infinite reverse'
-      }}></div>
 
-      {/* Mobile sidebar overlay */}
-      {sidebarOpen && (
-        <div 
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.6)',
-            backdropFilter: 'blur(10px)',
-            zIndex: 40
-          }}
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+      
 
       {/* Sidebar */}
       <div style={{
@@ -558,7 +510,8 @@ export default function Home() {
         transform: sidebarOpen ? 'translateX(0)' : 'translateX(-100%)',
         transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
         zIndex: 50,
-        boxShadow: '8px 0 40px rgba(0,0,0,0.2)'
+        boxShadow: '8px 0 40px rgba(0,0,0,0.2)',
+        display: 'none'
       }}>
         <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
           {/* Logo */}
@@ -780,19 +733,12 @@ export default function Home() {
       </div>
 
       {/* Main Content */}
-      <div style={{ marginLeft: '320px' }}>
+      <div style={{ marginLeft: 0 }}>
         {/* Top Bar */}
-        <div style={{
-          background: 'rgba(255,255,255,0.95)',
-          backdropFilter: 'blur(30px)',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-          borderBottom: '1px solid rgba(255,255,255,0.3)'
-        }}>
+        <div style={{ background: '#ffffff', borderBottom: '1px solid #e5e7eb' }}>
           <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '24px 32px'
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '20px 24px'
           }}>
             <button
               onClick={() => setSidebarOpen(true)}
@@ -816,250 +762,40 @@ export default function Home() {
               ☰
             </button>
             
-            <div style={{ textAlign: 'right' }}>
-              <p style={{ fontSize: '14px', color: '#64748b', fontWeight: '500', margin: '0 0 4px 0' }}>
-                Last updated
-              </p>
-              <p style={{ fontSize: '18px', fontWeight: 'bold', color: '#1e293b', margin: 0 }}>
-                {new Date().toLocaleDateString()}
-              </p>
-            </div>
+            <div style={{ textAlign: 'right', color: '#6b7280', fontSize: '14px' }}>{new Date().toLocaleDateString()}</div>
           </div>
         </div>
 
         {/* Dashboard Content */}
         <main style={{ padding: '40px 32px' }}>
           {/* Header */}
-          <div style={{ marginBottom: '40px', textAlign: 'center' }}>
-            <h1 style={{ 
-              fontSize: '56px', 
-              fontWeight: 'bold', 
-              color: 'white', 
-              margin: '0 0 20px 0',
-              textShadow: '0 4px 20px rgba(0,0,0,0.3)'
-            }}>
+          <div style={{ marginBottom: '24px' }}>
+            <h1 style={{ fontSize: '28px', fontWeight: 700, letterSpacing: -0.2, color: '#0f172a', margin: 0 }}>
               Business Dashboard
             </h1>
-            <p style={{ 
-              fontSize: '24px', 
-              color: 'rgba(255,255,255,0.9)', 
-              margin: 0,
-              textShadow: '0 2px 10px rgba(0,0,0,0.3)'
-            }}>
-              Daily takings overview for {activeAccount?.name || 'your store'}
+            <p style={{ fontSize: '14px', color: '#6b7280', marginTop: '6px' }}>
+              Overview for {activeAccount?.name || 'your store'}
             </p>
           </div>
 
           {/* Summary Cards */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
-            gap: '32px',
-            marginBottom: '40px'
-          }}>
-            <div style={{
-              background: 'rgba(255,255,255,0.95)',
-              backdropFilter: 'blur(30px)',
-              borderRadius: '24px',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
-              border: '1px solid rgba(255,255,255,0.3)',
-              padding: '32px',
-              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-              position: 'relative',
-              overflow: 'hidden'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'translateY(-12px) scale(1.02)'
-              e.currentTarget.style.boxShadow = '0 32px 80px rgba(0,0,0,0.25)'
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'translateY(0) scale(1)'
-              e.currentTarget.style.boxShadow = '0 20px 60px rgba(0,0,0,0.15)'
-            }}>
-              {/* Background glow effect */}
-              <div style={{
-                position: 'absolute',
-                top: '-50%',
-                left: '-50%',
-                width: '200%',
-                height: '200%',
-                background: 'radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%)',
-                animation: 'pulse 4s ease-in-out infinite'
-              }}></div>
-              
-              <div style={{ display: 'flex', alignItems: 'center', position: 'relative', zIndex: 10 }}>
-                <div style={{
-                  padding: '20px',
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  borderRadius: '20px',
-                  boxShadow: '0 12px 40px rgba(102, 126, 234, 0.4)',
-                  marginRight: '24px',
-                  animation: 'pulse 3s ease-in-out infinite'
-                }}>
-                  <span style={{ fontSize: '36px' }}>💰</span>
-                </div>
-                <div>
-                  <p style={{ 
-                    fontSize: '14px', 
-                    fontWeight: '700', 
-                    color: '#64748b', 
-                    textTransform: 'uppercase', 
-                    letterSpacing: '0.1em', 
-                    margin: '0 0 12px 0' 
-                  }}>
-                    Total Revenue
-                  </p>
-                  <p style={{ 
-                    fontSize: '48px', 
-                    fontWeight: 'bold', 
-                    color: '#1e293b', 
-                    margin: '0 0 8px 0',
-                    textShadow: '0 2px 10px rgba(0,0,0,0.1)'
-                  }}>
-                    {formatCurrency(totalTakings)}
-                  </p>
-                  {activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2' && dailyTakings.length > 0 && (
-                    <p style={{ 
-                      fontSize: '14px', 
-                      color: '#64748b', 
-                      margin: 0,
-                      fontWeight: '500'
-                    }}>
-                      Combined from all locations
-                    </p>
-                  )}
-                </div>
-              </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '16px', marginBottom: '24px' }}>
+            <div style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '20px', boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }}>
+              <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: 600, textTransform: 'uppercase', marginBottom: '8px' }}>Total Revenue</div>
+              <div style={{ fontSize: '28px', fontWeight: 700, color: '#0f172a' }}>{formatCurrency(totalTakings)}</div>
+              {activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2' && dailyTakings.length > 0 && (
+                <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '6px' }}>Combined from all locations</div>
+              )}
             </div>
 
-            <div style={{
-              background: 'rgba(255,255,255,0.95)',
-              backdropFilter: 'blur(30px)',
-              borderRadius: '24px',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
-              border: '1px solid rgba(255,255,255,0.3)',
-              padding: '32px',
-              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-              position: 'relative',
-              overflow: 'hidden'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'translateY(-12px) scale(1.02)'
-              e.currentTarget.style.boxShadow = '0 32px 80px rgba(0,0,0,0.25)'
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'translateY(0) scale(1)'
-              e.currentTarget.style.boxShadow = '0 20px 60px rgba(0,0,0,0.15)'
-            }}>
-              {/* Background glow effect */}
-              <div style={{
-                position: 'absolute',
-                top: '-50%',
-                left: '-50%',
-                width: '200%',
-                height: '200%',
-                background: 'radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%)',
-                animation: 'pulse 4s ease-in-out infinite'
-              }}></div>
-              
-              <div style={{ display: 'flex', alignItems: 'center', position: 'relative', zIndex: 10 }}>
-                <div style={{
-                  padding: '20px',
-                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                  borderRadius: '20px',
-                  boxShadow: '0 12px 40px rgba(16, 185, 129, 0.4)',
-                  marginRight: '24px',
-                  animation: 'pulse 3s ease-in-out infinite'
-                }}>
-                  <span style={{ fontSize: '36px' }}>📈</span>
-                </div>
-                <div>
-                  <p style={{ 
-                    fontSize: '14px', 
-                    fontWeight: '700', 
-                    color: '#64748b', 
-                    textTransform: 'uppercase', 
-                    letterSpacing: '0.1em', 
-                    margin: '0 0 12px 0' 
-                  }}>
-                    Daily Average
-                  </p>
-                  <p style={{ 
-                    fontSize: '48px', 
-                    fontWeight: 'bold', 
-                    color: '#1e293b', 
-                    margin: 0,
-                    textShadow: '0 2px 10px rgba(0,0,0,0.1)'
-                  }}>
-                    {formatCurrency(averageTakings)}
-                  </p>
-                </div>
-              </div>
+            <div style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '20px', boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }}>
+              <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: 600, textTransform: 'uppercase', marginBottom: '8px' }}>Daily Average</div>
+              <div style={{ fontSize: '28px', fontWeight: 700, color: '#0f172a' }}>{formatCurrency(averageTakings)}</div>
             </div>
 
-            <div style={{
-              background: 'rgba(255,255,255,0.95)',
-              backdropFilter: 'blur(30px)',
-              borderRadius: '24px',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
-              border: '1px solid rgba(255,255,255,0.3)',
-              padding: '32px',
-              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-              position: 'relative',
-              overflow: 'hidden'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'translateY(-12px) scale(1.02)'
-              e.currentTarget.style.boxShadow = '0 32px 80px rgba(0,0,0,0.25)'
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'translateY(0) scale(1)'
-              e.currentTarget.style.boxShadow = '0 20px 60px rgba(0,0,0,0.15)'
-            }}>
-              {/* Background glow effect */}
-              <div style={{
-                position: 'absolute',
-                top: '-50%',
-                left: '-50%',
-                width: '200%',
-                height: '200%',
-                background: 'radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%)',
-                animation: 'pulse 4s ease-in-out infinite'
-              }}></div>
-              
-              <div style={{ display: 'flex', alignItems: 'center', position: 'relative', zIndex: 10 }}>
-                <div style={{
-                  padding: '20px',
-                  background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
-                  borderRadius: '20px',
-                  boxShadow: '0 12px 40px rgba(139, 92, 246, 0.4)',
-                  marginRight: '24px',
-                  animation: 'pulse 3s ease-in-out infinite'
-                }}>
-                  <span style={{ fontSize: '36px' }}>📅</span>
-                </div>
-                <div>
-                  <p style={{ 
-                    fontSize: '14px', 
-                    fontWeight: '700', 
-                    color: '#64748b', 
-                    textTransform: 'uppercase', 
-                    letterSpacing: '0.1em', 
-                    margin: '0 0 12px 0' 
-                  }}>
-                    Days Tracked
-                  </p>
-                  <p style={{ 
-                    fontSize: '48px', 
-                    fontWeight: 'bold', 
-                    color: '#1e293b', 
-                    margin: 0,
-                    textShadow: '0 2px 10px rgba(0,0,0,0.1)'
-                  }}>
-                    {dailyTakings.length}
-                  </p>
-                </div>
-              </div>
+            <div style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '20px', boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }}>
+              <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: 600, textTransform: 'uppercase', marginBottom: '8px' }}>Days Tracked</div>
+              <div style={{ fontSize: '28px', fontWeight: 700, color: '#0f172a' }}>{dailyTakings.length}</div>
             </div>
           </div>
 
@@ -1125,16 +861,8 @@ export default function Home() {
           )}
 
           {/* Chart */}
-          <div style={{
-            background: 'rgba(255,255,255,0.95)',
-            backdropFilter: 'blur(20px)',
-            borderRadius: '24px',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
-            border: '1px solid rgba(0,0,0,0.1)',
-            padding: '32px',
-            marginBottom: '40px'
-          }}>
-            <h2 style={{ fontSize: '32px', fontWeight: 'bold', color: '#1e293b', margin: '0 0 32px 0' }}>
+          <div style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '20px', marginBottom: '24px', boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#0f172a', margin: 0, marginBottom: '12px' }}>
               Revenue Trends
             </h2>
             <DailyTakingsChart data={dailyTakings} />

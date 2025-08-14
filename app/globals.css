@@ -61,29 +61,8 @@ body {
   transition-duration: 150ms;
 }
 
-/* Focus styles */
-.focus-ring {
-  @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
-}
-
-/* Card hover effects */
-.card-hover {
-  @apply hover:shadow-md hover:-translate-y-0.5 transition-all duration-200;
-}
-
-/* Button base styles */
-.btn-primary {
-  @apply bg-blue-600 text-white font-medium px-6 py-3 rounded-xl hover:bg-blue-700 transition-all duration-200 shadow-sm hover:shadow-md;
-}
-
-.btn-secondary {
-  @apply bg-gray-100 text-gray-700 font-medium px-6 py-3 rounded-xl hover:bg-gray-200 transition-all duration-200;
-}
-
-/* Input base styles */
-.input-base {
-  @apply w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200;
-}
+/* Removed Tailwind @apply utilities to avoid v4 unknown utility errors.
+   Use plain CSS or inline styles in components instead. */
 
 /* Animation classes */
 @keyframes fadeIn {
