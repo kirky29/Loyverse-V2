@@ -18,9 +18,9 @@ export default function DailyTakingsTable({ data }: DailyTakingsTableProps) {
   // Safe number formatting function
   const formatCurrency = (value: number | null | undefined): string => {
     if (value === null || value === undefined || isNaN(value)) {
-      return '$0.00'
+      return '£0.00'
     }
-    return `$${value.toFixed(2)}`
+    return `£${value.toFixed(2)}`
   }
 
   return (
