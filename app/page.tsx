@@ -207,12 +207,23 @@ export default function Dashboard() {
           <div className="text-red-600 text-6xl mb-4">⚠️</div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Dashboard</h1>
           <p className="text-gray-600 mb-4">{error}</p>
-          <button
-            onClick={fetchDailyTakings}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Try Again
-          </button>
+          <div className="space-y-3">
+            <button
+              onClick={fetchDailyTakings}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Try Again
+            </button>
+            <button
+              onClick={() => {
+                setError(null)
+                setActiveTab('accounts')
+              }}
+              className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors ml-3"
+            >
+              Manage Accounts
+            </button>
+          </div>
         </div>
       </div>
     )
