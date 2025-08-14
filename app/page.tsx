@@ -498,48 +498,6 @@ export default function Home() {
                 📊 Dashboard
               </button>
               <button
-                style={{
-                  background: '#28a745',
-                  color: 'white',
-                  border: 'none',
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  cursor: 'pointer'
-                }}
-              >
-                📈 Analytics
-              </button>
-              <button
-                style={{
-                  background: '#6f42c1',
-                  color: 'white',
-                  border: 'none',
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  cursor: 'pointer'
-                }}
-              >
-                📋 Reports
-              </button>
-              <button
-                style={{
-                  background: '#fd7e14',
-                  color: 'white',
-                  border: 'none',
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  cursor: 'pointer'
-                }}
-              >
-                📅 Trends
-              </button>
-              <button
                 onClick={() => setActiveTab('accounts')}
                 style={{
                   background: '#1a7338',
@@ -554,6 +512,34 @@ export default function Home() {
               >
                 ⚙️ Stores
               </button>
+              
+              {/* Store Account Buttons */}
+              {accounts.length > 0 && (
+                <>
+                  <div style={{ width: '1px', height: '24px', background: '#dee2e6', margin: '0 8px' }} />
+                  {accounts.map((acc) => (
+                    <button
+                      key={acc.id}
+                      onClick={() => switchAccount(acc)}
+                      style={{
+                        padding: '8px 16px',
+                        borderRadius: '6px',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        border: '2px solid',
+                        transition: 'all 0.2s ease',
+                        background: acc.isActive ? '#6f42c1' : 'white',
+                        color: acc.isActive ? 'white' : '#6f42c1',
+                        borderColor: '#6f42c1'
+                      }}
+                    >
+                      {acc.name}
+                      {acc.isActive && <span style={{ marginLeft: '8px' }}>✓</span>}
+                    </button>
+                  ))}
+                </>
+              )}
             </nav>
 
             <div style={{ fontSize: '14px', color: '#666' }}>
@@ -657,110 +643,77 @@ export default function Home() {
             <button
               onClick={() => setActiveTab('dashboard')}
               style={{
-                background: activeTab === 'dashboard' ? '#6c757d' : '#6c757d',
+                background: activeTab === 'dashboard' ? '#0056b3' : '#007bff',
                 color: 'white',
                 border: 'none',
                 padding: '8px 16px',
                 borderRadius: '6px',
                 fontSize: '14px',
-                fontWeight: '500',
+                fontWeight: activeTab === 'dashboard' ? '600' : '500',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease'
               }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.background = '#5a6268'
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.background = activeTab === 'dashboard' ? '#6c757d' : '#6c757d'
-              }}
             >
-              🏠 Dashboard
-            </button>
-            <button
-              style={{
-                background: '#007bff',
-                color: 'white',
-                border: 'none',
-                padding: '8px 16px',
-                borderRadius: '6px',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer'
-              }}
-            >
-              🔍 Find Students
-            </button>
-            <button
-              style={{
-                background: '#6f42c1',
-                color: 'white',
-                border: 'none',
-                padding: '8px 16px',
-                borderRadius: '6px',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer'
-              }}
-            >
-              📦 Find Products
-            </button>
-            <button
-              style={{
-                background: '#e83e8c',
-                color: 'white',
-                border: 'none',
-                padding: '8px 16px',
-                borderRadius: '6px',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer'
-              }}
-            >
-              🛒 Saved Baskets
-            </button>
-            <button
-              style={{
-                background: '#fd7e14',
-                color: 'white',
-                border: 'none',
-                padding: '8px 16px',
-                borderRadius: '6px',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer'
-              }}
-            >
-              📊 Sales Reports
+              📊 Dashboard
             </button>
             <button
               onClick={() => setActiveTab('accounts')}
               style={{
-                background: '#20c997',
+                background: activeTab === 'accounts' ? '#1a7338' : '#20c997',
                 color: 'white',
                 border: 'none',
                 padding: '8px 16px',
                 borderRadius: '6px',
                 fontSize: '14px',
-                fontWeight: '500',
+                fontWeight: activeTab === 'accounts' ? '600' : '500',
                 cursor: 'pointer'
               }}
             >
               ⚙️ Stores
             </button>
-            <button
-              style={{
-                background: '#dc3545',
-                color: 'white',
-                border: 'none',
-                padding: '8px 16px',
-                borderRadius: '6px',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer'
-              }}
-            >
-              🚪 Logout
-            </button>
+            
+            {/* Store Account Buttons */}
+            {accounts.length > 0 && (
+              <>
+                <div style={{ width: '1px', height: '24px', background: '#dee2e6', margin: '0 8px' }} />
+                {accounts.map((acc) => (
+                  <button
+                    key={acc.id}
+                    onClick={() => switchAccount(acc)}
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      border: '2px solid',
+                      transition: 'all 0.2s ease',
+                      background: acc.isActive ? '#6f42c1' : 'white',
+                      color: acc.isActive ? 'white' : '#6f42c1',
+                      borderColor: '#6f42c1'
+                    }}
+                  >
+                    {acc.name}
+                    {acc.isActive && <span style={{ marginLeft: '8px' }}>✓</span>}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setActiveTab('accounts')}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    border: '2px dashed #20c997',
+                    background: 'white',
+                    color: '#20c997'
+                  }}
+                >
+                  + Add Store
+                </button>
+              </>
+            )}
           </nav>
 
           <div style={{ fontSize: '14px', color: '#666' }}>
@@ -775,63 +728,7 @@ export default function Home() {
         maxWidth: '1400px',
         margin: '0 auto'
       }}>
-        {/* Account Switcher */}
-        {accounts.length > 0 && (
-          <div style={{
-            background: 'white',
-            borderRadius: '8px',
-            padding: '20px',
-            marginBottom: '24px',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-          }}>
-            <h3 style={{ 
-              fontSize: '18px', 
-              fontWeight: 'bold', 
-              color: '#333', 
-              margin: '0 0 16px 0'
-            }}>
-              Select Store Account
-            </h3>
-            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-              {accounts.map((acc) => (
-                <button
-                  key={acc.id}
-                  onClick={() => switchAccount(acc)}
-                  style={{
-                    padding: '12px 20px',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    border: '2px solid',
-                    transition: 'all 0.2s ease',
-                    background: acc.isActive ? '#007bff' : 'white',
-                    color: acc.isActive ? 'white' : '#007bff',
-                    borderColor: '#007bff'
-                  }}
-                >
-                  {acc.name}
-                  {acc.isActive && <span style={{ marginLeft: '8px' }}>✓</span>}
-                </button>
-              ))}
-              <button
-                onClick={() => setActiveTab('accounts')}
-                style={{
-                  padding: '12px 20px',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  border: '2px dashed #20c997',
-                  background: 'white',
-                  color: '#20c997'
-                }}
-              >
-                + Add Store
-              </button>
-            </div>
-          </div>
-        )}
+
 
         {/* Sales Overview Cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginBottom: '24px' }}>
