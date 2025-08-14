@@ -778,8 +778,62 @@ export default function Home() {
             </p>
           </div>
 
+          {/* Quick account switcher */}
+          {accounts.length > 0 && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '20px',
+              gap: '12px'
+            }}>
+              <div style={{
+                display: 'flex',
+                overflowX: 'auto',
+                WebkitOverflowScrolling: 'touch',
+                gap: '8px',
+                paddingBottom: '4px'
+              }}>
+                {accounts.map((acc) => (
+                  <button
+                    key={acc.id}
+                    onClick={() => switchAccount(acc)}
+                    style={{
+                      whiteSpace: 'nowrap',
+                      padding: '8px 14px',
+                      borderRadius: '9999px',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      border: '1px solid #e5e7eb',
+                      background: acc.isActive ? '#111827' : '#ffffff',
+                      color: acc.isActive ? '#ffffff' : '#111827'
+                    }}
+                  >
+                    {acc.name}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setActiveTab('accounts')}
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  border: '1px solid #e5e7eb',
+                  background: '#ffffff',
+                  color: '#111827',
+                  cursor: 'pointer'
+                }}
+              >
+                Manage accounts
+              </button>
+            </div>
+          )}
+
           {/* Summary Cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '16px', marginBottom: '24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginBottom: '24px' }}>
             <div style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '20px', boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }}>
               <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: 600, textTransform: 'uppercase', marginBottom: '8px' }}>Total Revenue</div>
               <div style={{ fontSize: '28px', fontWeight: 700, color: '#0f172a' }}>{formatCurrency(totalTakings)}</div>
