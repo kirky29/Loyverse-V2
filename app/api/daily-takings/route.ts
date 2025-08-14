@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { apiToken, storeId } = body
+    const { apiToken, storeId, includeAllStores } = body
 
     if (!apiToken) {
       return NextResponse.json(
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    return await fetchDailyTakings(apiToken, storeId)
+    return await fetchDailyTakings(apiToken, storeId, includeAllStores)
   } catch (error) {
     console.error('Error fetching daily takings:', error)
     return NextResponse.json(
@@ -60,14 +60,23 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function fetchDailyTakings(apiToken: string, storeId: string) {
+async function fetchDailyTakings(apiToken: string, storeId: string, includeAllStores: boolean = false) {
   try {
     // Get receipts from the last 30 days
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
     const fromDate = thirtyDaysAgo.toISOString().split('T')[0]
 
-    const url = `https://api.loyverse.com/v1.0/receipts?store_id=${storeId}&created_at_min=${fromDate}T00:00:00Z&limit=250`
+    // Build the API URL
+    let url: string
+    if (includeAllStores || storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2') {
+      // For accounts with multiple stores, fetch all receipts without store filtering
+      // This allows combining data from Shop + Cafe locations
+      url = `https://api.loyverse.com/v1.0/receipts?created_at_min=${fromDate}T00:00:00Z&limit=500`
+    } else {
+      // For single-store accounts, filter by specific store
+      url = `https://api.loyverse.com/v1.0/receipts?store_id=${storeId}&created_at_min=${fromDate}T00:00:00Z&limit=250`
+    }
 
     const response = await fetch(url, {
       headers: {
