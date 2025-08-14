@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    return await fetchDailyTakings(apiToken, storeId)
+    return await fetchDailyTakings(apiToken, storeId, false)
   } catch (error) {
     console.error('Error fetching daily takings:', error)
     return NextResponse.json(
@@ -67,36 +67,69 @@ async function fetchDailyTakings(apiToken: string, storeId: string, includeAllSt
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
     const fromDate = thirtyDaysAgo.toISOString().split('T')[0]
 
-    // Build the API URL
-    let url: string
+    let receipts: LoyverseReceipt[] = []
+
     if (includeAllStores || storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2') {
-      // For accounts with multiple stores, fetch all receipts without store filtering
-      // This allows combining data from Shop + Cafe locations
-      url = `https://api.loyverse.com/v1.0/receipts?created_at_min=${fromDate}T00:00:00Z&limit=500`
+      // For multi-store accounts, fetch receipts in batches to avoid limits
+      const allReceipts: LoyverseReceipt[] = []
+      let cursor = null
+      let hasMore = true
+      
+      while (hasMore && allReceipts.length < 1000) { // Safety limit
+        let url = `https://api.loyverse.com/v1.0/receipts?created_at_min=${fromDate}T00:00:00Z&limit=100`
+        if (cursor) {
+          url += `&cursor=${cursor}`
+        }
+        
+        const response = await fetch(url, {
+          headers: {
+            'Authorization': `Bearer ${apiToken}`,
+            'Content-Type': 'application/json',
+          },
+        })
+
+        if (!response.ok) {
+          throw new Error(`Loyverse API error: ${response.status} ${response.statusText}`)
+        }
+
+        const data = await response.json()
+        const batchReceipts: LoyverseReceipt[] = data.receipts || []
+        
+        if (batchReceipts.length === 0) {
+          hasMore = false
+        } else {
+          allReceipts.push(...batchReceipts)
+          cursor = data.cursor
+          hasMore = !!cursor
+        }
+      }
+      
+      receipts = allReceipts
     } else {
-      // For single-store accounts, filter by specific store
-      url = `https://api.loyverse.com/v1.0/receipts?store_id=${storeId}&created_at_min=${fromDate}T00:00:00Z&limit=250`
+      // For single-store accounts, use the simpler approach
+      const url = `https://api.loyverse.com/v1.0/receipts?store_id=${storeId}&created_at_min=${fromDate}T00:00:00Z&limit=250`
+      
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${apiToken}`,
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error(`Loyverse API error: ${response.status} ${response.statusText}`)
+      }
+
+      const data = await response.json()
+      receipts = data.receipts || []
     }
-
-    const response = await fetch(url, {
-      headers: {
-        'Authorization': `Bearer ${apiToken}`,
-        'Content-Type': 'application/json',
-      },
-    })
-
-    if (!response.ok) {
-      throw new Error(`Loyverse API error: ${response.status} ${response.statusText}`)
-    }
-
-    const data = await response.json()
-    const receipts: LoyverseReceipt[] = data.receipts || []
 
     // Filter out voided/cancelled receipts and aggregate by date
     const dailyTakingsMap = new Map<string, DailyTaking>()
+    const locationBreakdown = new Map<string, { [locationId: string]: number }>()
 
     receipts.forEach(receipt => {
-      // Check if receipt is voided or cancelled (handle both possible field names)
+      // Check if receipt is voided or cancelled
       if (receipt.status === 'VOIDED' || receipt.status === 'CANCELLED' || 
           receipt.cancelled_at !== null) {
         return
@@ -107,25 +140,44 @@ async function fetchDailyTakings(apiToken: string, storeId: string, includeAllSt
         receipt.receipt_date.split('T')[0] : 
         receipt.created_at.split('T')[0]
       
-      const existing = dailyTakingsMap.get(date)
+      const total = receipt.total_money || receipt.total || 0
+      const locationId = receipt.store_id
 
+      // Aggregate daily totals
+      const existing = dailyTakingsMap.get(date)
       if (existing) {
-        existing.total += receipt.total_money || receipt.total || 0
+        existing.total += total
         existing.receiptCount += 1
         existing.averageReceipt = existing.total / existing.receiptCount
       } else {
         dailyTakingsMap.set(date, {
           date,
-          total: receipt.total_money || receipt.total || 0,
+          total,
           receiptCount: 1,
-          averageReceipt: receipt.total_money || receipt.total || 0,
+          averageReceipt: total,
         })
       }
+
+      // Track location breakdown
+      if (!locationBreakdown.has(date)) {
+        locationBreakdown.set(date, {})
+      }
+      const dayBreakdown = locationBreakdown.get(date)!
+      dayBreakdown[locationId] = (dayBreakdown[locationId] || 0) + total
     })
 
     // Convert to array and sort by date (newest first)
     const dailyTakings: DailyTaking[] = Array.from(dailyTakingsMap.values())
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+
+    // Add location breakdown to each daily taking
+    dailyTakings.forEach(taking => {
+      const breakdown = locationBreakdown.get(taking.date)
+      if (breakdown) {
+        // Add location breakdown as metadata
+        ;(taking as any).locationBreakdown = breakdown
+      }
+    })
 
     return NextResponse.json(dailyTakings)
   } catch (error) {

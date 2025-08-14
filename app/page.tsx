@@ -296,6 +296,11 @@ export default function Dashboard() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total Takings</p>
                 <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalTakings)}</p>
+                {activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2' && dailyTakings.length > 0 && (
+                  <div className="mt-2 text-xs text-gray-500">
+                    <div>Combined from all locations</div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -328,6 +333,35 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
+
+        {/* Location Breakdown for Multi-Store Accounts */}
+        {activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2' && dailyTakings.length > 0 && (
+          <div className="bg-white rounded-lg shadow p-6 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Location Breakdown</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-blue-50 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-blue-900 mb-2">Shop</h3>
+                <p className="text-3xl font-bold text-blue-600">
+                  {formatCurrency(dailyTakings.reduce((sum, day) => {
+                    const shopId = 'd5a7267b-ca6f-4490-9d66-b5ba46cc563c'
+                    return sum + (day.locationBreakdown?.[shopId] || 0)
+                  }, 0))}
+                </p>
+                <p className="text-sm text-blue-600 mt-1">Total from Shop location</p>
+              </div>
+              <div className="bg-green-50 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-green-900 mb-2">Cafe</h3>
+                <p className="text-3xl font-bold text-green-600">
+                  {formatCurrency(dailyTakings.reduce((sum, day) => {
+                    const cafeId = 'e2aa143e-3e91-433e-a6d8-5a5538d429e2'
+                    return sum + (day.locationBreakdown?.[cafeId] || 0)
+                  }, 0))}
+                </p>
+                <p className="text-sm text-green-600 mt-1">Total from Cafe location</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Chart */}
         <div className="bg-white rounded-lg shadow p-6 mb-8">
