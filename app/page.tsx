@@ -3,21 +3,143 @@
 import { useState, useEffect } from 'react'
 import DailyTakingsChart from './components/DailyTakingsChart'
 import DailyTakingsTable from './components/DailyTakingsTable'
+import AccountManager from './components/AccountManager'
 import { DailyTaking } from './types'
+
+interface LoyverseAccount {
+  id: string
+  name: string
+  apiToken: string
+  storeId: string
+  isActive: boolean
+}
 
 export default function Dashboard() {
   const [dailyTakings, setDailyTakings] = useState<DailyTaking[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'accounts'>('dashboard')
+  const [accounts, setAccounts] = useState<LoyverseAccount[]>([])
+  const [activeAccount, setActiveAccount] = useState<LoyverseAccount | null>(null)
 
   useEffect(() => {
-    fetchDailyTakings()
+    loadAccounts()
   }, [])
 
+  useEffect(() => {
+    if (activeAccount) {
+      fetchDailyTakings()
+    }
+  }, [activeAccount])
+
+  const loadAccounts = () => {
+    try {
+      const savedAccounts = localStorage.getItem('loyverse-accounts')
+      if (savedAccounts) {
+        const parsedAccounts = JSON.parse(savedAccounts)
+        setAccounts(parsedAccounts)
+        
+        // Set the first active account as default
+        const firstActive = parsedAccounts.find((acc: LoyverseAccount) => acc.isActive)
+        if (firstActive) {
+          setActiveAccount(firstActive)
+        }
+      } else {
+        // Check if environment variables are set and create a default account
+        const envApiToken = process.env.NEXT_PUBLIC_LOYVERSE_API_TOKEN
+        const envStoreId = process.env.NEXT_PUBLIC_LOYVERSE_LOCATION_ID
+        
+        if (envApiToken && envStoreId) {
+          const defaultAccount: LoyverseAccount = {
+            id: 'default',
+            name: 'Default Store',
+            apiToken: envApiToken,
+            storeId: envStoreId,
+            isActive: true
+          }
+          
+          setAccounts([defaultAccount])
+          setActiveAccount(defaultAccount)
+          saveAccounts([defaultAccount])
+        }
+      }
+    } catch (error) {
+      console.error('Error loading accounts:', error)
+    }
+  }
+
+  const saveAccounts = (newAccounts: LoyverseAccount[]) => {
+    try {
+      localStorage.setItem('loyverse-accounts', JSON.stringify(newAccounts))
+      setAccounts(newAccounts)
+    } catch (error) {
+      console.error('Error saving accounts:', error)
+    }
+  }
+
+  const addAccount = (account: Omit<LoyverseAccount, 'id'>) => {
+    const newAccount: LoyverseAccount = {
+      ...account,
+      id: Date.now().toString(),
+      isActive: true
+    }
+    
+    // Deactivate other accounts
+    const updatedAccounts = accounts.map(acc => ({ ...acc, isActive: false }))
+    updatedAccounts.push(newAccount)
+    
+    saveAccounts(updatedAccounts)
+    setActiveAccount(newAccount)
+    setActiveTab('dashboard')
+  }
+
+  const updateAccount = (id: string, updates: Partial<LoyverseAccount>) => {
+    const updatedAccounts = accounts.map(acc => 
+      acc.id === id ? { ...acc, ...updates } : acc
+    )
+    saveAccounts(updatedAccounts)
+    
+    if (activeAccount?.id === id) {
+      setActiveAccount({ ...activeAccount, ...updates })
+    }
+  }
+
+  const deleteAccount = (id: string) => {
+    const updatedAccounts = accounts.filter(acc => acc.id !== id)
+    saveAccounts(updatedAccounts)
+    
+    if (activeAccount?.id === id) {
+      const newActive = updatedAccounts.find(acc => acc.isActive) || updatedAccounts[0] || null
+      setActiveAccount(newActive)
+    }
+  }
+
+  const switchAccount = (account: LoyverseAccount) => {
+    const updatedAccounts = accounts.map(acc => ({
+      ...acc,
+      isActive: acc.id === account.id
+    }))
+    saveAccounts(updatedAccounts)
+    setActiveAccount(account)
+    setActiveTab('dashboard')
+  }
+
   const fetchDailyTakings = async () => {
+    if (!activeAccount) return
+    
     try {
       setLoading(true)
-      const response = await fetch('/api/daily-takings')
+      const response = await fetch('/api/daily-takings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          apiToken: activeAccount.apiToken,
+          storeId: activeAccount.storeId
+        })
+      })
+      
       if (!response.ok) {
         throw new Error('Failed to fetch daily takings')
       }
@@ -40,6 +162,40 @@ export default function Dashboard() {
       return '£0.00'
     }
     return `£${value.toFixed(2)}`
+  }
+
+  if (activeTab === 'accounts') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <header className="bg-white shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center py-6">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Loyverse Dashboard</h1>
+                <p className="text-gray-600">Account Management</p>
+              </div>
+              <button
+                onClick={() => setActiveTab('dashboard')}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Back to Dashboard
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <AccountManager
+            accounts={accounts}
+            onAddAccount={addAccount}
+            onUpdateAccount={updateAccount}
+            onDeleteAccount={deleteAccount}
+            onSwitchAccount={switchAccount}
+            activeAccount={activeAccount}
+          />
+        </main>
+      </div>
+    )
   }
 
   if (loading) {
@@ -71,6 +227,24 @@ export default function Dashboard() {
     )
   }
 
+  if (!activeAccount) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-blue-600 text-6xl mb-4">🏪</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">No Account Configured</h1>
+          <p className="text-gray-600 mb-4">Please add a Loyverse account to get started</p>
+          <button
+            onClick={() => setActiveTab('accounts')}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Add Account
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -79,13 +253,23 @@ export default function Dashboard() {
           <div className="flex justify-between items-center py-6">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Loyverse Dashboard</h1>
-              <p className="text-gray-600">Daily takings overview</p>
-            </div>
-            <div className="text-right">
-              <p className="text-sm text-gray-500">Last updated</p>
-              <p className="text-lg font-semibold text-gray-900">
-                {new Date().toLocaleDateString()}
+              <p className="text-gray-600">
+                {activeAccount.name} • Daily takings overview
               </p>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="text-right">
+                <p className="text-sm text-gray-500">Last updated</p>
+                <p className="text-lg font-semibold text-gray-900">
+                  {new Date().toLocaleDateString()}
+                </p>
+              </div>
+              <button
+                onClick={() => setActiveTab('accounts')}
+                className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                Manage Accounts
+              </button>
             </div>
           </div>
         </div>

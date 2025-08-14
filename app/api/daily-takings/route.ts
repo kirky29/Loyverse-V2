@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { DailyTaking, LoyverseReceipt } from '../../types'
 
 export async function GET(request: NextRequest) {
+  // Backward compatibility - use environment variables
   try {
     const apiToken = process.env.LOYVERSE_API_TOKEN
-    const storeId = process.env.LOYVERSE_LOCATION_ID // We'll keep the env var name but use it as store_id
+    const storeId = process.env.LOYVERSE_LOCATION_ID
 
     if (!apiToken) {
       return NextResponse.json(
@@ -20,6 +21,47 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    return await fetchDailyTakings(apiToken, storeId)
+  } catch (error) {
+    console.error('Error fetching daily takings:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch daily takings' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const { apiToken, storeId } = body
+
+    if (!apiToken) {
+      return NextResponse.json(
+        { error: 'API token is required' },
+        { status: 400 }
+      )
+    }
+
+    if (!storeId) {
+      return NextResponse.json(
+        { error: 'Store ID is required' },
+        { status: 400 }
+      )
+    }
+
+    return await fetchDailyTakings(apiToken, storeId)
+  } catch (error) {
+    console.error('Error fetching daily takings:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch daily takings' },
+      { status: 500 }
+    )
+  }
+}
+
+async function fetchDailyTakings(apiToken: string, storeId: string) {
+  try {
     // Get receipts from the last 30 days
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
