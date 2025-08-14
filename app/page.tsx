@@ -731,7 +731,7 @@ export default function Home() {
 
 
         {/* Sales Overview Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginBottom: '24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginBottom: '24px' }}>
           <div style={{ 
             background: 'linear-gradient(135deg, #007bff 0%, #0056b3 100%)', 
             padding: '24px', 
@@ -770,42 +770,6 @@ export default function Home() {
               {formatCurrency(averageTakings)}
             </div>
           </div>
-
-          <div style={{ 
-            background: 'linear-gradient(135deg, #fd7e14 0%, #dc6500 100%)', 
-            padding: '24px', 
-            borderRadius: '12px',
-            color: 'white',
-            boxShadow: '0 4px 12px rgba(253, 126, 20, 0.3)'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-              <div style={{ fontSize: '24px', marginRight: '12px' }}>📅</div>
-              <div style={{ fontSize: '14px', fontWeight: '600', opacity: 0.9 }}>
-                DAYS TRACKED
-              </div>
-            </div>
-            <div style={{ fontSize: '32px', fontWeight: '700' }}>
-              {dailyTakings.length}
-            </div>
-          </div>
-
-          <div style={{ 
-            background: 'linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%)', 
-            padding: '24px', 
-            borderRadius: '12px',
-            color: 'white',
-            boxShadow: '0 4px 12px rgba(111, 66, 193, 0.3)'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-              <div style={{ fontSize: '24px', marginRight: '12px' }}>🏪</div>
-              <div style={{ fontSize: '14px', fontWeight: '600', opacity: 0.9 }}>
-                ACTIVE STORE
-              </div>
-            </div>
-            <div style={{ fontSize: '20px', fontWeight: '700' }}>
-              {activeAccount?.name || 'No Store Selected'}
-            </div>
-          </div>
         </div>
 
         {/* Individual Store Performance Cards for Multi-Location Accounts */}
@@ -820,7 +784,7 @@ export default function Home() {
             }}>
               Individual Store Performance
             </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px' }}>
               {(() => {
                 const shopId = 'd5a7267b-ca6f-4490-9d66-b5ba46cc563c'
                 const cafeId = 'e2aa143e-3e91-433e-a6d8-5a5538d429e2'
@@ -910,44 +874,7 @@ export default function Home() {
                       </div>
                     </div>
 
-                    <div style={{
-                      background: 'linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%)',
-                      borderRadius: '16px',
-                      padding: '24px',
-                      color: 'white',
-                      boxShadow: '0 8px 24px rgba(156, 39, 176, 0.3)',
-                      border: '1px solid rgba(255,255,255,0.1)'
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
-                        <div style={{
-                          width: '48px',
-                          height: '48px',
-                          background: 'rgba(255,255,255,0.2)',
-                          borderRadius: '12px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          marginRight: '16px',
-                          fontSize: '24px'
-                        }}>
-                          🏢
-                        </div>
-                        <div>
-                          <h3 style={{ fontSize: '18px', fontWeight: 'bold', margin: '0 0 4px 0' }}>
-                            Combined Total
-                          </h3>
-                          <p style={{ fontSize: '14px', opacity: 0.9, margin: 0 }}>
-                            Both locations combined
-                          </p>
-                        </div>
-                      </div>
-                      <div style={{ fontSize: '36px', fontWeight: 'bold', marginBottom: '8px' }}>
-                        {formatCurrency(combinedTotal)}
-                      </div>
-                      <div style={{ fontSize: '14px', opacity: 0.9 }}>
-                        Daily Average: {formatCurrency(dailyTakings.length > 0 ? combinedTotal / dailyTakings.length : 0)}
-                      </div>
-                    </div>
+
                   </>
                 )
               })()}
