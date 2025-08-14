@@ -472,10 +472,10 @@ export default function Home() {
                 <span style={{ color: 'white', fontSize: '24px', fontWeight: 'bold' }}>L</span>
               </div>
               <div>
-                <h1 style={{ fontSize: '18px', fontWeight: 'bold', color: '#333', margin: 0 }}>
-                  {activeAccount?.name || 'LOYVERSE'}
-                </h1>
-                <p style={{ fontSize: '12px', color: '#666', margin: 0 }}>EPOS</p>
+                              <h1 style={{ fontSize: '18px', fontWeight: 'bold', color: '#333', margin: 0 }}>
+                LOYVERSE
+              </h1>
+              <p style={{ fontSize: '12px', color: '#666', margin: 0 }}>Analytics Dashboard</p>
               </div>
             </div>
 
@@ -484,21 +484,22 @@ export default function Home() {
               <button
                 onClick={() => setActiveTab('dashboard')}
                 style={{
-                  background: '#6c757d',
+                  background: activeTab === 'dashboard' ? '#0056b3' : '#007bff',
                   color: 'white',
                   border: 'none',
                   padding: '8px 16px',
                   borderRadius: '6px',
                   fontSize: '14px',
-                  fontWeight: '500',
-                  cursor: 'pointer'
+                  fontWeight: activeTab === 'dashboard' ? '600' : '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
                 }}
               >
-                🏠 Dashboard
+                📊 Dashboard
               </button>
               <button
                 style={{
-                  background: '#007bff',
+                  background: '#28a745',
                   color: 'white',
                   border: 'none',
                   padding: '8px 16px',
@@ -508,7 +509,7 @@ export default function Home() {
                   cursor: 'pointer'
                 }}
               >
-                🔍 Find Students
+                📈 Analytics
               </button>
               <button
                 style={{
@@ -522,21 +523,7 @@ export default function Home() {
                   cursor: 'pointer'
                 }}
               >
-                📦 Find Products
-              </button>
-              <button
-                style={{
-                  background: '#e83e8c',
-                  color: 'white',
-                  border: 'none',
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  cursor: 'pointer'
-                }}
-              >
-                🛒 Saved Baskets
+                📋 Reports
               </button>
               <button
                 style={{
@@ -550,36 +537,22 @@ export default function Home() {
                   cursor: 'pointer'
                 }}
               >
-                📊 Sales Reports
+                📅 Trends
               </button>
               <button
                 onClick={() => setActiveTab('accounts')}
                 style={{
-                  background: '#20c997',
+                  background: activeTab === 'accounts' ? '#1a7338' : '#20c997',
                   color: 'white',
                   border: 'none',
                   padding: '8px 16px',
                   borderRadius: '6px',
                   fontSize: '14px',
-                  fontWeight: '600',
+                  fontWeight: activeTab === 'accounts' ? '600' : '500',
                   cursor: 'pointer'
                 }}
               >
-                ⚙️ Admin
-              </button>
-              <button
-                style={{
-                  background: '#dc3545',
-                  color: 'white',
-                  border: 'none',
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  cursor: 'pointer'
-                }}
-              >
-                🚪 Logout
+                ⚙️ Stores
               </button>
             </nav>
 
@@ -673,9 +646,9 @@ export default function Home() {
             </div>
             <div>
               <h1 style={{ fontSize: '18px', fontWeight: 'bold', color: '#333', margin: 0 }}>
-                {activeAccount?.name || 'LOYVERSE'}
+                LOYVERSE
               </h1>
-              <p style={{ fontSize: '12px', color: '#666', margin: 0 }}>EPOS</p>
+              <p style={{ fontSize: '12px', color: '#666', margin: 0 }}>Analytics Dashboard</p>
             </div>
           </div>
 
@@ -802,311 +775,236 @@ export default function Home() {
         maxWidth: '1400px',
         margin: '0 auto'
       }}>
-        <div style={{ 
-          display: 'grid',
-          gridTemplateColumns: '2fr 1fr',
-          gap: '24px',
-          minHeight: '80vh'
-        }}>
-          {/* Left Column - Add Items */}
-          <div>
-            {/* Add Items Header */}
-            <div style={{
-              background: 'white',
-              borderRadius: '8px',
-              padding: '20px',
-              marginBottom: '20px',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        {/* Account Switcher */}
+        {accounts.length > 0 && (
+          <div style={{
+            background: 'white',
+            borderRadius: '8px',
+            padding: '20px',
+            marginBottom: '24px',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          }}>
+            <h3 style={{ 
+              fontSize: '18px', 
+              fontWeight: 'bold', 
+              color: '#333', 
+              margin: '0 0 16px 0'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
-                <div style={{
-                  width: '40px',
-                  height: '40px',
-                  background: '#8B4513',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginRight: '12px'
-                }}>
-                  <span style={{ color: 'white', fontSize: '18px' }}>🛒</span>
-                </div>
-                <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#333', margin: 0 }}>
-                  Add Items
-                </h2>
-              </div>
+              Select Store Account
+            </h3>
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+              {accounts.map((acc) => (
+                <button
+                  key={acc.id}
+                  onClick={() => switchAccount(acc)}
+                  style={{
+                    padding: '12px 20px',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    border: '2px solid',
+                    transition: 'all 0.2s ease',
+                    background: acc.isActive ? '#007bff' : 'white',
+                    color: acc.isActive ? 'white' : '#007bff',
+                    borderColor: '#007bff'
+                  }}
+                >
+                  {acc.name}
+                  {acc.isActive && <span style={{ marginLeft: '8px' }}>✓</span>}
+                </button>
+              ))}
+              <button
+                onClick={() => setActiveTab('accounts')}
+                style={{
+                  padding: '12px 20px',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  border: '2px dashed #20c997',
+                  background: 'white',
+                  color: '#20c997'
+                }}
+              >
+                + Add Store
+              </button>
+            </div>
+          </div>
+        )}
 
-              {/* Search Section */}
-              <div style={{ marginBottom: '24px' }}>
-                <h3 style={{ 
-                  fontSize: '16px', 
-                  color: '#666', 
-                  marginBottom: '12px',
-                  fontWeight: '500'
-                }}>
-                  Search Existing Products
-                </h3>
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                  <input
-                    type="text"
-                    placeholder="Search products by name, code, category, or any words... (e.g., 'Flower Shop')"
-                    style={{
-                      flex: 1,
-                      padding: '12px 16px',
-                      border: '2px solid #e9ecef',
-                      borderRadius: '6px',
-                      fontSize: '14px',
-                      outline: 'none'
-                    }}
-                  />
-                  <button
-                    style={{
-                      background: '#007bff',
-                      color: 'white',
-                      border: 'none',
-                      padding: '12px 24px',
-                      borderRadius: '6px',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px'
-                    }}
-                  >
-                    📦 Browse All
-                  </button>
-                </div>
-              </div>
-
-              {/* Custom Item Section */}
-              <div>
-                <h3 style={{ 
-                  fontSize: '16px', 
-                  color: '#666', 
-                  marginBottom: '12px',
-                  fontWeight: '500'
-                }}>
-                  Add Custom Item
-                </h3>
-                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 100px', gap: '12px', marginBottom: '16px' }}>
-                  <div>
-                    <label style={{ 
-                      display: 'block',
-                      fontSize: '12px',
-                      fontWeight: '600',
-                      color: '#333',
-                      marginBottom: '4px'
-                    }}>
-                      Item Name *
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g., Special Service"
-                      style={{
-                        width: '100%',
-                        padding: '10px 12px',
-                        border: '1px solid #ced4da',
-                        borderRadius: '4px',
-                        fontSize: '14px'
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ 
-                      display: 'block',
-                      fontSize: '12px',
-                      fontWeight: '600',
-                      color: '#333',
-                      marginBottom: '4px'
-                    }}>
-                      Price (£) *
-                    </label>
-                    <input
-                      type="number"
-                      placeholder="e.g., 10.50"
-                      step="0.01"
-                      style={{
-                        width: '100%',
-                        padding: '10px 12px',
-                        border: '1px solid #ced4da',
-                        borderRadius: '4px',
-                        fontSize: '14px'
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ 
-                      display: 'block',
-                      fontSize: '12px',
-                      fontWeight: '600',
-                      color: '#333',
-                      marginBottom: '4px'
-                    }}>
-                      Quantity
-                    </label>
-                    <input
-                      type="number"
-                      defaultValue="1"
-                      min="1"
-                      style={{
-                        width: '100%',
-                        padding: '10px 12px',
-                        border: '1px solid #ced4da',
-                        borderRadius: '4px',
-                        fontSize: '14px'
-                      }}
-                    />
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: '12px' }}>
-                  <button
-                    style={{
-                      background: '#28a745',
-                      color: 'white',
-                      border: 'none',
-                      padding: '10px 20px',
-                      borderRadius: '4px',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px'
-                    }}
-                  >
-                    ➕ Add to Basket
-                  </button>
-                  <button
-                    style={{
-                      background: '#6c757d',
-                      color: 'white',
-                      border: 'none',
-                      padding: '10px 20px',
-                      borderRadius: '4px',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Clear
-                  </button>
-                </div>
+        {/* Sales Overview Cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginBottom: '24px' }}>
+          <div style={{ 
+            background: 'linear-gradient(135deg, #007bff 0%, #0056b3 100%)', 
+            padding: '24px', 
+            borderRadius: '12px',
+            color: 'white',
+            boxShadow: '0 4px 12px rgba(0, 123, 255, 0.3)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+              <div style={{ fontSize: '24px', marginRight: '12px' }}>💰</div>
+              <div style={{ fontSize: '14px', fontWeight: '600', opacity: 0.9 }}>
+                TOTAL REVENUE
               </div>
             </div>
+            <div style={{ fontSize: '32px', fontWeight: '700', marginBottom: '8px' }}>
+              {formatCurrency(totalTakings)}
+            </div>
+            {activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2' && dailyTakings.length > 0 && (
+              <div style={{ fontSize: '12px', opacity: 0.8 }}>Combined from all locations</div>
+            )}
+          </div>
 
-            {/* Quick Stats */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-              <div style={{ 
-                background: 'white', 
-                padding: '20px', 
-                borderRadius: '8px',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-              }}>
-                <div style={{ fontSize: '12px', color: '#666', fontWeight: '600', marginBottom: '8px' }}>
-                  TOTAL REVENUE
-                </div>
-                <div style={{ fontSize: '24px', fontWeight: '700', color: '#333' }}>
-                  {formatCurrency(totalTakings)}
-                </div>
+          <div style={{ 
+            background: 'linear-gradient(135deg, #28a745 0%, #1e7e34 100%)', 
+            padding: '24px', 
+            borderRadius: '12px',
+            color: 'white',
+            boxShadow: '0 4px 12px rgba(40, 167, 69, 0.3)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+              <div style={{ fontSize: '24px', marginRight: '12px' }}>📊</div>
+              <div style={{ fontSize: '14px', fontWeight: '600', opacity: 0.9 }}>
+                DAILY AVERAGE
               </div>
-              <div style={{ 
-                background: 'white', 
-                padding: '20px', 
-                borderRadius: '8px',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-              }}>
-                <div style={{ fontSize: '12px', color: '#666', fontWeight: '600', marginBottom: '8px' }}>
-                  DAILY AVERAGE
-                </div>
-                <div style={{ fontSize: '24px', fontWeight: '700', color: '#333' }}>
-                  {formatCurrency(averageTakings)}
-                </div>
-              </div>
-              <div style={{ 
-                background: 'white', 
-                padding: '20px', 
-                borderRadius: '8px',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-              }}>
-                <div style={{ fontSize: '12px', color: '#666', fontWeight: '600', marginBottom: '8px' }}>
-                  DAYS TRACKED
-                </div>
-                <div style={{ fontSize: '24px', fontWeight: '700', color: '#333' }}>
-                  {dailyTakings.length}
-                </div>
-              </div>
+            </div>
+            <div style={{ fontSize: '32px', fontWeight: '700' }}>
+              {formatCurrency(averageTakings)}
             </div>
           </div>
 
-          {/* Right Column - Basket */}
-          <div>
-            <div style={{
-              background: 'white',
-              borderRadius: '8px',
-              padding: '20px',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-              height: 'fit-content'
-            }}>
-              <h2 style={{ 
-                fontSize: '20px', 
-                fontWeight: 'bold', 
-                color: '#333', 
-                margin: '0 0 20px 0',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between'
-              }}>
-                Basket 
-                <span style={{ 
-                  fontSize: '16px', 
-                  color: '#666',
-                  fontWeight: 'normal'
-                }}>(0)</span>
-              </h2>
-              
-              {/* Total Section */}
-              <div style={{
-                background: 'linear-gradient(135deg, #ffc107 0%, #ffca28 100%)',
-                borderRadius: '8px',
-                padding: '24px',
-                textAlign: 'center',
-                marginBottom: '20px',
-                boxShadow: '0 4px 8px rgba(255, 193, 7, 0.3)'
-              }}>
-                <div style={{ 
-                  fontSize: '16px', 
-                  fontWeight: '600',
-                  color: '#333',
-                  marginBottom: '8px'
-                }}>
-                  Total
-                </div>
-                <div style={{ 
-                  fontSize: '36px', 
-                  fontWeight: 'bold',
-                  color: '#333'
-                }}>
-                  £0.00
-                </div>
+          <div style={{ 
+            background: 'linear-gradient(135deg, #fd7e14 0%, #dc6500 100%)', 
+            padding: '24px', 
+            borderRadius: '12px',
+            color: 'white',
+            boxShadow: '0 4px 12px rgba(253, 126, 20, 0.3)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+              <div style={{ fontSize: '24px', marginRight: '12px' }}>📅</div>
+              <div style={{ fontSize: '14px', fontWeight: '600', opacity: 0.9 }}>
+                DAYS TRACKED
               </div>
+            </div>
+            <div style={{ fontSize: '32px', fontWeight: '700' }}>
+              {dailyTakings.length}
+            </div>
+          </div>
 
-              {/* Empty basket message */}
+          <div style={{ 
+            background: 'linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%)', 
+            padding: '24px', 
+            borderRadius: '12px',
+            color: 'white',
+            boxShadow: '0 4px 12px rgba(111, 66, 193, 0.3)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+              <div style={{ fontSize: '24px', marginRight: '12px' }}>🏪</div>
+              <div style={{ fontSize: '14px', fontWeight: '600', opacity: 0.9 }}>
+                ACTIVE STORE
+              </div>
+            </div>
+            <div style={{ fontSize: '20px', fontWeight: '700' }}>
+              {activeAccount?.name || 'No Store Selected'}
+            </div>
+          </div>
+        </div>
+
+        {/* Location Breakdown for Multi-Store Accounts */}
+        {activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2' && dailyTakings.length > 0 && (
+          <div style={{
+            background: 'white',
+            borderRadius: '12px',
+            padding: '24px',
+            marginBottom: '24px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+          }}>
+            <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: '#333', margin: '0 0 20px 0' }}>
+              Location Performance (Northcote)
+            </h2>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+              gap: '20px'
+            }}>
               <div style={{
-                textAlign: 'center',
-                padding: '40px 20px',
-                color: '#666'
+                background: 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)',
+                borderRadius: '12px',
+                padding: '24px',
+                border: '2px solid #2196f3'
               }}>
-                <div style={{
-                  fontSize: '48px',
-                  marginBottom: '12px'
-                }}>🛒</div>
-                <p style={{ margin: 0, fontSize: '14px' }}>
-                  Your basket is empty.<br />
-                  Add items to get started.
+                <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1565c0', margin: '0 0 12px 0' }}>
+                  🏪 Shop Location
+                </h3>
+                <p style={{ fontSize: '28px', fontWeight: 'bold', color: '#0d47a1', margin: '0 0 8px 0' }}>
+                  {formatCurrency(dailyTakings.reduce((sum, day) => {
+                    const shopId = 'd5a7267b-ca6f-4490-9d66-b5ba46cc563c'
+                    return sum + (day.locationBreakdown?.[shopId] || 0)
+                  }, 0))}
+                </p>
+                <p style={{ color: '#1565c0', fontWeight: '500', margin: 0 }}>
+                  Total revenue from Shop
+                </p>
+              </div>
+              <div style={{
+                background: 'linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%)',
+                borderRadius: '12px',
+                padding: '24px',
+                border: '2px solid #4caf50'
+              }}>
+                <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#2e7d32', margin: '0 0 12px 0' }}>
+                  ☕ Cafe Location
+                </h3>
+                <p style={{ fontSize: '28px', fontWeight: 'bold', color: '#1b5e20', margin: '0 0 8px 0' }}>
+                  {formatCurrency(dailyTakings.reduce((sum, day) => {
+                    const cafeId = 'e2aa143e-3e91-433e-a6d8-5a5538d429e2'
+                    return sum + (day.locationBreakdown?.[cafeId] || 0)
+                  }, 0))}
+                </p>
+                <p style={{ color: '#2e7d32', fontWeight: '500', margin: 0 }}>
+                  Total revenue from Cafe
                 </p>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Charts and Table Section */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px' }}>
+          {/* Chart */}
+          <div style={{ 
+            background: 'white', 
+            borderRadius: '12px', 
+            padding: '24px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+          }}>
+            <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: '#333', margin: '0 0 20px 0' }}>
+              📈 Revenue Trends
+            </h2>
+            <DailyTakingsChart data={dailyTakings} />
+          </div>
+
+          {/* Table */}
+          <div style={{
+            background: 'white',
+            borderRadius: '12px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              padding: '24px',
+              background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+              borderBottom: '1px solid #dee2e6'
+            }}>
+              <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: '#333', margin: '0 0 8px 0' }}>
+                📋 Daily Sales Breakdown
+              </h2>
+              <p style={{ color: '#666', margin: 0, fontSize: '14px' }}>
+                Detailed view of daily performance for {activeAccount?.name || 'your store'}
+              </p>
+            </div>
+            <DailyTakingsTable data={dailyTakings} />
           </div>
         </div>
       </main>
