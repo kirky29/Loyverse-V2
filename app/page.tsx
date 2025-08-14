@@ -1,23 +1,12 @@
-// WORKING VERSION - Multi-account dashboard with location breakdown
-// Features: Combined totals + separate Shop/Cafe breakdowns
-// Last tested: Working with both Account 1 (Shop+Cafe) and Account 2 (Single store)
 'use client'
 
 import { useState, useEffect } from 'react'
+import { LoyverseAccount, DailyTaking } from './types'
+import AccountManager from './components/AccountManager'
 import DailyTakingsChart from './components/DailyTakingsChart'
 import DailyTakingsTable from './components/DailyTakingsTable'
-import AccountManager from './components/AccountManager'
-import { DailyTaking } from './types'
 
-interface LoyverseAccount {
-  id: string
-  name: string
-  apiToken: string
-  storeId: string
-  isActive: boolean
-}
-
-export default function Dashboard() {
+export default function Home() {
   const [dailyTakings, setDailyTakings] = useState<DailyTaking[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -35,7 +24,7 @@ export default function Dashboard() {
         console.log('Loading timeout reached, forcing loading to false')
         setLoading(false)
       }
-    }, 5000)
+    }, 3000)
     
     return () => clearTimeout(timeout)
   }, [])
@@ -155,28 +144,52 @@ export default function Dashboard() {
     }
   }
 
+  const formatCurrency = (value: number): string => {
+    return new Intl.NumberFormat('en-GB', {
+      style: 'currency',
+      currency: 'GBP',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value)
+  }
+
   const totalTakings = dailyTakings.reduce((sum, day) => sum + (day.total || 0), 0)
   const averageTakings = dailyTakings.length > 0 ? totalTakings / dailyTakings.length : 0
-
-  const formatCurrency = (value: number | null | undefined): string => {
-    if (value === null || value === undefined || isNaN(value)) {
-      return '£0.00'
-    }
-    return `£${value.toFixed(2)}`
-  }
 
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="relative">
-            <div className="w-20 h-20 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto"></div>
-            <div className="absolute inset-0 w-20 h-20 border-4 border-transparent border-t-blue-400 rounded-full animate-spin mx-auto" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
-          </div>
-          <h2 className="mt-8 text-2xl font-bold text-slate-800">Loading your dashboard</h2>
-          <p className="mt-3 text-slate-600">Preparing your business insights...</p>
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: 'white'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            width: '80px',
+            height: '80px',
+            border: '4px solid rgba(255,255,255,0.3)',
+            borderTop: '4px solid white',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 32px'
+          }}></div>
+          <h2 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '16px' }}>
+            Loading your dashboard
+          </h2>
+          <p style={{ fontSize: '18px', opacity: 0.8 }}>
+            Preparing your business insights...
+          </p>
         </div>
+        <style jsx>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
       </div>
     )
   }
@@ -184,56 +197,120 @@ export default function Dashboard() {
   // Error state
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-red-50 flex items-center justify-center px-4">
-        <div className="text-center max-w-md">
-          <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-12 h-12 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
-            </svg>
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: 'white'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            width: '80px',
+            height: '80px',
+            background: 'rgba(255,255,255,0.2)',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 32px'
+          }}>
+            <span style={{ fontSize: '40px' }}>⚠️</span>
           </div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-3">Something went wrong</h1>
-          <p className="text-slate-600 mb-8 text-lg">{error}</p>
-          <div className="space-y-4">
-            <button
-              onClick={fetchDailyTakings}
-              className="w-full bg-blue-600 text-white px-8 py-4 rounded-2xl hover:bg-blue-700 transition-all duration-300 font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-            >
-              Try Again
-            </button>
-            <button
-              onClick={() => {
-                setError(null)
-                setActiveTab('accounts')
-              }}
-              className="w-full bg-slate-200 text-slate-700 px-8 py-4 rounded-2xl hover:bg-slate-300 transition-all duration-300 font-semibold text-lg"
-            >
-              Manage Accounts
-            </button>
-          </div>
+          <h2 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '16px' }}>
+            Something went wrong
+          </h2>
+          <p style={{ fontSize: '18px', marginBottom: '32px', opacity: 0.8 }}>
+            {error}
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              background: 'rgba(255,255,255,0.2)',
+              border: '2px solid rgba(255,255,255,0.3)',
+              color: 'white',
+              padding: '16px 32px',
+              borderRadius: '12px',
+              fontSize: '18px',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.3)'
+              e.currentTarget.style.transform = 'translateY(-2px)'
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.2)'
+              e.currentTarget.style.transform = 'translateY(0)'
+            }}
+          >
+            Try Again
+          </button>
         </div>
       </div>
     )
   }
 
-  // No account state
-  if (!activeAccount) {
+  // No accounts state
+  if (accounts.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center px-4">
-        <div className="text-center max-w-lg">
-          <div className="w-32 h-32 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl">
-            <svg className="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-            </svg>
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: 'white'
+      }}>
+        <div style={{ textAlign: 'center', maxWidth: '600px', padding: '40px' }}>
+          <div style={{
+            width: '120px',
+            height: '120px',
+            background: 'rgba(255,255,255,0.2)',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 40px'
+          }}>
+            <span style={{ fontSize: '60px' }}>🏪</span>
           </div>
-          <h1 className="text-4xl font-bold text-slate-900 mb-4">Welcome to Loyverse</h1>
-          <p className="text-xl text-slate-600 mb-10 leading-relaxed">Connect your first store to start tracking daily takings and gain valuable business insights</p>
+          <h1 style={{ fontSize: '48px', fontWeight: 'bold', marginBottom: '24px' }}>
+            Welcome to Loyverse
+          </h1>
+          <p style={{ fontSize: '20px', marginBottom: '40px', opacity: 0.9, lineHeight: '1.6' }}>
+            Connect your first store to start tracking daily takings and gain valuable business insights
+          </p>
           <button
             onClick={() => setActiveTab('accounts')}
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-10 py-5 rounded-2xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 text-xl font-bold shadow-2xl hover:shadow-3xl transform hover:-translate-y-2"
+            style={{
+              background: 'rgba(255,255,255,0.2)',
+              border: '2px solid rgba(255,255,255,0.3)',
+              color: 'white',
+              padding: '20px 40px',
+              borderRadius: '16px',
+              fontSize: '20px',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.3)'
+              e.currentTarget.style.transform = 'translateY(-4px)'
+              e.currentTarget.style.boxShadow = '0 12px 40px rgba(0,0,0,0.2)'
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.2)'
+              e.currentTarget.style.transform = 'translateY(0)'
+              e.currentTarget.style.boxShadow = '0 8px 32px rgba(0,0,0,0.1)'
+            }}
           >
             Connect Your Store
           </button>
-          <p className="text-sm text-slate-500 mt-6">
+          <p style={{ fontSize: '16px', marginTop: '24px', opacity: 0.7 }}>
             You'll need your Loyverse API token and store ID
           </p>
         </div>
@@ -241,24 +318,50 @@ export default function Dashboard() {
     )
   }
 
-  // Accounts management view
+  // Account management view
   if (activeTab === 'accounts') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mb-10">
-            <button
-              onClick={() => setActiveTab('dashboard')}
-              className="inline-flex items-center text-blue-600 hover:text-blue-700 font-semibold mb-6 group transition-all duration-200"
-            >
-              <svg className="w-5 h-5 mr-2 transform group-hover:-translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-              Back to Dashboard
-            </button>
-            <h1 className="text-4xl font-bold text-slate-900 mb-3">Store Management</h1>
-            <p className="text-xl text-slate-600">Connect and manage your Loyverse store integrations</p>
-          </div>
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        padding: '40px 20px'
+      }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <button
+            onClick={() => setActiveTab('dashboard')}
+            style={{
+              background: 'rgba(255,255,255,0.2)',
+              border: '2px solid rgba(255,255,255,0.3)',
+              color: 'white',
+              padding: '12px 24px',
+              borderRadius: '12px',
+              fontSize: '16px',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              marginBottom: '40px',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.3)'
+              e.currentTarget.style.transform = 'translateY(-2px)'
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.2)'
+              e.currentTarget.style.transform = 'translateY(0)'
+            }}
+          >
+            ← Back to Dashboard
+          </button>
+          
+          <h1 style={{
+            fontSize: '48px',
+            fontWeight: 'bold',
+            color: 'white',
+            textAlign: 'center',
+            marginBottom: '40px'
+          }}>
+            Store Management
+          </h1>
           
           <AccountManager
             accounts={accounts}
@@ -275,58 +378,132 @@ export default function Dashboard() {
 
   // Main dashboard view
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div style={{ minHeight: '100vh', background: '#f8fafc' }}>
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-40 lg:hidden"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.5)',
+            zIndex: 40
+          }}
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-80 bg-white bg-opacity-80 backdrop-blur-xl border-r border-slate-200 border-opacity-50 transform transition-all duration-500 ease-out lg:translate-x-0 lg:static lg:inset-0 ${
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}>
-        <div className="flex flex-col h-full">
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        bottom: 0,
+        width: '320px',
+        background: 'rgba(255,255,255,0.95)',
+        backdropFilter: 'blur(20px)',
+        borderRight: '1px solid rgba(0,0,0,0.1)',
+        transform: sidebarOpen ? 'translateX(0)' : 'translateX(-100%)',
+        transition: 'transform 0.3s ease',
+        zIndex: 50,
+        boxShadow: '4px 0 20px rgba(0,0,0,0.1)'
+      }}>
+        <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
           {/* Logo */}
-          <div className="flex items-center px-8 py-10 border-b border-slate-200 border-opacity-50">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center mr-4 shadow-lg">
-              <span className="text-white text-2xl font-bold">L</span>
+          <div style={{
+            padding: '40px 32px',
+            borderBottom: '1px solid rgba(0,0,0,0.1)',
+            display: 'flex',
+            alignItems: 'center'
+          }}>
+            <div style={{
+              width: '48px',
+              height: '48px',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              borderRadius: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginRight: '16px',
+              boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)'
+            }}>
+              <span style={{ color: 'white', fontSize: '24px', fontWeight: 'bold' }}>L</span>
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-slate-900">Loyverse</h1>
-              <p className="text-slate-500 font-medium">Business Intelligence</p>
+              <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1e293b', margin: 0 }}>
+                Loyverse
+              </h1>
+              <p style={{ fontSize: '14px', color: '#64748b', margin: 0, fontWeight: '500' }}>
+                Business Intelligence
+              </p>
             </div>
           </div>
 
           {/* Account Switcher */}
-          <div className="px-8 py-6 border-b border-slate-200 border-opacity-50">
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">
+          <div style={{ padding: '24px 32px', borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
+            <label style={{
+              display: 'block',
+              fontSize: '12px',
+              fontWeight: '600',
+              color: '#64748b',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              marginBottom: '16px'
+            }}>
               Active Store
             </label>
-            <div className="space-y-3">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {accounts.map((account) => (
                 <button
                   key={account.id}
                   onClick={() => switchAccount(account)}
-                  className={`w-full text-left p-4 rounded-2xl transition-all duration-300 ${
-                    account.isActive
-                      ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 text-blue-900 shadow-lg'
-                      : 'hover:bg-slate-50 hover:shadow-md transform hover:-translate-y-1'
-                  }`}
+                  style={{
+                    width: '100%',
+                    textAlign: 'left',
+                    padding: '16px',
+                    borderRadius: '16px',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    ...(account.isActive ? {
+                      background: 'linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)',
+                      border: '2px solid #818cf8',
+                      color: '#3730a3',
+                      boxShadow: '0 8px 32px rgba(99, 102, 241, 0.2)'
+                    } : {
+                      background: 'transparent',
+                      color: '#475569'
+                    })
+                  }}
+                  onMouseOver={(e) => {
+                    if (!account.isActive) {
+                      e.currentTarget.style.background = 'rgba(0,0,0,0.05)'
+                      e.currentTarget.style.transform = 'translateY(-2px)'
+                    }
+                  }}
+                  onMouseOut={(e) => {
+                    if (!account.isActive) {
+                      e.currentTarget.style.background = 'transparent'
+                      e.currentTarget.style.transform = 'translateY(0)'
+                    }
+                  }}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <div className={`w-3 h-3 rounded-full mr-3 ${
-                        account.isActive ? 'bg-blue-500 shadow-lg' : 'bg-slate-300'
-                      }`} />
-                      <span className="font-semibold truncate">{account.name}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <div style={{
+                        width: '12px',
+                        height: '12px',
+                        borderRadius: '50%',
+                        marginRight: '12px',
+                        ...(account.isActive ? {
+                          background: '#6366f1',
+                          boxShadow: '0 0 0 4px rgba(99, 102, 241, 0.2)'
+                        } : {
+                          background: '#cbd5e1'
+                        })
+                      }} />
+                      <span style={{ fontWeight: '600' }}>{account.name}</span>
                     </div>
                     {account.isActive && (
-                      <svg className="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
+                      <span style={{ fontSize: '16px' }}>✓</span>
                     )}
                   </div>
                 </button>
@@ -335,44 +512,103 @@ export default function Dashboard() {
             
             <button
               onClick={() => setActiveTab('accounts')}
-              className="w-full mt-4 p-4 text-blue-600 hover:bg-blue-50 rounded-2xl transition-all duration-300 font-semibold text-sm border-2 border-dashed border-blue-200 hover:border-blue-300 hover:shadow-md"
+              style={{
+                width: '100%',
+                marginTop: '16px',
+                padding: '16px',
+                color: '#6366f1',
+                background: 'transparent',
+                border: '2px dashed #c7d2fe',
+                borderRadius: '16px',
+                cursor: 'pointer',
+                fontWeight: '600',
+                fontSize: '14px',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.background = 'rgba(99, 102, 241, 0.05)'
+                e.currentTarget.style.borderColor = '#818cf8'
+                e.currentTarget.style.transform = 'translateY(-2px)'
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.background = 'transparent'
+                e.currentTarget.style.borderColor = '#c7d2fe'
+                e.currentTarget.style.transform = 'translateY(0)'
+              }}
             >
               + Add New Store
             </button>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-8 py-6">
-            <div className="space-y-3">
+          <nav style={{ flex: 1, padding: '24px 32px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <button
                 onClick={() => setActiveTab('dashboard')}
-                className="w-full flex items-center px-4 py-3 text-sm font-semibold text-blue-600 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200"
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '16px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  color: '#6366f1',
+                  background: 'linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)',
+                  borderRadius: '12px',
+                  border: '1px solid #818cf8',
+                  cursor: 'pointer'
+                }}
               >
-                <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
+                <span style={{ marginRight: '12px' }}>📊</span>
                 Dashboard
               </button>
               
               <button
                 onClick={() => setActiveTab('accounts')}
-                className="w-full flex items-center px-4 py-3 text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all duration-200"
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '16px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  color: '#475569',
+                  background: 'transparent',
+                  borderRadius: '12px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.background = 'rgba(0,0,0,0.05)'
+                  e.currentTarget.style.transform = 'translateY(-2px)'
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.background = 'transparent'
+                  e.currentTarget.style.transform = 'translateY(0)'
+                }}
               >
-                <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
+                <span style={{ marginRight: '12px' }}>⚙️</span>
                 Store Settings
               </button>
             </div>
           </nav>
 
           {/* Account Info */}
-          <div className="px-8 py-6 border-t border-slate-200 border-opacity-50">
-            <div className="bg-gradient-to-r from-slate-50 to-blue-50 rounded-2xl p-4 border border-slate-200 border-opacity-50">
-              <div className="text-sm">
-                <p className="text-slate-900 font-semibold mb-1">{activeAccount.name}</p>
-                <p className="text-slate-500">ID: {activeAccount.storeId.substring(0, 8)}...</p>
+          <div style={{ padding: '24px 32px', borderTop: '1px solid rgba(0,0,0,0.1)' }}>
+            <div style={{
+              background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)',
+              borderRadius: '16px',
+              padding: '16px',
+              border: '1px solid rgba(0,0,0,0.1)'
+            }}>
+              <div style={{ fontSize: '14px' }}>
+                <p style={{ color: '#1e293b', fontWeight: '600', margin: '0 0 4px 0' }}>
+                  {activeAccount?.name || 'Unknown Store'}
+                </p>
+                <p style={{ color: '#64748b', margin: 0, fontSize: '12px' }}>
+                  ID: {activeAccount?.storeId?.substring(0, 8) || 'Unknown'}...
+                </p>
               </div>
             </div>
           </div>
@@ -380,81 +616,187 @@ export default function Dashboard() {
       </div>
 
       {/* Main Content */}
-      <div className="lg:ml-80">
+      <div style={{ marginLeft: '320px' }}>
         {/* Top Bar */}
-        <div className="bg-white bg-opacity-80 backdrop-blur-xl shadow-sm border-b border-slate-200 border-opacity-50">
-          <div className="flex items-center justify-between px-6 lg:px-8 py-6">
+        <div style={{
+          background: 'rgba(255,255,255,0.95)',
+          backdropFilter: 'blur(20px)',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+          borderBottom: '1px solid rgba(0,0,0,0.1)'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '24px 32px'
+          }}>
             <button
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-3 rounded-2xl text-slate-600 hover:bg-slate-100 transition-all duration-200"
+              style={{
+                display: 'none',
+                padding: '12px',
+                borderRadius: '12px',
+                color: '#64748b',
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.background = 'rgba(0,0,0,0.05)'
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.background = 'transparent'
+              }}
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
+              ☰
             </button>
             
-            <div className="flex items-center space-x-6">
-              <div className="text-right">
-                <p className="text-sm text-slate-500 font-medium">Last updated</p>
-                <p className="text-lg font-bold text-slate-900">
-                  {new Date().toLocaleDateString()}
-                </p>
-              </div>
+            <div style={{ textAlign: 'right' }}>
+              <p style={{ fontSize: '14px', color: '#64748b', fontWeight: '500', margin: '0 0 4px 0' }}>
+                Last updated
+              </p>
+              <p style={{ fontSize: '18px', fontWeight: 'bold', color: '#1e293b', margin: 0 }}>
+                {new Date().toLocaleDateString()}
+              </p>
             </div>
           </div>
         </div>
 
         {/* Dashboard Content */}
-        <main className="px-6 lg:px-8 py-10">
+        <main style={{ padding: '40px 32px' }}>
           {/* Header */}
-          <div className="mb-10">
-            <h1 className="text-4xl font-bold text-slate-900 mb-3">Business Dashboard</h1>
-            <p className="text-xl text-slate-600">Daily takings overview for {activeAccount.name}</p>
+          <div style={{ marginBottom: '40px' }}>
+            <h1 style={{ fontSize: '48px', fontWeight: 'bold', color: '#1e293b', margin: '0 0 16px 0' }}>
+              Business Dashboard
+            </h1>
+            <p style={{ fontSize: '24px', color: '#64748b', margin: 0 }}>
+              Daily takings overview for {activeAccount?.name || 'your store'}
+            </p>
           </div>
 
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
-            <div className="bg-white bg-opacity-80 backdrop-blur-xl rounded-3xl shadow-xl border border-slate-200 border-opacity-50 p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-              <div className="flex items-center">
-                <div className="p-4 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg">
-                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                  </svg>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gap: '32px',
+            marginBottom: '40px'
+          }}>
+            <div style={{
+              background: 'rgba(255,255,255,0.95)',
+              backdropFilter: 'blur(20px)',
+              borderRadius: '24px',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+              border: '1px solid rgba(0,0,0,0.1)',
+              padding: '32px',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.transform = 'translateY(-8px)'
+              e.currentTarget.style.boxShadow = '0 32px 64px rgba(0,0,0,0.15)'
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)'
+              e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,0,0,0.1)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <div style={{
+                  padding: '16px',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  borderRadius: '16px',
+                  boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)',
+                  marginRight: '24px'
+                }}>
+                  <span style={{ fontSize: '32px' }}>💰</span>
                 </div>
-                <div className="ml-6">
-                  <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Total Revenue</p>
-                  <p className="text-4xl font-bold text-slate-900">{formatCurrency(totalTakings)}</p>
+                <div>
+                  <p style={{ fontSize: '14px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 8px 0' }}>
+                    Total Revenue
+                  </p>
+                  <p style={{ fontSize: '48px', fontWeight: 'bold', color: '#1e293b', margin: 0 }}>
+                    {formatCurrency(totalTakings)}
+                  </p>
                   {activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2' && dailyTakings.length > 0 && (
-                    <p className="text-sm text-slate-500 mt-2">Combined from all locations</p>
+                    <p style={{ fontSize: '14px', color: '#64748b', margin: '8px 0 0 0' }}>
+                      Combined from all locations
+                    </p>
                   )}
                 </div>
               </div>
             </div>
 
-            <div className="bg-white bg-opacity-80 backdrop-blur-xl rounded-3xl shadow-xl border border-slate-200 border-opacity-50 p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-              <div className="flex items-center">
-                <div className="p-4 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl shadow-lg">
-                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
+            <div style={{
+              background: 'rgba(255,255,255,0.95)',
+              backdropFilter: 'blur(20px)',
+              borderRadius: '24px',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+              border: '1px solid rgba(0,0,0,0.1)',
+              padding: '32px',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.transform = 'translateY(-8px)'
+              e.currentTarget.style.boxShadow = '0 32px 64px rgba(0,0,0,0.15)'
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)'
+              e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,0,0,0.1)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <div style={{
+                  padding: '16px',
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  borderRadius: '16px',
+                  boxShadow: '0 8px 32px rgba(16, 185, 129, 0.3)',
+                  marginRight: '24px'
+                }}>
+                  <span style={{ fontSize: '32px' }}>📈</span>
                 </div>
-                <div className="ml-6">
-                  <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Daily Average</p>
-                  <p className="text-4xl font-bold text-slate-900">{formatCurrency(averageTakings)}</p>
+                <div>
+                  <p style={{ fontSize: '14px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 8px 0' }}>
+                    Daily Average
+                  </p>
+                  <p style={{ fontSize: '48px', fontWeight: 'bold', color: '#1e293b', margin: 0 }}>
+                    {formatCurrency(averageTakings)}
+                  </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white bg-opacity-80 backdrop-blur-xl rounded-3xl shadow-xl border border-slate-200 border-opacity-50 p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-              <div className="flex items-center">
-                <div className="p-4 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl shadow-lg">
-                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
+            <div style={{
+              background: 'rgba(255,255,255,0.95)',
+              backdropFilter: 'blur(20px)',
+              borderRadius: '24px',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+              border: '1px solid rgba(0,0,0,0.1)',
+              padding: '32px',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.transform = 'translateY(-8px)'
+              e.currentTarget.style.boxShadow = '0 32px 64px rgba(0,0,0,0.15)'
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)'
+              e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,0,0,0.1)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <div style={{
+                  padding: '16px',
+                  background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+                  borderRadius: '16px',
+                  boxShadow: '0 8px 32px rgba(139, 92, 246, 0.3)',
+                  marginRight: '24px'
+                }}>
+                  <span style={{ fontSize: '32px' }}>📅</span>
                 </div>
-                <div className="ml-6">
-                  <p className="text-sm font-semibold text-slate-500 uppercase tracking-wider">Days Tracked</p>
-                  <p className="text-4xl font-bold text-slate-900">{dailyTakings.length}</p>
+                <div>
+                  <p style={{ fontSize: '14px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 8px 0' }}>
+                    Days Tracked
+                  </p>
+                  <p style={{ fontSize: '48px', fontWeight: 'bold', color: '#1e293b', margin: 0 }}>
+                    {dailyTakings.length}
+                  </p>
                 </div>
               </div>
             </div>
@@ -462,49 +804,118 @@ export default function Dashboard() {
 
           {/* Location Breakdown for Multi-Store Accounts */}
           {activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2' && dailyTakings.length > 0 && (
-            <div className="bg-white bg-opacity-80 backdrop-blur-xl rounded-3xl shadow-xl border border-slate-200 border-opacity-50 p-8 mb-10">
-              <h2 className="text-2xl font-bold text-slate-900 mb-8">Location Performance</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-3xl p-8 border border-blue-200 border-opacity-50">
-                  <h3 className="text-xl font-bold text-blue-900 mb-4">Shop Location</h3>
-                  <p className="text-5xl font-bold text-blue-600 mb-3">
+            <div style={{
+              background: 'rgba(255,255,255,0.95)',
+              backdropFilter: 'blur(20px)',
+              borderRadius: '24px',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+              border: '1px solid rgba(0,0,0,0.1)',
+              padding: '32px',
+              marginBottom: '40px'
+            }}>
+              <h2 style={{ fontSize: '32px', fontWeight: 'bold', color: '#1e293b', margin: '0 0 32px 0' }}>
+                Location Performance
+              </h2>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                gap: '32px'
+              }}>
+                <div style={{
+                  background: 'linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)',
+                  borderRadius: '24px',
+                  padding: '32px',
+                  border: '1px solid #818cf8'
+                }}>
+                  <h3 style={{ fontSize: '24px', fontWeight: 'bold', color: '#3730a3', margin: '0 0 16px 0' }}>
+                    Shop Location
+                  </h3>
+                  <p style={{ fontSize: '60px', fontWeight: 'bold', color: '#4338ca', margin: '0 0 12px 0' }}>
                     {formatCurrency(dailyTakings.reduce((sum, day) => {
                       const shopId = 'd5a7267b-ca6f-4490-9d66-b5ba46cc563c'
                       return sum + (day.locationBreakdown?.[shopId] || 0)
                     }, 0))}
                   </p>
-                  <p className="text-blue-700 font-medium">Total revenue from Shop</p>
+                  <p style={{ color: '#4338ca', fontWeight: '500', margin: 0 }}>
+                    Total revenue from Shop
+                  </p>
                 </div>
-                <div className="bg-gradient-to-br from-emerald-50 to-teal-100 rounded-3xl p-8 border border-emerald-200 border-opacity-50">
-                  <h3 className="text-xl font-bold text-emerald-900 mb-4">Cafe Location</h3>
-                  <p className="text-5xl font-bold text-emerald-600 mb-3">
+                <div style={{
+                  background: 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)',
+                  borderRadius: '24px',
+                  padding: '32px',
+                  border: '1px solid #34d399'
+                }}>
+                  <h3 style={{ fontSize: '24px', fontWeight: 'bold', color: '#065f46', margin: '0 0 16px 0' }}>
+                    Cafe Location
+                  </h3>
+                  <p style={{ fontSize: '60px', fontWeight: 'bold', color: '#047857', margin: '0 0 12px 0' }}>
                     {formatCurrency(dailyTakings.reduce((sum, day) => {
                       const cafeId = 'e2aa143e-3e91-433e-a6d8-5a5538d429e2'
                       return sum + (day.locationBreakdown?.[cafeId] || 0)
                     }, 0))}
                   </p>
-                  <p className="text-emerald-700 font-medium">Total revenue from Cafe</p>
+                  <p style={{ color: '#047857', fontWeight: '500', margin: 0 }}>
+                    Total revenue from Cafe
+                  </p>
                 </div>
               </div>
             </div>
           )}
 
           {/* Chart */}
-          <div className="bg-white bg-opacity-80 backdrop-blur-xl rounded-3xl shadow-xl border border-slate-200 border-opacity-50 p-8 mb-10">
-            <h2 className="text-2xl font-bold text-slate-900 mb-8">Revenue Trends</h2>
+          <div style={{
+            background: 'rgba(255,255,255,0.95)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: '24px',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+            border: '1px solid rgba(0,0,0,0.1)',
+            padding: '32px',
+            marginBottom: '40px'
+          }}>
+            <h2 style={{ fontSize: '32px', fontWeight: 'bold', color: '#1e293b', margin: '0 0 32px 0' }}>
+              Revenue Trends
+            </h2>
             <DailyTakingsChart data={dailyTakings} />
           </div>
 
           {/* Table */}
-          <div className="bg-white bg-opacity-80 backdrop-blur-xl rounded-3xl shadow-xl border border-slate-200 border-opacity-50 overflow-hidden">
-            <div className="px-8 py-6 border-b border-slate-200 border-opacity-50 bg-gradient-to-r from-slate-50 to-blue-50">
-              <h2 className="text-2xl font-bold text-slate-900">Daily Breakdown</h2>
-              <p className="text-slate-600 mt-1">Detailed view of your daily performance</p>
+          <div style={{
+            background: 'rgba(255,255,255,0.95)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: '24px',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+            border: '1px solid rgba(0,0,0,0.1)',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              padding: '24px 32px',
+              background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)',
+              borderBottom: '1px solid rgba(0,0,0,0.1)'
+            }}>
+              <h2 style={{ fontSize: '32px', fontWeight: 'bold', color: '#1e293b', margin: '0 0 8px 0' }}>
+                Daily Breakdown
+              </h2>
+              <p style={{ color: '#64748b', margin: 0, fontSize: '18px' }}>
+                Detailed view of your daily performance
+              </p>
             </div>
             <DailyTakingsTable data={dailyTakings} />
           </div>
         </main>
       </div>
+
+      {/* Mobile responsive styles */}
+      <style jsx>{`
+        @media (max-width: 1024px) {
+          div[style*="margin-left: 320px"] {
+            margin-left: 0;
+          }
+          div[style*="width: 320px"] {
+            display: block;
+          }
+        }
+      `}</style>
     </div>
   )
 }

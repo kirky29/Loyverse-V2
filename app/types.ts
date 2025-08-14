@@ -6,6 +6,14 @@ export interface DailyTaking {
   locationBreakdown?: { [locationId: string]: number }
 }
 
+export interface LoyverseAccount {
+  id: string
+  name: string
+  apiToken: string
+  storeId: string
+  isActive: boolean
+}
+
 export interface LoyverseReceipt {
   id?: string
   receipt_number: string
