@@ -29,8 +29,11 @@ export default function Dashboard() {
   useEffect(() => {
     if (activeAccount) {
       fetchDailyTakings()
+    } else if (accounts.length === 0) {
+      // If no accounts exist, stop loading
+      setLoading(false)
     }
-  }, [activeAccount])
+  }, [activeAccount, accounts.length])
 
   const loadAccounts = () => {
     try {
@@ -46,25 +49,13 @@ export default function Dashboard() {
         }
       } else {
         // Check if environment variables are set and create a default account
-        const envApiToken = process.env.NEXT_PUBLIC_LOYVERSE_API_TOKEN
-        const envStoreId = process.env.NEXT_PUBLIC_LOYVERSE_LOCATION_ID
-        
-        if (envApiToken && envStoreId) {
-          const defaultAccount: LoyverseAccount = {
-            id: 'default',
-            name: 'Default Store',
-            apiToken: envApiToken,
-            storeId: envStoreId,
-            isActive: true
-          }
-          
-          setAccounts([defaultAccount])
-          setActiveAccount(defaultAccount)
-          saveAccounts([defaultAccount])
-        }
+        // Note: We can't access process.env in client-side code, so we'll create a default account
+        // that the user can fill in manually
+        setLoading(false)
       }
     } catch (error) {
       console.error('Error loading accounts:', error)
+      setLoading(false)
     }
   }
 
@@ -232,14 +223,19 @@ export default function Dashboard() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="text-blue-600 text-6xl mb-4">🏪</div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">No Account Configured</h1>
-          <p className="text-gray-600 mb-4">Please add a Loyverse account to get started</p>
-          <button
-            onClick={() => setActiveTab('accounts')}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Add Account
-          </button>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Welcome to Loyverse Dashboard</h1>
+          <p className="text-gray-600 mb-4">You need to add your first Loyverse account to get started</p>
+          <div className="space-y-3">
+            <button
+              onClick={() => setActiveTab('accounts')}
+              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors text-lg"
+            >
+              Add Your First Account
+            </button>
+            <p className="text-sm text-gray-500">
+              You'll need your Loyverse API token and store ID
+            </p>
+          </div>
         </div>
       </div>
     )
