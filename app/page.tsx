@@ -29,14 +29,19 @@ export default function Home() {
     return () => clearTimeout(timeout)
   }, [])
 
+  // Fetch data when the active account changes (do not depend on `loading` to avoid loops)
   useEffect(() => {
     if (activeAccount) {
       fetchDailyTakings()
-    } else if (accounts.length === 0 && !loading) {
-      // If no accounts exist and we're not loading, stop loading
+    }
+  }, [activeAccount])
+
+  // When there are no accounts, end loading state
+  useEffect(() => {
+    if (!activeAccount && accounts.length === 0) {
       setLoading(false)
     }
-  }, [activeAccount, accounts.length, loading])
+  }, [activeAccount, accounts.length])
 
   const loadAccounts = () => {
     try {
@@ -128,7 +133,8 @@ export default function Home() {
         },
         body: JSON.stringify({
           apiToken: activeAccount.apiToken,
-          storeId: activeAccount.storeId
+          storeId: activeAccount.storeId,
+          includeAllStores: activeAccount.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2'
         })
       })
       
@@ -136,7 +142,7 @@ export default function Home() {
         throw new Error('Failed to fetch daily takings')
       }
       const data = await response.json()
-      setDailyTakings(data)
+      setDailyTakings(Array.isArray(data) ? data : [])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
