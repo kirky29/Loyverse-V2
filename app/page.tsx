@@ -1,3 +1,6 @@
+// WORKING VERSION - Multi-account dashboard with location breakdown
+// Features: Combined totals + separate Shop/Cafe breakdowns
+// Last tested: Working with both Account 1 (Shop+Cafe) and Account 2 (Single store)
 'use client'
 
 import { useState, useEffect } from 'react'
