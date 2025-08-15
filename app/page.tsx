@@ -872,6 +872,9 @@ export default function Home() {
   }
 
   const switchAccount = (account: LoyverseAccount) => {
+    // Clear any selected day when switching accounts
+    setSelectedDay(null)
+    
     // Check if we have cached data for this account
     const cachedData = accountDataCache.get(account.id)
     const cacheAge = cachedData ? Date.now() - cachedData.timestamp : Infinity
@@ -1632,7 +1635,10 @@ export default function Home() {
           {/* Navigation */}
           <nav style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
             <button
-              onClick={() => setActiveTab('dashboard')}
+              onClick={() => {
+                setActiveTab('dashboard')
+                setSelectedDay(null)
+              }}
               style={{
                 background: '#007bff',
                 color: 'white',
