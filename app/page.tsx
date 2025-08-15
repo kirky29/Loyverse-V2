@@ -294,102 +294,7 @@ export default function Home() {
   const totalTakings = dailyTakings.reduce((sum, day) => sum + (day.total || 0), 0)
   const averageTakings = dailyTakings.length > 0 ? totalTakings / dailyTakings.length : 0
 
-  // Loading state
-  if (loading) {
-    return (
-      <div style={{
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: 'white',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
-        {/* Animated background elements */}
-        <div style={{
-          position: 'absolute',
-          top: '-50%',
-          left: '-50%',
-          width: '200%',
-          height: '200%',
-          background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
-          animation: 'pulse 4s ease-in-out infinite'
-        }}></div>
-        
-        <div style={{
-          position: 'absolute',
-          top: '20%',
-          right: '10%',
-          width: '200px',
-          height: '200px',
-          background: 'linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))',
-          borderRadius: '50%',
-          animation: 'float 6s ease-in-out infinite'
-        }}></div>
-        
-        <div style={{
-          position: 'absolute',
-          bottom: '20%',
-          left: '10%',
-          width: '150px',
-          height: '150px',
-          background: 'linear-gradient(45deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))',
-          borderRadius: '50%',
-          animation: 'float 8s ease-in-out infinite reverse'
-        }}></div>
-        
-        <div style={{ textAlign: 'center', zIndex: 10, position: 'relative' }}>
-          <div style={{
-            width: '120px',
-            height: '120px',
-            border: '4px solid rgba(255,255,255,0.3)',
-            borderTop: '4px solid white',
-            borderRadius: '50%',
-            animation: 'spin 1.5s linear infinite',
-            margin: '0 auto 40px',
-            boxShadow: '0 0 30px rgba(255,255,255,0.3)'
-          }}></div>
-          <h2 style={{ 
-            fontSize: '36px', 
-            fontWeight: 'bold', 
-            marginBottom: '20px',
-            textShadow: '0 4px 20px rgba(0,0,0,0.3)'
-          }}>
-            Loading your dashboard
-          </h2>
-          <p style={{ 
-            fontSize: '20px', 
-            opacity: 0.9,
-            textShadow: '0 2px 10px rgba(0,0,0,0.3)'
-          }}>
-            Preparing your business insights...
-          </p>
-        </div>
-        
-        <style jsx>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-          @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.5; }
-            50% { transform: scale(1.1); opacity: 0.8; }
-          }
-          @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(180deg); }
-          }
-          @keyframes fadeInOut {
-            0% { opacity: 0; transform: translateY(-10px); }
-            50% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-10px); }
-          }
-        `}</style>
-      </div>
-    )
-  }
+  // No more full-screen loading - we'll show the dashboard with a loading indicator instead
 
   // Error state
   if (error) {
@@ -454,7 +359,137 @@ export default function Home() {
     )
   }
 
-  // No accounts state
+  // No accounts state OR initial loading (before accounts are loaded)
+  if (loading && accounts.length === 0) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: 'white',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        {/* Animated background elements */}
+        <div style={{
+          position: 'absolute',
+          top: '0',
+          left: '0',
+          width: '100%',
+          height: '100%',
+          background: 'radial-gradient(circle at 20% 80%, rgba(255,255,255,0.1) 0%, transparent 50%)',
+          animation: 'pulse 6s ease-in-out infinite'
+        }}></div>
+        
+        <div style={{
+          position: 'absolute',
+          top: '10%',
+          right: '5%',
+          width: '300px',
+          height: '300px',
+          background: 'linear-gradient(45deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))',
+          borderRadius: '50%',
+          animation: 'float 10s ease-in-out infinite'
+        }}></div>
+        
+        <div style={{ textAlign: 'center', maxWidth: '700px', padding: '60px', zIndex: 10, position: 'relative' }}>
+          <div style={{
+            width: '160px',
+            height: '160px',
+            background: 'rgba(255,255,255,0.15)',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 50px',
+            boxShadow: '0 0 50px rgba(255,255,255,0.2)',
+            animation: 'pulse 3s ease-in-out infinite'
+          }}>
+            <span style={{ fontSize: '80px' }}>🏪</span>
+          </div>
+          <h1 style={{ 
+            fontSize: '56px', 
+            fontWeight: 'bold', 
+            marginBottom: '30px',
+            textShadow: '0 4px 20px rgba(0,0,0,0.3)'
+          }}>
+            Welcome to Loyverse
+          </h1>
+          <p style={{ 
+            fontSize: '24px', 
+            marginBottom: '50px', 
+            opacity: 0.95, 
+            lineHeight: '1.6',
+            textShadow: '0 2px 10px rgba(0,0,0,0.3)'
+          }}>
+            Connect your first store to start tracking daily takings and gain valuable business insights
+          </p>
+          <button
+            onClick={() => setActiveTab('accounts')}
+            style={{
+              background: 'rgba(255,255,255,0.2)',
+              border: '3px solid rgba(255,255,255,0.4)',
+              color: 'white',
+              padding: '24px 48px',
+              borderRadius: '20px',
+              fontSize: '22px',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              transition: 'all 0.4s ease',
+              boxShadow: '0 12px 40px rgba(0,0,0,0.2)',
+              backdropFilter: 'blur(20px)'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.3)'
+              e.currentTarget.style.transform = 'translateY(-6px) scale(1.05)'
+              e.currentTarget.style.boxShadow = '0 20px 60px rgba(0,0,0,0.3)'
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.6)'
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.2)'
+              e.currentTarget.style.transform = 'translateY(0) scale(1)'
+              e.currentTarget.style.boxShadow = '0 12px 40px rgba(0,0,0,0.2)'
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.4)'
+            }}
+          >
+            Connect Your Store
+          </button>
+          <p style={{ 
+            fontSize: '18px', 
+            marginTop: '30px', 
+            opacity: 0.8,
+            textShadow: '0 2px 10px rgba(0,0,0,0.3)'
+          }}>
+            You'll need your Loyverse API token and store ID
+          </p>
+        </div>
+        
+        <style jsx>{`
+          @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.3; }
+            50% { transform: scale(1.1); opacity: 0.6; }
+          }
+          @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(180deg); }
+          }
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-10px); }
+            50% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-10px); }
+          }
+        `}</style>
+      </div>
+    )
+  }
+
+  // No accounts state (when loading is complete but no accounts exist)
   if (accounts.length === 0) {
     return (
       <div style={{
@@ -588,6 +623,18 @@ export default function Home() {
   if (activeTab === 'accounts') {
     return (
       <div style={{ minHeight: '100vh', background: '#f8f9fa' }}>
+        {/* Global CSS for animations */}
+        <style jsx>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-10px); }
+            50% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-10px); }
+          }
+        `}</style>
         {/* Header */}
         <header style={{ 
           background: '#ffffff',
@@ -708,8 +755,18 @@ export default function Home() {
               )}
             </nav>
 
-            <div style={{ fontSize: '14px', color: '#666' }}>
-              {new Date().toLocaleDateString()}
+            <div style={{ fontSize: '14px', color: '#666', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {loading ? (
+                <>
+                  <span style={{ 
+                    animation: 'spin 1s linear infinite',
+                    fontSize: '12px'
+                  }}>⟳</span>
+                  <span style={{ color: '#007bff', fontWeight: '500' }}>Fetching Data...</span>
+                </>
+              ) : (
+                new Date().toLocaleDateString()
+              )}
             </div>
           </div>
         </header>
@@ -792,6 +849,18 @@ export default function Home() {
   // Main dashboard view (EPOS Style)
   return (
     <div style={{ minHeight: '100vh', background: '#f8f9fa' }}>
+      {/* Global CSS for animations */}
+      <style jsx>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        @keyframes fadeInOut {
+          0% { opacity: 0; transform: translateY(-10px); }
+          50% { opacity: 1; transform: translateY(0); }
+          100% { opacity: 0; transform: translateY(-10px); }
+        }
+      `}</style>
       {/* Header */}
       <header style={{ 
         background: '#ffffff',
@@ -928,8 +997,18 @@ export default function Home() {
             )}
           </nav>
 
-          <div style={{ fontSize: '14px', color: '#666' }}>
-            {new Date().toLocaleDateString()}
+          <div style={{ fontSize: '14px', color: '#666', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {loading ? (
+              <>
+                <span style={{ 
+                  animation: 'spin 1s linear infinite',
+                  fontSize: '12px'
+                }}>⟳</span>
+                <span style={{ color: '#007bff', fontWeight: '500' }}>Fetching Data...</span>
+              </>
+            ) : (
+              new Date().toLocaleDateString()
+            )}
           </div>
         </div>
       </header>
@@ -1252,12 +1331,31 @@ export default function Home() {
             background: 'white', 
             borderRadius: '12px', 
             padding: '24px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            position: 'relative'
           }}>
             <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: '#333', margin: '0 0 20px 0' }}>
               📈 Revenue Trends
             </h2>
-            <DailyTakingsChart data={dailyTakings} />
+            {loading && dailyTakings.length === 0 ? (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '300px',
+                color: '#666',
+                fontSize: '16px'
+              }}>
+                <span style={{ 
+                  animation: 'spin 1s linear infinite',
+                  marginRight: '12px',
+                  fontSize: '16px'
+                }}>⟳</span>
+                Loading chart data...
+              </div>
+            ) : (
+              <DailyTakingsChart data={dailyTakings} />
+            )}
           </div>
 
           {/* Table */}
@@ -1279,7 +1377,25 @@ export default function Home() {
                 Detailed view of daily performance for {activeAccount?.name || 'your store'}
               </p>
             </div>
-            <DailyTakingsTable data={dailyTakings} />
+            {loading && dailyTakings.length === 0 ? (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '200px',
+                color: '#666',
+                fontSize: '16px'
+              }}>
+                <span style={{ 
+                  animation: 'spin 1s linear infinite',
+                  marginRight: '12px',
+                  fontSize: '16px'
+                }}>⟳</span>
+                Loading table data...
+              </div>
+            ) : (
+              <DailyTakingsTable data={dailyTakings} />
+            )}
           </div>
         </div>
       </main>
