@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { DataService } from '../../lib/dataService'
 
 interface LoyverseAccount {
   id: string
@@ -15,6 +16,7 @@ interface SimpleMainDashboardProps {
   onAccountSelect: (account: LoyverseAccount) => void
   onManageAccounts: () => void
   formatCurrency: (value: number) => string
+  userId?: string
 }
 
 interface TodaysSummary {
@@ -28,9 +30,11 @@ export default function SimpleMainDashboard({
   accounts, 
   onAccountSelect, 
   onManageAccounts, 
-  formatCurrency 
+  formatCurrency,
+  userId
 }: SimpleMainDashboardProps) {
   const [summaries, setSummaries] = useState<TodaysSummary[]>([])
+  const [dataService] = useState(() => userId ? new DataService(userId) : null)
 
   useEffect(() => {
     // Initialize summaries for all accounts
@@ -45,38 +49,61 @@ export default function SimpleMainDashboard({
     // Fetch today's totals for each account
     accounts.forEach(async (account, index) => {
       try {
-        console.log('Fetching today total for:', account.name)
-        const response = await fetch('/api/daily-takings', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            apiToken: account.apiToken,
-            storeId: account.storeId,
-            includeAllStores: account.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2'
+        if (dataService) {
+          // Use optimized DataService for fast loading
+          console.log('🚀 Fetching critical data for dashboard:', account.name)
+          const criticalData = await dataService.getCriticalData(account)
+          
+          // Find today's data
+          const today = new Date().toISOString().split('T')[0]
+          const todayData = criticalData.find(item => item.date === today)
+          const todaysTotal = todayData ? todayData.total : 0
+
+          console.log('✅ Today total for', account.name, ':', todaysTotal)
+
+          // Update just this account's summary
+          setSummaries(prev => prev.map((summary, idx) => 
+            idx === index 
+              ? { ...summary, todaysTotal, loading: false, error: null }
+              : summary
+          ))
+        } else {
+          // Fallback to direct API call for backward compatibility
+          console.log('📡 Fetching data directly for:', account.name)
+          const response = await fetch('/api/daily-takings', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              apiToken: account.apiToken,
+              storeId: account.storeId,
+              includeAllStores: account.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2',
+              priority: 'high',
+              daysToLoad: 7
+            })
           })
-        })
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch data')
+          if (!response.ok) {
+            throw new Error('Failed to fetch data')
+          }
+
+          const data = await response.json()
+          const today = new Date().toISOString().split('T')[0]
+          const todayData = data.find((item: any) => item.date === today)
+          const todaysTotal = todayData ? todayData.total : 0
+
+          console.log('✅ Today total for', account.name, ':', todaysTotal)
+
+          // Update just this account's summary
+          setSummaries(prev => prev.map((summary, idx) => 
+            idx === index 
+              ? { ...summary, todaysTotal, loading: false, error: null }
+              : summary
+          ))
         }
-
-        const data = await response.json()
-        const today = new Date().toISOString().split('T')[0]
-        const todayData = data.find((item: any) => item.date === today)
-        const todaysTotal = todayData ? todayData.total : 0
-
-        console.log('Today total for', account.name, ':', todaysTotal)
-
-        // Update just this account's summary
-        setSummaries(prev => prev.map((summary, idx) => 
-          idx === index 
-            ? { ...summary, todaysTotal, loading: false, error: null }
-            : summary
-        ))
       } catch (error) {
-        console.error('Error fetching data for', account.name, ':', error)
+        console.error('❌ Error fetching data for', account.name, ':', error)
         setSummaries(prev => prev.map((summary, idx) => 
           idx === index 
             ? { ...summary, loading: false, error: 'Failed to load' }
@@ -84,7 +111,7 @@ export default function SimpleMainDashboard({
         ))
       }
     })
-  }, [accounts])
+  }, [accounts, dataService])
 
   const handleAccountClick = (account: LoyverseAccount) => {
     console.log('Simple dashboard - account clicked:', account.name)

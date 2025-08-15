@@ -435,6 +435,7 @@ function OptimizedPage({ user }: OptimizedPageProps) {
               onAccountSelect={selectAccount}
               onManageAccounts={() => setCurrentView('accountManager')}
               formatCurrency={formatCurrency}
+              userId={user.uid}
             />
           </Suspense>
         )}
