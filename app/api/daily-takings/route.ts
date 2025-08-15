@@ -109,25 +109,46 @@ async function fetchDailyTakings(apiToken: string, storeId: string, includeAllSt
       receipts = allReceipts
       console.log('Multi-store fetch completed. Total receipts:', allReceipts.length)
     } else {
-      // For single-store accounts, use the simpler approach
-      const url = `https://api.loyverse.com/v1.0/receipts?store_id=${storeId}&created_at_min=${fromDate}T00:00:00Z&limit=250`
+      // For single-store accounts, use pagination to get all data
+      const allReceipts: LoyverseReceipt[] = []
+      let cursor = null
+      let hasMore = true
       
-      console.log('Single-store API call:', url)
-      
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${apiToken}`,
-          'Content-Type': 'application/json',
-        },
-      })
+      while (hasMore && allReceipts.length < 2000) { // Safety limit
+        let url = `https://api.loyverse.com/v1.0/receipts?store_id=${storeId}&created_at_min=${fromDate}T00:00:00Z&limit=100`
+        if (cursor) {
+          url += `&cursor=${cursor}`
+        }
+        
+        console.log('Single-store API call:', url)
+        
+        const response = await fetch(url, {
+          headers: {
+            'Authorization': `Bearer ${apiToken}`,
+            'Content-Type': 'application/json',
+          },
+        })
 
-      if (!response.ok) {
-        throw new Error(`Loyverse API error: ${response.status} ${response.statusText}`)
+        if (!response.ok) {
+          throw new Error(`Loyverse API error: ${response.status} ${response.statusText}`)
+        }
+
+        const data = await response.json()
+        const batchReceipts: LoyverseReceipt[] = data.receipts || []
+        
+        console.log('Batch fetched:', batchReceipts.length, 'receipts. Cursor:', data.cursor)
+        
+        if (batchReceipts.length === 0) {
+          hasMore = false
+        } else {
+          allReceipts.push(...batchReceipts)
+          cursor = data.cursor
+          hasMore = !!cursor
+        }
       }
-
-      const data = await response.json()
-      receipts = data.receipts || []
-      console.log('Single-store fetch completed. Total receipts:', receipts.length)
+      
+      receipts = allReceipts
+      console.log('Single-store fetch completed. Total receipts:', allReceipts.length)
     }
 
     // Filter out voided/cancelled receipts and aggregate by date
