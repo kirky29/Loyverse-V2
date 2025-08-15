@@ -14,7 +14,8 @@ function optimizeResponseData(dailyTakings: DailyTaking[]): any {
     rc: taking.receiptCount,
     ar: taking.averageReceipt ? Math.round(taking.averageReceipt * 100) / 100 : undefined,
     pb: taking.paymentBreakdown,
-    lb: (taking as any).locationBreakdown
+    lb: (taking as any).locationBreakdown,
+    ib: (taking as any).itemBreakdown
   }))
 }
 

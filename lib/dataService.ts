@@ -201,7 +201,8 @@ export class DataService {
         receiptCount: item.rc,
         averageReceipt: item.ar,
         paymentBreakdown: item.pb,
-        locationBreakdown: item.lb
+        locationBreakdown: item.lb,
+        itemBreakdown: item.ib
       }))
     }
     

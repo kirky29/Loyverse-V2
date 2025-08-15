@@ -258,7 +258,10 @@ export default function DayDetailView({
       </div>
 
       {/* Item Breakdown */}
-      {(dayData as any).itemBreakdown && (dayData as any).itemBreakdown.length > 0 && (
+      {(() => {
+        console.log('🔍 DayDetailView - itemBreakdown data:', (dayData as any).itemBreakdown)
+        return (dayData as any).itemBreakdown && (dayData as any).itemBreakdown.length > 0
+      })() && (
         <div style={{
           background: 'white',
           padding: '24px',
