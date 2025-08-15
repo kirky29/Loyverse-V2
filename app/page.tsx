@@ -9,11 +9,19 @@ import DailyTakingsTable from './components/DailyTakingsTable'
 export default function Home() {
   const [dailyTakings, setDailyTakings] = useState<DailyTaking[]>([])
   const [loading, setLoading] = useState(true)
+  const [switchingAccount, setSwitchingAccount] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'dashboard' | 'accounts'>('dashboard')
   const [accounts, setAccounts] = useState<LoyverseAccount[]>([])
   const [activeAccount, setActiveAccount] = useState<LoyverseAccount | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  
+  // Cache system for account data
+  const [accountDataCache, setAccountDataCache] = useState<Map<string, {
+    data: DailyTaking[]
+    timestamp: number
+    loading: boolean
+  }>>(new Map())
 
   useEffect(() => {
     loadAccounts()
@@ -29,10 +37,31 @@ export default function Home() {
     return () => clearTimeout(timeout)
   }, [])
 
+  // Prefetch data for all accounts periodically to improve switching speed
+  useEffect(() => {
+    if (accounts.length <= 1) return // No need to prefetch if only one account
+    
+    const prefetchInterval = setInterval(() => {
+      accounts.forEach(account => {
+        if (account.id !== activeAccount?.id) {
+          const cachedData = accountDataCache.get(account.id)
+          const cacheAge = cachedData ? Date.now() - cachedData.timestamp : Infinity
+          
+          // Prefetch if no cache or cache is older than 10 minutes
+          if (!cachedData || cacheAge > 10 * 60 * 1000) {
+            fetchDailyTakingsInBackground(account)
+          }
+        }
+      })
+    }, 5 * 60 * 1000) // Prefetch every 5 minutes
+    
+    return () => clearInterval(prefetchInterval)
+  }, [accounts, activeAccount, accountDataCache])
+
   // Fetch data when the active account changes (do not depend on `loading` to avoid loops)
   useEffect(() => {
     if (activeAccount) {
-      fetchDailyTakings()
+      fetchDailyTakingsWithCache()
     }
   }, [activeAccount])
 
@@ -112,29 +141,99 @@ export default function Home() {
   }
 
   const switchAccount = (account: LoyverseAccount) => {
-    const updatedAccounts = accounts.map(acc => ({
-      ...acc,
-      isActive: acc.id === account.id
-    }))
-    saveAccounts(updatedAccounts)
-    setActiveAccount(account)
-    setActiveTab('dashboard')
+    // Check if we have cached data for this account
+    const cachedData = accountDataCache.get(account.id)
+    const cacheAge = cachedData ? Date.now() - cachedData.timestamp : Infinity
+    const isCacheValid = cacheAge < 5 * 60 * 1000 // 5 minutes cache
+    
+    // If we have valid cached data, use it immediately for instant switching
+    if (cachedData && isCacheValid && cachedData.data.length > 0) {
+      setDailyTakings(cachedData.data)
+      setError(null)
+      setSwitchingAccount(true) // Show subtle switching indicator
+      
+      // Still update the account state
+      const updatedAccounts = accounts.map(acc => ({
+        ...acc,
+        isActive: acc.id === account.id
+      }))
+      saveAccounts(updatedAccounts)
+      setActiveAccount(account)
+      setActiveTab('dashboard')
+      
+      // Clear switching indicator after a short delay
+      setTimeout(() => setSwitchingAccount(false), 500)
+      
+      // Refresh data in background if cache is getting stale (older than 2 minutes)
+      if (cacheAge > 2 * 60 * 1000) {
+        fetchDailyTakingsInBackground(account)
+      }
+    } else {
+      // No cache or stale cache - show loading and fetch
+      setSwitchingAccount(true)
+      setError(null)
+      
+      const updatedAccounts = accounts.map(acc => ({
+        ...acc,
+        isActive: acc.id === account.id
+      }))
+      saveAccounts(updatedAccounts)
+      setActiveAccount(account)
+      setActiveTab('dashboard')
+    }
   }
 
-  const fetchDailyTakings = async () => {
+  const fetchDailyTakingsWithCache = async () => {
     if (!activeAccount) return
     
+    // Check cache first
+    const cachedData = accountDataCache.get(activeAccount.id)
+    const cacheAge = cachedData ? Date.now() - cachedData.timestamp : Infinity
+    const isCacheValid = cacheAge < 5 * 60 * 1000 // 5 minutes cache
+    
+    if (cachedData && isCacheValid && cachedData.data.length > 0) {
+      setDailyTakings(cachedData.data)
+      setLoading(false)
+      setSwitchingAccount(false)
+      setError(null)
+      
+      // If cache is getting stale (older than 2 minutes), refresh in background
+      if (cacheAge > 2 * 60 * 1000) {
+        fetchDailyTakingsInBackground(activeAccount)
+      }
+      return
+    }
+    
+    // No valid cache - fetch fresh data
+    await fetchDailyTakings()
+  }
+
+  const fetchDailyTakings = async (account?: LoyverseAccount) => {
+    const targetAccount = account || activeAccount
+    if (!targetAccount) return
+    
     try {
-      setLoading(true)
+      // Only show loading for initial load, not account switches
+      if (!account) {
+        setLoading(true)
+      }
+      
+      // Mark this account as loading in cache
+      setAccountDataCache(prev => new Map(prev.set(targetAccount.id, {
+        data: prev.get(targetAccount.id)?.data || [],
+        timestamp: prev.get(targetAccount.id)?.timestamp || 0,
+        loading: true
+      })))
+      
       const response = await fetch('/api/daily-takings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          apiToken: activeAccount.apiToken,
-          storeId: activeAccount.storeId,
-          includeAllStores: activeAccount.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2'
+          apiToken: targetAccount.apiToken,
+          storeId: targetAccount.storeId,
+          includeAllStores: targetAccount.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2'
         })
       })
       
@@ -142,12 +241,45 @@ export default function Home() {
         throw new Error('Failed to fetch daily takings')
       }
       const data = await response.json()
-      setDailyTakings(Array.isArray(data) ? data : [])
+      const dailyTakingsData = Array.isArray(data) ? data : []
+      
+      // Update cache
+      setAccountDataCache(prev => new Map(prev.set(targetAccount.id, {
+        data: dailyTakingsData,
+        timestamp: Date.now(),
+        loading: false
+      })))
+      
+      // Update UI if this is for the current active account
+      if (!account || targetAccount.id === activeAccount?.id) {
+        setDailyTakings(dailyTakingsData)
+        setError(null)
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred'
+      
+      // Update cache with error state
+      setAccountDataCache(prev => new Map(prev.set(targetAccount.id, {
+        data: prev.get(targetAccount.id)?.data || [],
+        timestamp: prev.get(targetAccount.id)?.timestamp || 0,
+        loading: false
+      })))
+      
+      // Update UI if this is for the current active account
+      if (!account || targetAccount.id === activeAccount?.id) {
+        setError(errorMessage)
+      }
     } finally {
-      setLoading(false)
+      if (!account) {
+        setLoading(false)
+      }
+      setSwitchingAccount(false)
     }
+  }
+
+  const fetchDailyTakingsInBackground = async (account: LoyverseAccount) => {
+    // Silently update cache in background without affecting UI
+    await fetchDailyTakings(account)
   }
 
   const formatCurrency = (value: number): string => {
@@ -248,6 +380,11 @@ export default function Home() {
           @keyframes float {
             0%, 100% { transform: translateY(0px) rotate(0deg); }
             50% { transform: translateY(-20px) rotate(180deg); }
+          }
+          @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-10px); }
+            50% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-10px); }
           }
         `}</style>
       </div>
@@ -433,6 +570,15 @@ export default function Home() {
             0%, 100% { transform: translateY(0px) rotate(0deg); }
             50% { transform: translateY(-30px) rotate(180deg); }
           }
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-10px); }
+            50% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-10px); }
+          }
         `}</style>
       </div>
     )
@@ -517,27 +663,47 @@ export default function Home() {
               {accounts.length > 0 && (
                 <>
                   <div style={{ width: '1px', height: '24px', background: '#dee2e6', margin: '0 8px' }} />
-                  {accounts.map((acc) => (
-                    <button
-                      key={acc.id}
-                      onClick={() => switchAccount(acc)}
-                      style={{
-                        padding: '8px 16px',
-                        borderRadius: '6px',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        cursor: 'pointer',
-                        border: '2px solid',
-                        transition: 'all 0.2s ease',
-                        background: acc.isActive ? '#6f42c1' : 'white',
-                        color: acc.isActive ? 'white' : '#6f42c1',
-                        borderColor: '#6f42c1'
-                      }}
-                    >
-                      {acc.name}
-                      {acc.isActive && <span style={{ marginLeft: '8px' }}>✓</span>}
-                    </button>
-                  ))}
+                  {accounts.map((acc) => {
+                    const cachedData = accountDataCache.get(acc.id)
+                    const hasCache = cachedData && cachedData.data.length > 0
+                    const isLoading = cachedData?.loading || false
+                    
+                    return (
+                      <button
+                        key={acc.id}
+                        onClick={() => switchAccount(acc)}
+                        style={{
+                          padding: '8px 16px',
+                          borderRadius: '6px',
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          border: '2px solid',
+                          transition: 'all 0.2s ease',
+                          background: acc.isActive ? '#6f42c1' : 'white',
+                          color: acc.isActive ? 'white' : '#6f42c1',
+                          borderColor: '#6f42c1'
+                        }}
+                      >
+                        {acc.name}
+                        {acc.isActive && <span style={{ marginLeft: '8px' }}>✓</span>}
+                        {!acc.isActive && hasCache && (
+                          <span style={{ 
+                            marginLeft: '6px', 
+                            fontSize: '10px',
+                            opacity: 0.7
+                          }}>⚡</span>
+                        )}
+                        {isLoading && (
+                          <span style={{ 
+                            marginLeft: '6px', 
+                            fontSize: '10px',
+                            animation: 'spin 1s linear infinite'
+                          }}>⟳</span>
+                        )}
+                      </button>
+                    )
+                  })}
                 </>
               )}
             </nav>
@@ -552,8 +718,33 @@ export default function Home() {
         <main style={{ 
           padding: '24px',
           maxWidth: '1400px',
-          margin: '0 auto'
+          margin: '0 auto',
+          position: 'relative'
         }}>
+          
+          {/* Switching Indicator */}
+          {switchingAccount && (
+            <div style={{
+              position: 'absolute',
+              top: '12px',
+              right: '24px',
+              background: 'rgba(111, 66, 193, 0.1)',
+              border: '1px solid rgba(111, 66, 193, 0.3)',
+              borderRadius: '8px',
+              padding: '8px 16px',
+              fontSize: '14px',
+              color: '#6f42c1',
+              fontWeight: '600',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              animation: 'fadeInOut 0.5s ease-in-out',
+              zIndex: 1000
+            }}>
+              <span style={{ animation: 'spin 1s linear infinite' }}>⟳</span>
+              Switching account...
+            </div>
+          )}
           <div style={{ marginBottom: '24px' }}>
             <button
               onClick={() => setActiveTab('dashboard')}
@@ -676,27 +867,48 @@ export default function Home() {
             {accounts.length > 0 && (
               <>
                 <div style={{ width: '1px', height: '24px', background: '#dee2e6', margin: '0 8px' }} />
-                {accounts.map((acc) => (
-                  <button
-                    key={acc.id}
-                    onClick={() => switchAccount(acc)}
-                    style={{
-                      padding: '8px 16px',
-                      borderRadius: '6px',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      border: '2px solid',
-                      transition: 'all 0.2s ease',
-                      background: acc.isActive ? '#6f42c1' : 'white',
-                      color: acc.isActive ? 'white' : '#6f42c1',
-                      borderColor: '#6f42c1'
-                    }}
-                  >
-                    {acc.name}
-                    {acc.isActive && <span style={{ marginLeft: '8px' }}>✓</span>}
-                  </button>
-                ))}
+                {accounts.map((acc) => {
+                  const cachedData = accountDataCache.get(acc.id)
+                  const hasCache = cachedData && cachedData.data.length > 0
+                  const isLoading = cachedData?.loading || false
+                  
+                  return (
+                    <button
+                      key={acc.id}
+                      onClick={() => switchAccount(acc)}
+                      style={{
+                        padding: '8px 16px',
+                        borderRadius: '6px',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        border: '2px solid',
+                        transition: 'all 0.2s ease',
+                        background: acc.isActive ? '#6f42c1' : 'white',
+                        color: acc.isActive ? 'white' : '#6f42c1',
+                        borderColor: '#6f42c1',
+                        position: 'relative'
+                      }}
+                    >
+                      {acc.name}
+                      {acc.isActive && <span style={{ marginLeft: '8px' }}>✓</span>}
+                      {!acc.isActive && hasCache && (
+                        <span style={{ 
+                          marginLeft: '6px', 
+                          fontSize: '10px',
+                          opacity: 0.7
+                        }}>⚡</span>
+                      )}
+                      {isLoading && (
+                        <span style={{ 
+                          marginLeft: '6px', 
+                          fontSize: '10px',
+                          animation: 'spin 1s linear infinite'
+                        }}>⟳</span>
+                      )}
+                    </button>
+                  )
+                })}
                 <button
                   onClick={() => setActiveTab('accounts')}
                   style={{
