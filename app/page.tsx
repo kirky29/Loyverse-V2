@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { LoyverseAccount, DailyTaking } from './types'
 import AccountManager from './components/AccountManager'
 import DayDetailView from './components/DayDetailView'
+import MainDashboard from './components/MainDashboard'
 
 // Account-specific filter state interface
 interface AccountFilterState {
@@ -653,6 +654,7 @@ export default function Home() {
   const [activeAccount, setActiveAccount] = useState<LoyverseAccount | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [selectedDay, setSelectedDay] = useState<DailyTaking | null>(null)
+  const [currentView, setCurrentView] = useState<'main' | 'account' | 'accountManager'>('main')
   
   // Cache system for account data
   const [accountDataCache, setAccountDataCache] = useState<Map<string, {
@@ -780,12 +782,21 @@ export default function Home() {
     }
   }, [activeAccount])
 
-  // When there are no accounts, end loading state
+  // When there are no accounts, end loading state and show main dashboard
   useEffect(() => {
-    if (!activeAccount && accounts.length === 0) {
+    if (accounts.length === 0) {
       setLoading(false)
+      setCurrentView('main')
+    } else if (accounts.length === 1 && !activeAccount) {
+      // If only one account, go directly to it
+      const singleAccount = accounts[0]
+      selectAccountFromMain(singleAccount)
+    } else {
+      // Multiple accounts - show main dashboard for selection
+      setLoading(false)
+      setCurrentView('main')
     }
-  }, [activeAccount, accounts.length])
+  }, [accounts.length, activeAccount])
 
   const loadAccounts = () => {
     try {
@@ -871,9 +882,10 @@ export default function Home() {
     }
   }
 
-  const switchAccount = (account: LoyverseAccount) => {
-    // Clear any selected day when switching accounts
+  const selectAccountFromMain = (account: LoyverseAccount) => {
+    // Clear any selected day when selecting an account
     setSelectedDay(null)
+    setCurrentView('account')
     
     // Check if we have cached data for this account
     const cachedData = accountDataCache.get(account.id)
@@ -887,13 +899,13 @@ export default function Home() {
       setSwitchingAccount(true) // Show subtle switching indicator
       
       // Still update the account state
-    const updatedAccounts = accounts.map(acc => ({
-      ...acc,
-      isActive: acc.id === account.id
-    }))
-    saveAccounts(updatedAccounts)
-    setActiveAccount(account)
-    setActiveTab('dashboard')
+      const updatedAccounts = accounts.map(acc => ({
+        ...acc,
+        isActive: acc.id === account.id
+      }))
+      saveAccounts(updatedAccounts)
+      setActiveAccount(account)
+      setActiveTab('dashboard')
       
       // Clear switching indicator after a short delay
       setTimeout(() => setSwitchingAccount(false), 500)
@@ -915,6 +927,11 @@ export default function Home() {
       setActiveAccount(account)
       setActiveTab('dashboard')
     }
+  }
+
+  const switchAccount = (account: LoyverseAccount) => {
+    // This is for top navigation account switching - stay in account view
+    selectAccountFromMain(account)
   }
 
   const fetchDailyTakingsWithCache = async () => {
@@ -1636,8 +1653,9 @@ export default function Home() {
           <nav style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
             <button
               onClick={() => {
-                setActiveTab('dashboard')
+                setCurrentView('main')
                 setSelectedDay(null)
+                setActiveTab('dashboard')
               }}
               style={{
                 background: '#007bff',
@@ -1651,10 +1669,13 @@ export default function Home() {
                 transition: 'all 0.2s ease'
               }}
             >
-              📊 Dashboard
+              🏠 Home
             </button>
             <button
-              onClick={() => setActiveTab('accounts')}
+              onClick={() => {
+                setCurrentView('accountManager')
+                setActiveTab('accounts')
+              }}
               style={{
                 background: '#20c997',
                 color: 'white',
@@ -1716,7 +1737,10 @@ export default function Home() {
                   )
                 })}
                 <button
-                  onClick={() => setActiveTab('accounts')}
+                  onClick={() => {
+                    setCurrentView('accountManager')
+                    setActiveTab('accounts')
+                  }}
                   style={{
                     padding: '8px 16px',
                     borderRadius: '6px',
@@ -1757,11 +1781,45 @@ export default function Home() {
         margin: '0 auto'
       }}>
 
+        {/* Render based on current view */}
+        {currentView === 'main' && (
+          <MainDashboard 
+            accounts={accounts}
+            onAccountSelect={selectAccountFromMain}
+            onManageAccounts={() => setCurrentView('accountManager')}
+            formatCurrency={formatCurrency}
+          />
+        )}
 
-        {/* Performance Cards - Unified Design */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginBottom: '24px' }}>
-          {/* Check if this is a multi-store account with location breakdown */}
-          {activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2' && dailyTakings.length > 0 ? (
+        {currentView === 'accountManager' && (
+          <AccountManager 
+            accounts={accounts}
+            onAddAccount={(account) => {
+              const newAccount = { ...account, id: crypto.randomUUID() }
+              const updatedAccounts = [...accounts, newAccount]
+              saveAccounts(updatedAccounts)
+            }}
+            onUpdateAccount={(id, updates) => {
+              const updatedAccounts = accounts.map(acc => 
+                acc.id === id ? { ...acc, ...updates } : acc
+              )
+              saveAccounts(updatedAccounts)
+            }}
+            onDeleteAccount={deleteAccount}
+            onSwitchAccount={(account) => {
+              selectAccountFromMain(account)
+              setCurrentView('account')
+            }}
+            activeAccount={activeAccount}
+          />
+        )}
+
+        {currentView === 'account' && activeAccount && (
+          <>
+            {/* Performance Cards - Unified Design */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginBottom: '24px' }}>
+            {/* Check if this is a multi-store account with location breakdown */}
+            {activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2' && dailyTakings.length > 0 ? (
             <>
             {(() => {
               const shopId = 'd5a7267b-ca6f-4490-9d66-b5ba46cc563c'
@@ -1911,25 +1969,26 @@ export default function Home() {
 
 
 
-        {/* Enhanced Daily Performance Table */}
-        {!selectedDay ? (
-          <PerformanceTable 
-            dailyTakings={dailyTakings} 
-            activeAccount={activeAccount}
-            formatCurrency={formatCurrency}
-            filterState={getAccountFilterState(activeAccount?.id || '')}
-            onFilterStateChange={(newState) => updateAccountFilterState(activeAccount?.id || '', newState)}
-            onDayClick={(dayData) => setSelectedDay(dayData)}
-          />
-        ) : (
-          <DayDetailView 
-            dayData={selectedDay}
-            activeAccount={activeAccount}
-            formatCurrency={formatCurrency}
-            onBack={() => setSelectedDay(null)}
-          />
+            {/* Enhanced Daily Performance Table */}
+            {!selectedDay ? (
+              <PerformanceTable 
+                dailyTakings={dailyTakings} 
+                activeAccount={activeAccount}
+                formatCurrency={formatCurrency}
+                filterState={getAccountFilterState(activeAccount?.id || '')}
+                onFilterStateChange={(newState) => updateAccountFilterState(activeAccount?.id || '', newState)}
+                onDayClick={(dayData) => setSelectedDay(dayData)}
+              />
+            ) : (
+              <DayDetailView 
+                dayData={selectedDay}
+                activeAccount={activeAccount}
+                formatCurrency={formatCurrency}
+                onBack={() => setSelectedDay(null)}
+              />
+            )}
+          </>
         )}
-
 
       </main>
     </div>

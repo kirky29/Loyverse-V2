@@ -27,8 +27,8 @@ export default function AccountManager({
   onSwitchAccount,
   activeAccount
 }: AccountManagerProps) {
-  const [showAddForm, setShowAddForm] = useState(false)
   const [editingAccount, setEditingAccount] = useState<LoyverseAccount | null>(null)
+  const [showAddForm, setShowAddForm] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     apiToken: '',
