@@ -135,6 +135,8 @@ function OptimizedPage({ user }: OptimizedPageProps) {
   const [loading, setLoading] = useState(false)
   const [criticalLoading, setCriticalLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [backgroundLoading, setBackgroundLoading] = useState(false)
+  const [loadingProgress, setLoadingProgress] = useState({ current: 0, total: 0, currentAccount: '' })
 
   // Services
   const [dataService] = useState(() => new DataService(user.uid))
@@ -143,7 +145,7 @@ function OptimizedPage({ user }: OptimizedPageProps) {
   // Background refresh interval
   const [refreshInterval, setRefreshInterval] = useState<NodeJS.Timeout | null>(null)
 
-  // Load accounts on mount
+  // Load accounts on mount and start systematic background loading
   useEffect(() => {
     loadAccounts()
     
@@ -154,6 +156,13 @@ function OptimizedPage({ user }: OptimizedPageProps) {
       }
     }
   }, [user.uid])
+
+  // Start systematic background loading when accounts are loaded
+  useEffect(() => {
+    if (accounts.length > 0 && !backgroundLoading) {
+      startSystematicBackgroundLoading()
+    }
+  }, [accounts])
 
   // Setup background refresh when account is active
   useEffect(() => {
@@ -307,6 +316,34 @@ function OptimizedPage({ user }: OptimizedPageProps) {
     setError(null)
   }
 
+  // Systematic background loading for all accounts
+  const startSystematicBackgroundLoading = async () => {
+    if (accounts.length === 0) return
+    
+    console.log('🔄 Starting systematic background loading for all accounts')
+    setBackgroundLoading(true)
+    
+    await dataService.systematicBackgroundLoad(
+      accounts,
+      (account, index, total) => {
+        // On account start
+        console.log(`📚 [${index + 1}/${total}] Starting background load for`, account.name)
+        setLoadingProgress({ current: index + 1, total, currentAccount: account.name })
+      },
+      (account, data, index, total) => {
+        // On account complete
+        console.log(`✅ [${index + 1}/${total}] Completed background load for`, account.name, ':', data.length, 'days')
+        setLoadingProgress({ current: index + 1, total, currentAccount: account.name })
+      },
+      (results) => {
+        // On all complete
+        console.log('🎉 All accounts loaded systematically:', results.length)
+        setBackgroundLoading(false)
+        setLoadingProgress({ current: 0, total: 0, currentAccount: '' })
+      }
+    )
+  }
+
   // Clear all cache (for debugging/admin)
   const clearAllCache = async () => {
     try {
@@ -405,23 +442,65 @@ function OptimizedPage({ user }: OptimizedPageProps) {
               </div>
             )}
 
+            {/* Background loading indicator */}
+            {backgroundLoading && (
+              <div style={{
+                background: '#fef3c7',
+                color: '#92400e',
+                padding: '6px 12px',
+                borderRadius: '6px',
+                fontSize: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}>
+                <div style={{
+                  width: '12px',
+                  height: '12px',
+                  border: '2px solid #fbbf24',
+                  borderTop: '2px solid #92400e',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite'
+                }} />
+                Loading {loadingProgress.current}/{loadingProgress.total}: {loadingProgress.currentAccount}
+              </div>
+            )}
+
             {/* Dev tools */}
             {process.env.NODE_ENV === 'development' && (
-              <button
-                onClick={clearAllCache}
-                style={{
-                  background: '#ef4444',
-                  color: 'white',
-                  border: 'none',
-                  padding: '4px 8px',
-                  borderRadius: '4px',
-                  fontSize: '12px',
-                  cursor: 'pointer'
-                }}
-                title="Clear all cache (dev only)"
-              >
-                🧹
-              </button>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  onClick={startSystematicBackgroundLoading}
+                  disabled={backgroundLoading}
+                  style={{
+                    background: backgroundLoading ? '#9ca3af' : '#3b82f6',
+                    color: 'white',
+                    border: 'none',
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    fontSize: '12px',
+                    cursor: backgroundLoading ? 'not-allowed' : 'pointer'
+                  }}
+                  title="Start systematic background loading"
+                >
+                  📚
+                </button>
+                <button
+                  onClick={clearAllCache}
+                  style={{
+                    background: '#ef4444',
+                    color: 'white',
+                    border: 'none',
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    fontSize: '12px',
+                    cursor: 'pointer'
+                  }}
+                  title="Clear all cache (dev only)"
+                >
+                  🧹
+                </button>
+              </div>
             )}
           </div>
 
@@ -447,6 +526,8 @@ function OptimizedPage({ user }: OptimizedPageProps) {
               onManageAccounts={() => setCurrentView('accountManager')}
               formatCurrency={formatCurrency}
               userId={user.uid}
+              backgroundLoading={backgroundLoading}
+              loadingProgress={loadingProgress}
             />
           </Suspense>
         )}

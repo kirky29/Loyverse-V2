@@ -31,18 +31,27 @@ export class DataService {
       onCriticalData(criticalData)
     }
     
-    // Step 2: Load ALL historical data in background (since it won't change)
-    setTimeout(async () => {
-      try {
-        console.log('📚 Loading historical data in background for', account.name)
-        const historicalData = await this.getHistoricalData(account)
-        if (onHistoricalData) {
-          onHistoricalData(historicalData)
-        }
-      } catch (error) {
-        console.error('Failed to load historical data:', error)
+    // Step 2: Check if historical data is already cached
+    const cachedHistorical = await this.cache.getFromAnyCache(account.id, 'historical-all')
+    if (cachedHistorical) {
+      console.log('📚 Historical data already cached for', account.name)
+      if (onHistoricalData) {
+        setTimeout(() => onHistoricalData(cachedHistorical.data), 100)
       }
-    }, 200) // Small delay to ensure critical data renders first
+    } else {
+      // Load historical data in background if not cached
+      setTimeout(async () => {
+        try {
+          console.log('📚 Loading historical data in background for', account.name)
+          const historicalData = await this.getHistoricalData(account)
+          if (onHistoricalData) {
+            onHistoricalData(historicalData)
+          }
+        } catch (error) {
+          console.error('Failed to load historical data:', error)
+        }
+      }, 200)
+    }
     
     return criticalData
   }
@@ -207,5 +216,59 @@ export class DataService {
   // Clear all cache
   async clearAllCache(): Promise<void> {
     await this.cache.clearAll()
+  }
+
+  // Systematic background loading for multiple accounts
+  async systematicBackgroundLoad(
+    accounts: LoyverseAccount[],
+    onAccountStart?: (account: LoyverseAccount, index: number, total: number) => void,
+    onAccountComplete?: (account: LoyverseAccount, data: DailyTaking[], index: number, total: number) => void,
+    onAllComplete?: (results: { account: LoyverseAccount; data: DailyTaking[]; error?: string }[]) => void
+  ): Promise<void> {
+    console.log('🔄 Starting systematic background loading for', accounts.length, 'accounts')
+    
+    const results: { account: LoyverseAccount; data: DailyTaking[]; error?: string }[] = []
+    
+    for (let i = 0; i < accounts.length; i++) {
+      const account = accounts[i]
+      
+      try {
+        console.log(`📚 [${i + 1}/${accounts.length}] Loading historical data for`, account.name)
+        
+        if (onAccountStart) {
+          onAccountStart(account, i, accounts.length)
+        }
+        
+        // Load historical data for this account
+        const historicalData = await this.getHistoricalData(account)
+        
+        results.push({ account, data: historicalData })
+        
+        if (onAccountComplete) {
+          onAccountComplete(account, historicalData, i, accounts.length)
+        }
+        
+        console.log(`✅ [${i + 1}/${accounts.length}] Completed loading for`, account.name, ':', historicalData.length, 'days')
+        
+        // Small delay between accounts to prevent overwhelming the API
+        if (i < accounts.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 500))
+        }
+        
+      } catch (error) {
+        console.error(`❌ [${i + 1}/${accounts.length}] Failed to load data for`, account.name, ':', error)
+        results.push({ 
+          account, 
+          data: [], 
+          error: error instanceof Error ? error.message : 'Unknown error' 
+        })
+      }
+    }
+    
+    console.log('🎉 Systematic background loading completed for all accounts')
+    
+    if (onAllComplete) {
+      onAllComplete(results)
+    }
   }
 }

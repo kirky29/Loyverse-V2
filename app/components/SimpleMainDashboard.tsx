@@ -17,6 +17,8 @@ interface SimpleMainDashboardProps {
   onManageAccounts: () => void
   formatCurrency: (value: number) => string
   userId?: string
+  backgroundLoading?: boolean
+  loadingProgress?: { current: number; total: number; currentAccount: string }
 }
 
 interface TodaysSummary {
@@ -31,7 +33,9 @@ export default function SimpleMainDashboard({
   onAccountSelect, 
   onManageAccounts, 
   formatCurrency,
-  userId
+  userId,
+  backgroundLoading = false,
+  loadingProgress
 }: SimpleMainDashboardProps) {
   const [summaries, setSummaries] = useState<TodaysSummary[]>([])
   const [dataService] = useState(() => userId ? new DataService(userId) : null)
@@ -143,6 +147,34 @@ export default function SimpleMainDashboard({
         }}>
           Choose a store to view its dashboard and analytics
         </p>
+        
+        {/* Background loading progress */}
+        {backgroundLoading && loadingProgress && (
+          <div style={{
+            marginTop: '16px',
+            padding: '12px 20px',
+            background: '#fef3c7',
+            borderRadius: '8px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '10px',
+            fontSize: '14px',
+            color: '#92400e'
+          }}>
+            <div style={{
+              width: '16px',
+              height: '16px',
+              border: '2px solid #fbbf24',
+              borderTop: '2px solid #92400e',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite'
+            }} />
+            <span>
+              Loading historical data ({loadingProgress.current}/{loadingProgress.total}): 
+              <strong>{loadingProgress.currentAccount}</strong>
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Account Cards */}
@@ -212,19 +244,30 @@ export default function SimpleMainDashboard({
               }}>
                 Today's Sales
               </p>
-              <div style={{
-                fontSize: '32px',
-                fontWeight: '700',
-                color: summary.loading ? '#6b7280' : summary.error ? '#ef4444' : '#059669'
-              }}>
-                {summary.loading ? (
-                  <span style={{ fontSize: '16px' }}>Loading...</span>
-                ) : summary.error ? (
-                  <span style={{ fontSize: '16px' }}>{summary.error}</span>
-                ) : (
-                  formatCurrency(summary.todaysTotal)
-                )}
-              </div>
+              
+              {summary.loading ? (
+                // Skeleton loading state
+                <div style={{
+                  height: '40px',
+                  background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+                  backgroundSize: '200% 100%',
+                  animation: 'shimmer 1.5s infinite',
+                  borderRadius: '6px',
+                  width: '70%'
+                }} />
+              ) : (
+                <div style={{
+                  fontSize: '32px',
+                  fontWeight: '700',
+                  color: summary.error ? '#ef4444' : '#059669'
+                }}>
+                  {summary.error ? (
+                    <span style={{ fontSize: '16px' }}>{summary.error}</span>
+                  ) : (
+                    formatCurrency(summary.todaysTotal)
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Click indicator */}
@@ -266,6 +309,19 @@ export default function SimpleMainDashboard({
           ⚙️ Manage Store Connections
         </button>
       </div>
+      
+      {/* CSS for animations */}
+      <style jsx>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes shimmer {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+      `}</style>
     </div>
   )
 }
