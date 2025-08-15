@@ -729,12 +729,12 @@ export default function EnhancedPerformanceTable({
           </div>
 
           {/* Date Range Section */}
-          <div style={{ marginBottom: '32px' }}>
+          <div style={{ marginBottom: '40px' }}>
             <div style={{
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              marginBottom: '16px'
+              marginBottom: '20px'
             }}>
               <span style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>📅 Date Range</span>
               <div style={{
@@ -752,7 +752,7 @@ export default function EnhancedPerformanceTable({
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-              gap: '16px'
+              gap: '24px'
             }}>
               <div>
                 <label style={{ fontSize: '12px', fontWeight: '500', color: '#6b7280', marginBottom: '4px', display: 'block' }}>
@@ -767,9 +767,9 @@ export default function EnhancedPerformanceTable({
                   }))}
                   style={{
                     width: '100%',
-                    padding: '8px 12px',
+                    padding: '12px 16px',
                     border: '1px solid #d1d5db',
-                    borderRadius: '6px',
+                    borderRadius: '8px',
                     fontSize: '14px',
                     background: 'white'
                   }}
@@ -789,9 +789,9 @@ export default function EnhancedPerformanceTable({
                   }))}
                   style={{
                     width: '100%',
-                    padding: '8px 12px',
+                    padding: '12px 16px',
                     border: '1px solid #d1d5db',
-                    borderRadius: '6px',
+                    borderRadius: '8px',
                     fontSize: '14px',
                     background: 'white'
                   }}
@@ -807,9 +807,9 @@ export default function EnhancedPerformanceTable({
                   onChange={(e) => applyDatePreset(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '8px 12px',
+                    padding: '12px 16px',
                     border: '1px solid #d1d5db',
-                    borderRadius: '6px',
+                    borderRadius: '8px',
                     fontSize: '14px',
                     background: 'white',
                     cursor: 'pointer'
@@ -826,12 +826,12 @@ export default function EnhancedPerformanceTable({
           </div>
 
           {/* Basic Filters */}
-          <div style={{ marginBottom: showAdvancedFilters ? '24px' : '0' }}>
+          <div style={{ marginBottom: showAdvancedFilters ? '32px' : '0' }}>
             <div style={{
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              marginBottom: '16px'
+              marginBottom: '20px'
             }}>
               <span style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>💰 Amount Filters</span>
             </div>
@@ -839,7 +839,7 @@ export default function EnhancedPerformanceTable({
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-              gap: '16px'
+              gap: '24px'
             }}>
               <div>
                 <label style={{ fontSize: '12px', fontWeight: '500', color: '#6b7280', marginBottom: '4px', display: 'block' }}>
@@ -856,9 +856,9 @@ export default function EnhancedPerformanceTable({
                   step="0.01"
                   style={{
                     width: '100%',
-                    padding: '8px 12px',
+                    padding: '12px 16px',
                     border: '1px solid #d1d5db',
-                    borderRadius: '6px',
+                    borderRadius: '8px',
                     fontSize: '14px',
                     background: 'white'
                   }}
@@ -880,9 +880,9 @@ export default function EnhancedPerformanceTable({
                   step="0.01"
                   style={{
                     width: '100%',
-                    padding: '8px 12px',
+                    padding: '12px 16px',
                     border: '1px solid #d1d5db',
-                    borderRadius: '6px',
+                    borderRadius: '8px',
                     fontSize: '14px',
                     background: 'white'
                   }}
@@ -893,12 +893,12 @@ export default function EnhancedPerformanceTable({
 
           {/* Advanced Filters */}
           {showAdvancedFilters && (
-            <div style={{ marginBottom: '20px' }}>
+            <div style={{ marginBottom: '32px' }}>
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
-                marginBottom: '12px'
+                marginBottom: '20px'
               }}>
                 <span style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>📊 Advanced Metrics</span>
               </div>
@@ -906,7 +906,7 @@ export default function EnhancedPerformanceTable({
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-                gap: '12px'
+                gap: '20px'
               }}>
                 <div>
                   <label style={{ fontSize: '12px', fontWeight: '500', color: '#6b7280', marginBottom: '4px', display: 'block' }}>
