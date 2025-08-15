@@ -5,6 +5,7 @@ import { LoyverseAccount, DailyTaking } from './types'
 import AccountManager from './components/AccountManager'
 import DayDetailView from './components/DayDetailView'
 import SimpleMainDashboard from './components/SimpleMainDashboard'
+import EnhancedPerformanceTable from './components/EnhancedPerformanceTable'
 
 type ViewType = 'main' | 'account' | 'accountManager' | 'dayDetail'
 
@@ -371,81 +372,16 @@ export default function SimplePage() {
                   </div>
                 </div>
 
-                {/* Simple Data Table */}
-                <div style={{
-                  background: 'white',
-                  borderRadius: '12px',
-                  overflow: 'hidden',
-                  border: '1px solid #e2e8f0'
-                }}>
-                  <div style={{
-                    padding: '20px',
-                    borderBottom: '1px solid #e2e8f0',
-                    background: '#f8fafc'
-                  }}>
-                    <h3 style={{
-                      fontSize: '18px',
-                      fontWeight: '600',
-                      color: '#1e293b',
-                      margin: 0
-                    }}>
-                      Daily Sales ({dailyTakings.length} days)
-                    </h3>
-                  </div>
-                  
-                  <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                      <thead>
-                        <tr style={{ background: '#f8fafc' }}>
-                          <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#6b7280', textTransform: 'uppercase' }}>Date</th>
-                          <th style={{ padding: '12px 16px', textAlign: 'right', fontSize: '12px', fontWeight: '600', color: '#6b7280', textTransform: 'uppercase' }}>Total Sales</th>
-                          <th style={{ padding: '12px 16px', textAlign: 'right', fontSize: '12px', fontWeight: '600', color: '#6b7280', textTransform: 'uppercase' }}>Receipts</th>
-                          <th style={{ padding: '12px 16px', textAlign: 'right', fontSize: '12px', fontWeight: '600', color: '#6b7280', textTransform: 'uppercase' }}>Avg Receipt</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {dailyTakings.slice(0, 10).map((day, index) => (
-                          <tr 
-                            key={day.date}
-                            style={{
-                              borderBottom: '1px solid #f1f5f9',
-                              cursor: 'pointer',
-                              transition: 'background 0.15s ease'
-                            }}
-                            onClick={() => {
-                              setSelectedDay(day)
-                              setCurrentView('dayDetail')
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.background = '#f8fafc'
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.background = 'transparent'
-                            }}
-                          >
-                            <td style={{ padding: '12px 16px', fontSize: '14px', color: '#1e293b' }}>
-                              {new Date(day.date).toLocaleDateString('en-GB', {
-                                weekday: 'short',
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric'
-                              })}
-                            </td>
-                            <td style={{ padding: '12px 16px', textAlign: 'right', fontSize: '14px', fontWeight: '600', color: '#059669' }}>
-                              {formatCurrency(day.total)}
-                            </td>
-                            <td style={{ padding: '12px 16px', textAlign: 'right', fontSize: '14px', color: '#6b7280' }}>
-                              {day.receiptCount || 0}
-                            </td>
-                            <td style={{ padding: '12px 16px', textAlign: 'right', fontSize: '14px', color: '#6b7280' }}>
-                              {formatCurrency(day.averageReceipt || 0)}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
+                {/* Enhanced Performance Table */}
+                <EnhancedPerformanceTable 
+                  dailyTakings={dailyTakings}
+                  activeAccount={activeAccount}
+                  formatCurrency={formatCurrency}
+                  onDayClick={(day) => {
+                    setSelectedDay(day)
+                    setCurrentView('dayDetail')
+                  }}
+                />
               </div>
             )}
 
