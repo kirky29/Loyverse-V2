@@ -777,7 +777,9 @@ export default function Home() {
 
   // Fetch data when the active account changes (do not depend on `loading` to avoid loops)
   useEffect(() => {
+    console.log('useEffect triggered - activeAccount changed:', activeAccount?.name)
     if (activeAccount) {
+      console.log('Calling fetchDailyTakingsWithCache for:', activeAccount.name)
       fetchDailyTakingsWithCache()
     }
   }, [activeAccount])
@@ -936,14 +938,26 @@ export default function Home() {
   }
 
   const fetchDailyTakingsWithCache = async () => {
-    if (!activeAccount) return
+    console.log('fetchDailyTakingsWithCache called for:', activeAccount?.name)
+    if (!activeAccount) {
+      console.log('No activeAccount, returning early')
+      return
+    }
     
     // Check cache first
     const cachedData = accountDataCache.get(activeAccount.id)
     const cacheAge = cachedData ? Date.now() - cachedData.timestamp : Infinity
     const isCacheValid = cacheAge < 5 * 60 * 1000 // 5 minutes cache
     
+    console.log('Cache status:', {
+      hasCachedData: !!cachedData,
+      cacheAge: Math.round(cacheAge / 1000) + 's',
+      isCacheValid,
+      dataLength: cachedData?.data?.length || 0
+    })
+    
     if (cachedData && isCacheValid && cachedData.data.length > 0) {
+      console.log('Using cached data for:', activeAccount.name)
       setDailyTakings(cachedData.data)
       setLoading(false)
       setSwitchingAccount(false)
@@ -957,6 +971,7 @@ export default function Home() {
     }
     
     // No valid cache - fetch fresh data
+    console.log('No valid cache, fetching fresh data for:', activeAccount.name)
     await fetchDailyTakings()
   }
 
