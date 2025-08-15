@@ -131,23 +131,43 @@ export default function EnhancedPerformanceTable({
 
   const processedData = () => {
     let data = generateCompleteDataset()
+    console.log('Generated complete dataset:', {
+      accountName: activeAccount?.name,
+      recordsToShow,
+      totalDays: data.length,
+      daysWithSales: data.filter(d => d.total > 0).length,
+      dateRange: data.length > 0 ? `${data[data.length - 1].date} to ${data[0].date}` : 'none'
+    })
     
     // Apply filters
     if (dateFilter.from) {
+      const beforeFilter = data.length
       data = data.filter(item => item.date >= dateFilter.from)
+      console.log('After date from filter:', beforeFilter, '->', data.length)
     }
     if (dateFilter.to) {
+      const beforeFilter = data.length
       data = data.filter(item => item.date <= dateFilter.to)
+      console.log('After date to filter:', beforeFilter, '->', data.length)
     }
     
-    // Apply amount filters
+    // Apply amount filters - but preserve zero-sales days unless specifically filtered
     if (amountFilter.min) {
       const minAmount = parseFloat(amountFilter.min)
-      data = data.filter(item => item.total >= minAmount)
+      const beforeFilter = data.length
+      // Only filter out zero days if min amount is greater than 0
+      if (minAmount > 0) {
+        data = data.filter(item => item.total >= minAmount)
+      } else {
+        data = data.filter(item => item.total >= minAmount)
+      }
+      console.log('After amount min filter:', beforeFilter, '->', data.length)
     }
     if (amountFilter.max) {
       const maxAmount = parseFloat(amountFilter.max)
+      const beforeFilter = data.length
       data = data.filter(item => item.total <= maxAmount)
+      console.log('After amount max filter:', beforeFilter, '->', data.length)
     }
     
     // Apply sorting
