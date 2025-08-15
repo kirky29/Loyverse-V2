@@ -1,5 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { DailyTaking, LoyverseReceipt } from '../../types'
+import { createHash } from 'crypto'
+import { gzip } from 'zlib'
+import { promisify } from 'util'
+
+const gzipAsync = promisify(gzip)
+
+// Optimize response data
+function optimizeResponseData(dailyTakings: DailyTaking[]): any {
+  return dailyTakings.map(taking => ({
+    d: taking.date,
+    t: Math.round(taking.total * 100) / 100, // Round to 2 decimal places
+    rc: taking.receiptCount,
+    ar: taking.averageReceipt ? Math.round(taking.averageReceipt * 100) / 100 : undefined,
+    pb: taking.paymentBreakdown,
+    lb: (taking as any).locationBreakdown
+  }))
+}
+
+// Compress response if supported
+async function createOptimizedResponse(data: any, headers: Record<string, string> = {}): Promise<NextResponse> {
+  const jsonString = JSON.stringify(data)
+  
+  // Add base headers
+  const responseHeaders = {
+    'Content-Type': 'application/json',
+    ...headers
+  }
+
+  // For large responses, consider compression
+  if (jsonString.length > 1024) {
+    try {
+      const compressed = await gzipAsync(Buffer.from(jsonString))
+      responseHeaders['Content-Encoding'] = 'gzip'
+      responseHeaders['Content-Length'] = compressed.length.toString()
+      
+      return new NextResponse(compressed, {
+        status: 200,
+        headers: responseHeaders
+      })
+    } catch (error) {
+      console.warn('Compression failed, sending uncompressed:', error)
+    }
+  }
+
+  return NextResponse.json(data, { headers: responseHeaders })
+}
 
 export async function GET(request: NextRequest) {
   // Backward compatibility - use environment variables
@@ -21,7 +67,8 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    return await fetchDailyTakings(apiToken, storeId, false)
+    const result = await fetchDailyTakings(apiToken, storeId, false)
+    return NextResponse.json(result.data)
   } catch (error) {
     console.error('Error fetching daily takings:', error)
     return NextResponse.json(
@@ -34,7 +81,17 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { apiToken, storeId, includeAllStores, fromDate, daysToLoad } = body
+    const { 
+      apiToken, 
+      storeId, 
+      includeAllStores, 
+      fromDate, 
+      daysToLoad, 
+      priority = 'normal',
+      page = 1,
+      limit = 50,
+      enablePagination = false
+    } = body
 
     if (!apiToken) {
       return NextResponse.json(
@@ -50,7 +107,49 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    return await fetchDailyTakings(apiToken, storeId, includeAllStores, fromDate, daysToLoad)
+    // Check for If-None-Match header for ETag caching
+    const ifNoneMatch = request.headers.get('if-none-match')
+    
+    // Generate cache key for ETag (include pagination params)
+    const cacheKey = createHash('md5')
+      .update(`${storeId}-${fromDate || 'default'}-${daysToLoad || 31}-${includeAllStores}-${page}-${limit}-${enablePagination}`)
+      .digest('hex')
+
+    // If client has current version, return 304
+    if (ifNoneMatch === cacheKey) {
+      return new NextResponse(null, { 
+        status: 304,
+        headers: {
+          'ETag': cacheKey,
+          'Cache-Control': 'public, max-age=300, stale-while-revalidate=86400'
+        }
+      })
+    }
+
+    const result = await fetchDailyTakings(apiToken, storeId, includeAllStores, fromDate, daysToLoad, priority, { page, limit, enablePagination })
+    
+    // Optimize data based on priority level
+    const responseData = priority === 'high' ? result.data : optimizeResponseData(result.data)
+    
+    // Create optimized response with enhanced caching headers
+    const headers: Record<string, string> = {
+      'ETag': cacheKey,
+      'Cache-Control': 'public, max-age=300, stale-while-revalidate=86400',
+      'X-Data-Source': result.source,
+      'X-Processing-Time': `${result.processingTime}ms`,
+      'X-Total-Receipts': result.totalReceipts.toString(),
+      'X-Optimized': priority === 'high' ? 'false' : 'true'
+    }
+    
+    // Add pagination headers if applicable
+    if (result.pagination) {
+      headers['X-Pagination-Page'] = result.pagination.page.toString()
+      headers['X-Pagination-Limit'] = result.pagination.limit.toString()
+      headers['X-Pagination-Total'] = result.pagination.total.toString()
+      headers['X-Pagination-Has-More'] = result.pagination.hasMore.toString()
+    }
+    
+    return await createOptimizedResponse(responseData, headers)
   } catch (error) {
     console.error('Error fetching daily takings:', error)
     return NextResponse.json(
@@ -60,14 +159,39 @@ export async function POST(request: NextRequest) {
   }
 }
 
+interface PaginationOptions {
+  page: number
+  limit: number
+  enablePagination: boolean
+}
+
+interface FetchResult {
+  data: DailyTaking[]
+  source: string
+  processingTime: number
+  totalReceipts: number
+  pagination?: {
+    page: number
+    limit: number
+    total: number
+    hasMore: boolean
+  }
+}
+
 async function fetchDailyTakings(
   apiToken: string, 
   storeId: string, 
   includeAllStores: boolean = false, 
   customFromDate?: string, 
-  daysToLoad?: number
-) {
+  daysToLoad?: number,
+  priority: 'normal' | 'high' = 'normal',
+  paginationOptions?: PaginationOptions
+): Promise<FetchResult> {
+  const startTime = Date.now()
+  
   try {
+    console.log(`🚀 Fetching data (priority: ${priority}) for store: ${storeId}`)
+    
     // Determine date range based on parameters
     let fromDate: string
     
@@ -296,12 +420,40 @@ async function fetchDailyTakings(
       }
     })
 
-    return NextResponse.json(dailyTakings)
+    const processingTime = Date.now() - startTime
+    console.log(`✅ Data fetched in ${processingTime}ms`)
+    
+    // Apply pagination if enabled
+    let paginatedData = dailyTakings
+    let paginationInfo = undefined
+    
+    if (paginationOptions?.enablePagination) {
+      const { page, limit } = paginationOptions
+      const total = dailyTakings.length
+      const startIndex = (page - 1) * limit
+      const endIndex = startIndex + limit
+      
+      paginatedData = dailyTakings.slice(startIndex, endIndex)
+      
+      paginationInfo = {
+        page,
+        limit,
+        total,
+        hasMore: endIndex < total
+      }
+      
+      console.log(`📄 Pagination applied: page ${page}, showing ${paginatedData.length}/${total} records`)
+    }
+    
+    return {
+      data: paginatedData,
+      source: 'loyverse-api',
+      processingTime,
+      totalReceipts: receipts.length,
+      pagination: paginationInfo
+    }
   } catch (error) {
     console.error('Error fetching daily takings:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch daily takings' },
-      { status: 500 }
-    )
+    throw error
   }
 }

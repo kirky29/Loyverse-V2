@@ -1,16 +1,123 @@
 // app/optimized-page.tsx
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { User } from 'firebase/auth'
 import { LoyverseAccount, DailyTaking } from './types'
 import AuthWrapper from './components/AuthWrapper'
-import AccountManager from './components/AccountManager'
-import DayDetailView from './components/DayDetailView'
-import SimpleMainDashboard from './components/SimpleMainDashboard'
-import EnhancedPerformanceTable from './components/EnhancedPerformanceTable'
 import { DataService } from '../lib/dataService'
 import { AccountService } from '../lib/accountService'
+
+// Lazy load components for better performance
+const AccountManager = lazy(() => import('./components/AccountManager'))
+const DayDetailView = lazy(() => import('./components/DayDetailView'))
+const SimpleMainDashboard = lazy(() => import('./components/SimpleMainDashboard'))
+const EnhancedPerformanceTable = lazy(() => import('./components/EnhancedPerformanceTable'))
+
+// Loading fallback component
+const ComponentLoader = ({ name }: { name: string }) => (
+  <div style={{
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '40px',
+    color: '#6b7280'
+  }}>
+    <div style={{
+      width: '24px',
+      height: '24px',
+      border: '3px solid #e2e8f0',
+      borderTop: '3px solid #3b82f6',
+      borderRadius: '50%',
+      animation: 'spin 1s linear infinite',
+      marginRight: '12px'
+    }} />
+    Loading {name}...
+  </div>
+)
+
+// Skeleton components for better UX
+const SkeletonCard = () => (
+  <div style={{
+    background: 'white',
+    borderRadius: '16px',
+    padding: '24px',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+    border: '2px solid #e1e5e9',
+    animation: 'pulse 2s ease-in-out infinite'
+  }}>
+    <div style={{ 
+      height: '24px', 
+      background: '#e1e5e9', 
+      borderRadius: '4px', 
+      marginBottom: '16px',
+      width: '60%'
+    }} />
+    <div style={{ 
+      height: '48px', 
+      background: '#e1e5e9', 
+      borderRadius: '4px', 
+      marginBottom: '16px'
+    }} />
+    <div style={{ 
+      height: '16px', 
+      background: '#e1e5e9', 
+      borderRadius: '4px',
+      width: '40%'
+    }} />
+  </div>
+)
+
+const SkeletonTable = () => (
+  <div style={{
+    background: 'white',
+    borderRadius: '12px',
+    padding: '24px',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+  }}>
+    <div style={{ 
+      height: '32px', 
+      background: '#e1e5e9', 
+      borderRadius: '4px', 
+      marginBottom: '24px',
+      width: '30%'
+    }} />
+    {[...Array(5)].map((_, i) => (
+      <div key={i} style={{
+        display: 'flex',
+        gap: '16px',
+        marginBottom: '16px',
+        animation: 'pulse 2s ease-in-out infinite',
+        animationDelay: `${i * 0.1}s`
+      }}>
+        <div style={{ height: '20px', background: '#e1e5e9', borderRadius: '4px', flex: 1 }} />
+        <div style={{ height: '20px', background: '#e1e5e9', borderRadius: '4px', flex: 1 }} />
+        <div style={{ height: '20px', background: '#e1e5e9', borderRadius: '4px', flex: 1 }} />
+      </div>
+    ))}
+  </div>
+)
+
+const DashboardSkeleton = () => (
+  <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
+    <div style={{ 
+      height: '200px', 
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+      borderRadius: '16px',
+      marginBottom: '40px',
+      animation: 'pulse 2s ease-in-out infinite'
+    }} />
+    <div style={{ 
+      display: 'grid', 
+      gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', 
+      gap: '24px'
+    }}>
+      <SkeletonCard />
+      <SkeletonCard />
+      <SkeletonCard />
+    </div>
+  </div>
+)
 
 type ViewType = 'main' | 'account' | 'accountManager' | 'dayDetail'
 
@@ -26,6 +133,7 @@ function OptimizedPage({ user }: OptimizedPageProps) {
   const [dailyTakings, setDailyTakings] = useState<DailyTaking[]>([])
   const [selectedDay, setSelectedDay] = useState<DailyTaking | null>(null)
   const [loading, setLoading] = useState(false)
+  const [criticalLoading, setCriticalLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // Services
@@ -111,10 +219,31 @@ function OptimizedPage({ user }: OptimizedPageProps) {
     setLoading(true)
     
     try {
-      const data = await dataService.getData(account, fromDate, daysToLoad)
-      setDailyTakings(data)
+      // Use progressive loading for better UX
+      if (!fromDate && !daysToLoad) {
+        setCriticalLoading(true)
+        const data = await dataService.getProgressiveData(
+          account,
+          (criticalData) => {
+            console.log('⚡ Critical data loaded:', criticalData.length, 'days')
+            setDailyTakings(criticalData)
+            setCriticalLoading(false)
+            setError(null)
+          },
+          (historicalData) => {
+            console.log('📈 Historical data loaded:', historicalData.length, 'days')
+            setDailyTakings(historicalData)
+          }
+        )
+        setDailyTakings(data)
+      } else {
+        // For specific date ranges, use regular loading
+        const data = await dataService.getData(account, fromDate, daysToLoad)
+        setDailyTakings(data)
+      }
+      
       setError(null)
-      console.log('✅ Data loaded:', data.length, 'days')
+      console.log('✅ Data loading complete')
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred'
       console.error('❌ Error fetching data:', err)
@@ -122,6 +251,7 @@ function OptimizedPage({ user }: OptimizedPageProps) {
       setDailyTakings([])
     } finally {
       setLoading(false)
+      setCriticalLoading(false)
     }
   }
 
@@ -299,33 +429,37 @@ function OptimizedPage({ user }: OptimizedPageProps) {
       {/* Main Content */}
       <main>
         {currentView === 'main' && (
-          <SimpleMainDashboard 
-            accounts={accounts}
-            onAccountSelect={selectAccount}
-            onManageAccounts={() => setCurrentView('accountManager')}
-            formatCurrency={formatCurrency}
-          />
+          <Suspense fallback={<DashboardSkeleton />}>
+            <SimpleMainDashboard 
+              accounts={accounts}
+              onAccountSelect={selectAccount}
+              onManageAccounts={() => setCurrentView('accountManager')}
+              formatCurrency={formatCurrency}
+            />
+          </Suspense>
         )}
 
         {currentView === 'accountManager' && (
           <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
-            <AccountManager 
-              accounts={accounts}
-              onAddAccount={async (account) => {
-                const newAccount = { ...account, id: crypto.randomUUID() }
-                const updatedAccounts = [...accounts, newAccount]
-                await saveAccounts(updatedAccounts)
-              }}
-              onUpdateAccount={async (id, updates) => {
-                const updatedAccounts = accounts.map(acc => 
-                  acc.id === id ? { ...acc, ...updates } : acc
-                )
-                await saveAccounts(updatedAccounts)
-              }}
-              onDeleteAccount={deleteAccount}
-              onSwitchAccount={selectAccount}
-              activeAccount={activeAccount}
-            />
+            <Suspense fallback={<ComponentLoader name="Account Manager" />}>
+              <AccountManager 
+                accounts={accounts}
+                onAddAccount={async (account) => {
+                  const newAccount = { ...account, id: crypto.randomUUID() }
+                  const updatedAccounts = [...accounts, newAccount]
+                  await saveAccounts(updatedAccounts)
+                }}
+                onUpdateAccount={async (id, updates) => {
+                  const updatedAccounts = accounts.map(acc => 
+                    acc.id === id ? { ...acc, ...updates } : acc
+                  )
+                  await saveAccounts(updatedAccounts)
+                }}
+                onDeleteAccount={deleteAccount}
+                onSwitchAccount={selectAccount}
+                activeAccount={activeAccount}
+              />
+            </Suspense>
           </div>
         )}
 
@@ -387,7 +521,7 @@ function OptimizedPage({ user }: OptimizedPageProps) {
             </div>
 
             {/* Loading State */}
-            {loading && (
+            {(loading || criticalLoading) && (
               <div style={{
                 textAlign: 'center',
                 padding: '60px 20px',
@@ -402,8 +536,24 @@ function OptimizedPage({ user }: OptimizedPageProps) {
                   animation: 'spin 1s linear infinite',
                   margin: '0 auto 16px'
                 }} />
-                <div style={{ fontSize: '18px', marginBottom: '8px' }}>Loading...</div>
-                <div style={{ fontSize: '14px' }}>Fetching data for {activeAccount.name}</div>
+                <div style={{ fontSize: '18px', marginBottom: '8px' }}>
+                  {criticalLoading ? 'Loading critical data...' : 'Loading...'}
+                </div>
+                <div style={{ fontSize: '14px' }}>
+                  {criticalLoading 
+                    ? 'Getting recent sales data first' 
+                    : `Fetching data for ${activeAccount.name}`}
+                </div>
+                {criticalLoading && (
+                  <div style={{ 
+                    fontSize: '12px', 
+                    color: '#10b981', 
+                    marginTop: '8px',
+                    fontWeight: '500'
+                  }}>
+                    🚀 Progressive loading active
+                  </div>
+                )}
               </div>
             )}
 
@@ -504,16 +654,18 @@ function OptimizedPage({ user }: OptimizedPageProps) {
                 </div>
 
                 {/* Enhanced Performance Table */}
-                <EnhancedPerformanceTable 
-                  dailyTakings={dailyTakings}
-                  activeAccount={activeAccount}
-                  formatCurrency={formatCurrency}
-                  onDayClick={(day) => {
-                    setSelectedDay(day)
-                    setCurrentView('dayDetail')
-                  }}
-                  onLoadHistoricalData={loadHistoricalData}
-                />
+                <Suspense fallback={<SkeletonTable />}>
+                  <EnhancedPerformanceTable 
+                    dailyTakings={dailyTakings}
+                    activeAccount={activeAccount}
+                    formatCurrency={formatCurrency}
+                    onDayClick={(day) => {
+                      setSelectedDay(day)
+                      setCurrentView('dayDetail')
+                    }}
+                    onLoadHistoricalData={loadHistoricalData}
+                  />
+                </Suspense>
               </div>
             )}
 
@@ -533,12 +685,14 @@ function OptimizedPage({ user }: OptimizedPageProps) {
 
         {currentView === 'dayDetail' && selectedDay && (
           <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
-            <DayDetailView 
-              dayData={selectedDay}
-              activeAccount={activeAccount}
-              formatCurrency={formatCurrency}
-              onBack={() => setCurrentView('account')}
-            />
+            <Suspense fallback={<ComponentLoader name="Day Details" />}>
+              <DayDetailView 
+                dayData={selectedDay}
+                activeAccount={activeAccount}
+                formatCurrency={formatCurrency}
+                onBack={() => setCurrentView('account')}
+              />
+            </Suspense>
           </div>
         )}
       </main>
@@ -553,6 +707,13 @@ function OptimizedPage({ user }: OptimizedPageProps) {
         @keyframes pulse {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.5; }
+        }
+        
+        /* Skeleton pulse animation */
+        @keyframes skeletonPulse {
+          0% { background-color: #e1e5e9; }
+          50% { background-color: #f3f4f6; }
+          100% { background-color: #e1e5e9; }
         }
       `}</style>
     </div>
