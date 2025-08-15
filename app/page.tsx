@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { LoyverseAccount, DailyTaking } from './types'
 import AccountManager from './components/AccountManager'
+import DayDetailView from './components/DayDetailView'
 
 // Account-specific filter state interface
 interface AccountFilterState {
@@ -33,6 +34,7 @@ interface PerformanceTableProps {
   formatCurrency: (value: number) => string
   filterState: AccountFilterState
   onFilterStateChange: (newState: AccountFilterState) => void
+  onDayClick: (dayData: DailyTaking) => void
 }
 
 function PerformanceTable({ 
@@ -40,7 +42,8 @@ function PerformanceTable({
   activeAccount, 
   formatCurrency, 
   filterState, 
-  onFilterStateChange 
+  onFilterStateChange,
+  onDayClick
 }: PerformanceTableProps) {
   const {
     sortColumn,
@@ -510,7 +513,20 @@ function PerformanceTable({
               return (
                 <tr key={day.date} style={{
                   background: isToday ? '#e3f2fd' : (index % 2 === 0 ? '#ffffff' : '#f8f9fa'),
-                  borderBottom: '1px solid #dee2e6'
+                  borderBottom: '1px solid #dee2e6',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s ease'
+                }}
+                onClick={() => onDayClick(day)}
+                onMouseEnter={(e) => {
+                  if (!isToday) {
+                    e.currentTarget.style.backgroundColor = '#f5f5f5'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isToday) {
+                    e.currentTarget.style.backgroundColor = index % 2 === 0 ? '#ffffff' : '#f8f9fa'
+                  }
                 }}>
                   {visibleColumns.date && (
                     <td style={{
@@ -636,6 +652,7 @@ export default function Home() {
   const [accounts, setAccounts] = useState<LoyverseAccount[]>([])
   const [activeAccount, setActiveAccount] = useState<LoyverseAccount | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [selectedDay, setSelectedDay] = useState<DailyTaking | null>(null)
   
   // Cache system for account data
   const [accountDataCache, setAccountDataCache] = useState<Map<string, {
@@ -1889,13 +1906,23 @@ export default function Home() {
 
 
         {/* Enhanced Daily Performance Table */}
-        <PerformanceTable 
-          dailyTakings={dailyTakings} 
-          activeAccount={activeAccount}
-          formatCurrency={formatCurrency}
-          filterState={getAccountFilterState(activeAccount?.id || '')}
-          onFilterStateChange={(newState) => updateAccountFilterState(activeAccount?.id || '', newState)}
-        />
+        {!selectedDay ? (
+          <PerformanceTable 
+            dailyTakings={dailyTakings} 
+            activeAccount={activeAccount}
+            formatCurrency={formatCurrency}
+            filterState={getAccountFilterState(activeAccount?.id || '')}
+            onFilterStateChange={(newState) => updateAccountFilterState(activeAccount?.id || '', newState)}
+            onDayClick={(dayData) => setSelectedDay(dayData)}
+          />
+        ) : (
+          <DayDetailView 
+            dayData={selectedDay}
+            activeAccount={activeAccount}
+            formatCurrency={formatCurrency}
+            onBack={() => setSelectedDay(null)}
+          />
+        )}
 
 
       </main>
