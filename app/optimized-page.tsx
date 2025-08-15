@@ -442,29 +442,7 @@ function OptimizedPage({ user }: OptimizedPageProps) {
               </div>
             )}
 
-            {/* Background loading indicator */}
-            {backgroundLoading && (
-              <div style={{
-                background: '#fef3c7',
-                color: '#92400e',
-                padding: '6px 12px',
-                borderRadius: '6px',
-                fontSize: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}>
-                <div style={{
-                  width: '12px',
-                  height: '12px',
-                  border: '2px solid #fbbf24',
-                  borderTop: '2px solid #92400e',
-                  borderRadius: '50%',
-                  animation: 'spin 1s linear infinite'
-                }} />
-                Loading {loadingProgress.current}/{loadingProgress.total}: {loadingProgress.currentAccount}
-              </div>
-            )}
+
 
             {/* Dev tools */}
             {process.env.NODE_ENV === 'development' && (
