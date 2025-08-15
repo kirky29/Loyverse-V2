@@ -331,51 +331,7 @@ export default function MainDashboard({
         </button>
       </div>
 
-      {/* Quick Stats Summary */}
-      {accounts.length > 0 && (
-        <div style={{
-          marginTop: '40px',
-          padding: '20px',
-          background: '#f8f9fa',
-          borderRadius: '12px',
-          textAlign: 'center'
-        }}>
-          <h4 style={{ 
-            fontSize: '16px', 
-            fontWeight: '600', 
-            color: '#333',
-            marginBottom: '16px'
-          }}>
-            📊 Today's Overview
-          </h4>
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
-            gap: '16px'
-          }}>
-            <div>
-              <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#333' }}>
-                {accounts.length}
-              </div>
-              <div style={{ fontSize: '12px', color: '#666' }}>Total Accounts</div>
-            </div>
-            <div>
-              <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#4caf50' }}>
-                {formatCurrency(
-                  accountSummaries.reduce((sum, summary) => sum + summary.todaysTotal, 0)
-                )}
-              </div>
-              <div style={{ fontSize: '12px', color: '#666' }}>Combined Sales</div>
-            </div>
-            <div>
-              <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#2196f3' }}>
-                {accountSummaries.filter(s => s.todaysTotal > 0).length}
-              </div>
-              <div style={{ fontSize: '12px', color: '#666' }}>Active Today</div>
-            </div>
-          </div>
-        </div>
-      )}
+
     </div>
   )
 }
