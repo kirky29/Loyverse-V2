@@ -957,8 +957,11 @@ export default function Home() {
     })
     
     if (cachedData && isCacheValid && cachedData.data.length > 0) {
-      console.log('Using cached data for:', activeAccount.name)
-      setDailyTakings(cachedData.data)
+      console.log('Using cached data for:', activeAccount.name, 'data length:', cachedData.data.length)
+      setDailyTakings(prev => {
+        console.log('setDailyTakings (cached) called - prev length:', prev.length, 'new length:', cachedData.data.length)
+        return cachedData.data
+      })
       setLoading(false)
       setSwitchingAccount(false)
       setError(null)
@@ -1037,8 +1040,11 @@ export default function Home() {
       })
       
       if (shouldUpdateUI) {
-        console.log('✅ Updating UI for:', targetAccount.name)
-        setDailyTakings(dailyTakingsData)
+        console.log('✅ Updating UI for:', targetAccount.name, 'data length:', dailyTakingsData.length)
+        setDailyTakings(prev => {
+          console.log('setDailyTakings called - prev length:', prev.length, 'new length:', dailyTakingsData.length)
+          return dailyTakingsData
+        })
         setError(null)
       } else {
         console.log('❌ Skipping UI update - targetAccount:', targetAccount.name, 'activeAccount:', activeAccount?.name)
