@@ -576,19 +576,7 @@ function OptimizedPage({ user }: OptimizedPageProps) {
                 🔄 Force Resync
               </button>
 
-              {/* Cache status indicator */}
-              <div style={{
-                background: '#ecfdf5',
-                color: '#065f46',
-                padding: '8px 12px',
-                borderRadius: '6px',
-                fontSize: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}>
-                ⚡ Smart Cache Active
-              </div>
+
             </div>
 
             {/* Loading State */}
@@ -655,17 +643,7 @@ function OptimizedPage({ user }: OptimizedPageProps) {
                     {activeAccount.name} Dashboard
                   </h2>
                   
-                  {/* Performance indicator */}
-                  <div style={{
-                    background: '#f0fdf4',
-                    color: '#166534',
-                    padding: '6px 12px',
-                    borderRadius: '6px',
-                    fontSize: '12px',
-                    fontWeight: '500'
-                  }}>
-                    🚀 Optimized Performance
-                  </div>
+
                 </div>
                 
                 {/* Simple Performance Cards */}

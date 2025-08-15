@@ -520,23 +520,7 @@ export default function EnhancedPerformanceTable({
             </p>
           </div>
 
-          {/* Active preset indicator */}
-          {activeColumnPreset && (
-            <div style={{
-              background: '#ecfdf5',
-              border: '1px solid #d1fae5',
-              color: '#065f46',
-              padding: '6px 12px',
-              borderRadius: '8px',
-              fontSize: '12px',
-              fontWeight: '600',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px'
-            }}>
-              ⚡ {COLUMN_PRESETS[activeColumnPreset as keyof typeof COLUMN_PRESETS]?.name || 'Custom'} View
-            </div>
-          )}
+
         </div>
 
         {/* Quick Date Presets */}
@@ -657,48 +641,7 @@ export default function EnhancedPerformanceTable({
 
           {/* Right side controls */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            {/* Export button */}
-            <button
-              onClick={() => {
-                // Export functionality - create CSV
-                const csvContent = [
-                  ['Date', 'Total', 'Cash', 'Card', 'Receipts', 'Avg Receipt'].join(','),
-                  ...data.map(d => [
-                    d.date,
-                    d.total,
-                    d.paymentBreakdown?.cash || 0,
-                    d.paymentBreakdown?.card || 0,
-                    d.receiptCount || 0,
-                    d.averageReceipt || 0
-                  ].join(','))
-                ].join('\n')
-                
-                const blob = new Blob([csvContent], { type: 'text/csv' })
-                const url = window.URL.createObjectURL(blob)
-                const link = document.createElement('a')
-                link.href = url
-                link.download = `daily-sales-${new Date().toISOString().split('T')[0]}.csv`
-                link.click()
-                window.URL.revokeObjectURL(url)
-              }}
-              style={{
-                background: '#f59e0b',
-                color: 'white',
-                border: 'none',
-                padding: '8px 14px',
-                borderRadius: '8px',
-                fontSize: '13px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                boxShadow: '0 2px 4px rgba(245, 158, 11, 0.2)'
-              }}
-            >
-              📥 Export CSV
-            </button>
+
 
             {/* Clear all filters */}
             <button
@@ -786,12 +729,12 @@ export default function EnhancedPerformanceTable({
           </div>
 
           {/* Date Range Section */}
-          <div style={{ marginBottom: '20px' }}>
+          <div style={{ marginBottom: '32px' }}>
             <div style={{
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              marginBottom: '12px'
+              marginBottom: '16px'
             }}>
               <span style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>📅 Date Range</span>
               <div style={{
@@ -809,7 +752,7 @@ export default function EnhancedPerformanceTable({
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-              gap: '12px'
+              gap: '16px'
             }}>
               <div>
                 <label style={{ fontSize: '12px', fontWeight: '500', color: '#6b7280', marginBottom: '4px', display: 'block' }}>
@@ -883,12 +826,12 @@ export default function EnhancedPerformanceTable({
           </div>
 
           {/* Basic Filters */}
-          <div style={{ marginBottom: showAdvancedFilters ? '20px' : '0' }}>
+          <div style={{ marginBottom: showAdvancedFilters ? '24px' : '0' }}>
             <div style={{
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              marginBottom: '12px'
+              marginBottom: '16px'
             }}>
               <span style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>💰 Amount Filters</span>
             </div>
@@ -896,7 +839,7 @@ export default function EnhancedPerformanceTable({
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-              gap: '12px'
+              gap: '16px'
             }}>
               <div>
                 <label style={{ fontSize: '12px', fontWeight: '500', color: '#6b7280', marginBottom: '4px', display: 'block' }}>
