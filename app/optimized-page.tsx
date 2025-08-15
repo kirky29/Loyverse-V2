@@ -222,7 +222,7 @@ function OptimizedPage({ user }: OptimizedPageProps) {
       // Use progressive loading for better UX
       if (!fromDate && !daysToLoad) {
         setCriticalLoading(true)
-        const data = await dataService.getProgressiveData(
+        await dataService.getProgressiveData(
           account,
           (criticalData) => {
             console.log('⚡ Critical data loaded:', criticalData.length, 'days')
@@ -235,7 +235,6 @@ function OptimizedPage({ user }: OptimizedPageProps) {
             setDailyTakings(historicalData)
           }
         )
-        setDailyTakings(data)
       } else {
         // For specific date ranges, use regular loading
         const data = await dataService.getData(account, fromDate, daysToLoad)
