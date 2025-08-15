@@ -15,8 +15,14 @@ export class OptimizedCache {
   private memoryCache = new Map<string, CacheEntry>()
   private readonly CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
   private readonly FIRESTORE_CACHE_DURATION = 30 * 60 * 1000 // 30 minutes
+  private readonly HISTORICAL_CACHE_DURATION = 365 * 24 * 60 * 60 * 1000 // 1 year for historical data
 
   constructor(private userId: string) {}
+
+  // Check if data is historical (never changes)
+  private isHistoricalData(fromDate?: string): boolean {
+    return fromDate === 'historical-all' || fromDate === '2024-10-01'
+  }
 
   // Generate cache key
   private getCacheKey(accountId: string, fromDate?: string): string {
@@ -63,14 +69,17 @@ export class OptimizedCache {
     }
   }
 
-  // Level 3: Firestore (persistent, real-time)
+  // Level 3: Firestore (persistent, real-time) - WITH PERMANENT HISTORICAL CACHING
   async getFromFirestore(accountId: string, fromDate?: string): Promise<CacheEntry | null> {
     try {
       const key = this.getCacheKey(accountId, fromDate)
       const docRef = doc(db, 'users', this.userId, 'cache', key)
       const docSnap = await getDoc(docRef)
       
-      if (!docSnap.exists()) return null
+      if (!docSnap.exists()) {
+        console.log('❌ Firestore cache miss: No document found for key', key)
+        return null
+      }
       
       const data = docSnap.data()
       const entry: CacheEntry = {
@@ -81,14 +90,19 @@ export class OptimizedCache {
         userId: data.userId
       }
       
-      if (Date.now() - entry.timestamp < this.FIRESTORE_CACHE_DURATION) {
-        console.log('☁️ Cache hit: Firestore (persistent)')
+      // Use different cache durations for historical vs regular data
+      const isHistorical = this.isHistoricalData(fromDate)
+      const cacheDuration = isHistorical ? this.HISTORICAL_CACHE_DURATION : this.FIRESTORE_CACHE_DURATION
+      
+      if (Date.now() - entry.timestamp < cacheDuration) {
+        console.log(`☁️ Cache hit: Firestore (${isHistorical ? 'HISTORICAL - PERMANENT' : 'regular'}) - ${entry.data.length} days`)
         // Promote to memory and localStorage
         this.setInMemory(accountId, entry.data, fromDate)
         this.setInLocalStorage(accountId, entry.data, fromDate)
         return entry
       }
       
+      console.log('⏰ Firestore cache expired:', fromDate, 'Age:', Math.round((Date.now() - entry.timestamp) / 1000 / 60), 'minutes')
       return null
     } catch (error) {
       console.error('Firestore cache error:', error)
@@ -126,11 +140,13 @@ export class OptimizedCache {
     }
   }
 
-  // Set in Firestore
+  // Set in Firestore - WITH PERMANENT HISTORICAL STORAGE
   async setInFirestore(accountId: string, data: DailyTaking[], fromDate?: string): Promise<void> {
     try {
       const key = this.getCacheKey(accountId, fromDate)
       const docRef = doc(db, 'users', this.userId, 'cache', key)
+      
+      const isHistorical = this.isHistoricalData(fromDate)
       
       await setDoc(docRef, {
         data,
@@ -138,8 +154,12 @@ export class OptimizedCache {
         fromDate,
         accountId,
         userId: this.userId,
-        lastUpdated: serverTimestamp()
+        lastUpdated: serverTimestamp(),
+        isHistorical,
+        cacheDuration: isHistorical ? 'PERMANENT (1 year)' : '30 minutes'
       })
+      
+      console.log(`💾 Firestore cache set: ${key} (${isHistorical ? 'HISTORICAL - PERMANENT' : 'regular'}) - ${data.length} days`)
     } catch (error) {
       console.error('Firestore set error:', error)
     }
