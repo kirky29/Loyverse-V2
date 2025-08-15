@@ -1189,7 +1189,7 @@ export default function Home() {
               color: '#333', 
               margin: '0 0 20px 0'
             }}>
-              📅 Daily Performance {activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2' ? 'by Location' : 'Overview'}
+              📅 Daily Performance by Location
             </h3>
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -1202,57 +1202,27 @@ export default function Home() {
                       color: '#333',
                       borderBottom: '2px solid #dee2e6'
                     }}>Date</th>
-                    {activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2' ? (
-                      /* Multi-store headers */
-                      <>
-                        <th style={{ 
-                          padding: '12px 16px', 
-                          textAlign: 'right', 
-                          fontWeight: '600', 
-                          color: '#333',
-                          borderBottom: '2px solid #dee2e6'
-                        }}>🏪 Shop</th>
-                        <th style={{ 
-                          padding: '12px 16px', 
-                          textAlign: 'right', 
-                          fontWeight: '600', 
-                          color: '#333',
-                          borderBottom: '2px solid #dee2e6'
-                        }}>☕ Cafe</th>
-                        <th style={{ 
-                          padding: '12px 16px', 
-                          textAlign: 'right', 
-                          fontWeight: '600', 
-                          color: '#333',
-                          borderBottom: '2px solid #dee2e6'
-                        }}>🏢 Combined</th>
-                      </>
-                    ) : (
-                      /* Single-store headers */
-                      <>
-                        <th style={{ 
-                          padding: '12px 16px', 
-                          textAlign: 'right', 
-                          fontWeight: '600', 
-                          color: '#333',
-                          borderBottom: '2px solid #dee2e6'
-                        }}>💰 Total</th>
-                        <th style={{ 
-                          padding: '12px 16px', 
-                          textAlign: 'right', 
-                          fontWeight: '600', 
-                          color: '#333',
-                          borderBottom: '2px solid #dee2e6'
-                        }}>🧾 Receipts</th>
-                        <th style={{ 
-                          padding: '12px 16px', 
-                          textAlign: 'right', 
-                          fontWeight: '600', 
-                          color: '#333',
-                          borderBottom: '2px solid #dee2e6'
-                        }}>📊 Average</th>
-                      </>
-                    )}
+                    <th style={{ 
+                      padding: '12px 16px', 
+                      textAlign: 'right', 
+                      fontWeight: '600', 
+                      color: '#333',
+                      borderBottom: '2px solid #dee2e6'
+                    }}>🏪 Shop</th>
+                    <th style={{ 
+                      padding: '12px 16px', 
+                      textAlign: 'right', 
+                      fontWeight: '600', 
+                      color: '#333',
+                      borderBottom: '2px solid #dee2e6'
+                    }}>☕ Cafe</th>
+                    <th style={{ 
+                      padding: '12px 16px', 
+                      textAlign: 'right', 
+                      fontWeight: '600', 
+                      color: '#333',
+                      borderBottom: '2px solid #dee2e6'
+                    }}>🏢 Combined</th>
                     <th style={{ 
                       padding: '12px 16px', 
                       textAlign: 'center', 
@@ -1267,193 +1237,111 @@ export default function Home() {
                     const isToday = new Date(day.date).toDateString() === new Date().toDateString()
                     const isYesterday = new Date(day.date).toDateString() === new Date(Date.now() - 24 * 60 * 60 * 1000).toDateString()
                     
+                    // Unified template approach - same structure for all accounts
+                    let shopAmount, cafeAmount, combinedAmount
+                    
                     if (activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2') {
-                      // Multi-store account
+                      // Multi-store account - use actual location breakdown
                       const shopId = 'd5a7267b-ca6f-4490-9d66-b5ba46cc563c'
                       const cafeId = 'e2aa143e-3e91-433e-a6d8-5a5538d429e2'
-                      const shopAmount = day.locationBreakdown?.[shopId] || 0
-                      const cafeAmount = day.locationBreakdown?.[cafeId] || 0
-                      const combinedAmount = shopAmount + cafeAmount
-                      
-                      return (
-                        <tr key={day.date} style={{ 
-                          background: isToday ? '#e3f2fd' : (index % 2 === 0 ? '#ffffff' : '#f8f9fa'),
-                          borderBottom: '1px solid #dee2e6'
-                        }}>
-                          <td style={{ 
-                            padding: '12px 16px',
-                            fontWeight: isToday ? '700' : '500',
-                            color: isToday ? '#1976d2' : '#333'
-                          }}>
-                            <div>
-                              <div style={{ fontSize: '14px' }}>
-                                {new Date(day.date).toLocaleDateString('en-US', {
-                                  weekday: 'short',
-                                  month: 'short',
-                                  day: 'numeric'
-                                })}
-                              </div>
-                              <div style={{ fontSize: '12px', color: '#666' }}>
-                                {new Date(day.date).getFullYear()}
-                              </div>
-                            </div>
-                          </td>
-                          <td style={{ 
-                            padding: '12px 16px', 
-                            textAlign: 'right',
-                            fontWeight: isToday ? '700' : '600',
-                            color: '#1976d2'
-                          }}>
-                            {formatCurrency(shopAmount)}
-                          </td>
-                          <td style={{ 
-                            padding: '12px 16px', 
-                            textAlign: 'right',
-                            fontWeight: isToday ? '700' : '600',
-                            color: '#388e3c'
-                          }}>
-                            {formatCurrency(cafeAmount)}
-                          </td>
-                          <td style={{ 
-                            padding: '12px 16px', 
-                            textAlign: 'right',
-                            fontWeight: isToday ? '700' : '600',
-                            color: '#7b1fa2'
-                          }}>
-                            {formatCurrency(combinedAmount)}
-                          </td>
-                          <td style={{ 
-                            padding: '12px 16px', 
-                            textAlign: 'center'
-                          }}>
-                            {isToday ? (
-                              <span style={{
-                                background: '#2196f3',
-                                color: 'white',
-                                padding: '4px 12px',
-                                borderRadius: '12px',
-                                fontSize: '12px',
-                                fontWeight: '600'
-                              }}>
-                                TODAY
-                              </span>
-                            ) : isYesterday ? (
-                              <span style={{
-                                background: '#4caf50',
-                                color: 'white',
-                                padding: '4px 12px',
-                                borderRadius: '12px',
-                                fontSize: '12px',
-                                fontWeight: '600'
-                              }}>
-                                YESTERDAY
-                              </span>
-                            ) : (
-                              <span style={{
-                                background: '#9e9e9e',
-                                color: 'white',
-                                padding: '4px 12px',
-                                borderRadius: '12px',
-                                fontSize: '12px',
-                                fontWeight: '600'
-                              }}>
-                                PAST
-                              </span>
-                            )}
-                          </td>
-                        </tr>
-                      )
+                      shopAmount = day.locationBreakdown?.[shopId] || 0
+                      cafeAmount = day.locationBreakdown?.[cafeId] || 0
+                      combinedAmount = shopAmount + cafeAmount
                     } else {
-                      // Single-store account
-                      return (
-                        <tr key={day.date} style={{ 
-                          background: isToday ? '#e3f2fd' : (index % 2 === 0 ? '#ffffff' : '#f8f9fa'),
-                          borderBottom: '1px solid #dee2e6'
-                        }}>
-                          <td style={{ 
-                            padding: '12px 16px',
-                            fontWeight: isToday ? '700' : '500',
-                            color: isToday ? '#1976d2' : '#333'
-                          }}>
-                            <div>
-                              <div style={{ fontSize: '14px' }}>
-                                {new Date(day.date).toLocaleDateString('en-US', {
-                                  weekday: 'short',
-                                  month: 'short',
-                                  day: 'numeric'
-                                })}
-                              </div>
-                              <div style={{ fontSize: '12px', color: '#666' }}>
-                                {new Date(day.date).getFullYear()}
-                              </div>
-                            </div>
-                          </td>
-                          <td style={{ 
-                            padding: '12px 16px', 
-                            textAlign: 'right',
-                            fontWeight: isToday ? '700' : '600',
-                            color: '#1976d2'
-                          }}>
-                            {formatCurrency(day.total)}
-                          </td>
-                          <td style={{ 
-                            padding: '12px 16px', 
-                            textAlign: 'right',
-                            fontWeight: isToday ? '700' : '600',
-                            color: '#388e3c'
-                          }}>
-                            {day.receiptCount || 0}
-                          </td>
-                          <td style={{ 
-                            padding: '12px 16px', 
-                            textAlign: 'right',
-                            fontWeight: isToday ? '700' : '600',
-                            color: '#7b1fa2'
-                          }}>
-                            {formatCurrency(day.averageReceipt)}
-                          </td>
-                          <td style={{ 
-                            padding: '12px 16px', 
-                            textAlign: 'center'
-                          }}>
-                            {isToday ? (
-                              <span style={{
-                                background: '#2196f3',
-                                color: 'white',
-                                padding: '4px 12px',
-                                borderRadius: '12px',
-                                fontSize: '12px',
-                                fontWeight: '600'
-                              }}>
-                                TODAY
-                              </span>
-                            ) : isYesterday ? (
-                              <span style={{
-                                background: '#4caf50',
-                                color: 'white',
-                                padding: '4px 12px',
-                                borderRadius: '12px',
-                                fontSize: '12px',
-                                fontWeight: '600'
-                              }}>
-                                YESTERDAY
-                              </span>
-                            ) : (
-                              <span style={{
-                                background: '#9e9e9e',
-                                color: 'white',
-                                padding: '4px 12px',
-                                borderRadius: '12px',
-                                fontSize: '12px',
-                                fontWeight: '600'
-                              }}>
-                                PAST
-                              </span>
-                            )}
-                          </td>
-                        </tr>
-                      )
+                      // Single-store account - map data to template structure
+                      shopAmount = day.total  // Show total as "shop" amount
+                      cafeAmount = 0          // No second location, so £0
+                      combinedAmount = day.total  // Combined is same as total
                     }
+                    
+                    return (
+                      <tr key={day.date} style={{ 
+                        background: isToday ? '#e3f2fd' : (index % 2 === 0 ? '#ffffff' : '#f8f9fa'),
+                        borderBottom: '1px solid #dee2e6'
+                      }}>
+                        <td style={{ 
+                          padding: '12px 16px',
+                          fontWeight: isToday ? '700' : '500',
+                          color: isToday ? '#1976d2' : '#333'
+                        }}>
+                          <div>
+                            <div style={{ fontSize: '14px' }}>
+                              {new Date(day.date).toLocaleDateString('en-US', {
+                                weekday: 'short',
+                                month: 'short',
+                                day: 'numeric'
+                              })}
+                            </div>
+                            <div style={{ fontSize: '12px', color: '#666' }}>
+                              {new Date(day.date).getFullYear()}
+                            </div>
+                          </div>
+                        </td>
+                        <td style={{ 
+                          padding: '12px 16px', 
+                          textAlign: 'right',
+                          fontWeight: isToday ? '700' : '600',
+                          color: '#1976d2'
+                        }}>
+                          {formatCurrency(shopAmount)}
+                        </td>
+                        <td style={{ 
+                          padding: '12px 16px', 
+                          textAlign: 'right',
+                          fontWeight: isToday ? '700' : '600',
+                          color: '#388e3c'
+                        }}>
+                          {formatCurrency(cafeAmount)}
+                        </td>
+                        <td style={{ 
+                          padding: '12px 16px', 
+                          textAlign: 'right',
+                          fontWeight: isToday ? '700' : '600',
+                          color: '#7b1fa2'
+                        }}>
+                          {formatCurrency(combinedAmount)}
+                        </td>
+                        <td style={{ 
+                          padding: '12px 16px', 
+                          textAlign: 'center'
+                        }}>
+                          {isToday ? (
+                            <span style={{
+                              background: '#2196f3',
+                              color: 'white',
+                              padding: '4px 12px',
+                              borderRadius: '12px',
+                              fontSize: '12px',
+                              fontWeight: '600'
+                            }}>
+                              TODAY
+                            </span>
+                          ) : isYesterday ? (
+                            <span style={{
+                              background: '#4caf50',
+                              color: 'white',
+                              padding: '4px 12px',
+                              borderRadius: '12px',
+                              fontSize: '12px',
+                              fontWeight: '600'
+                            }}>
+                              YESTERDAY
+                            </span>
+                          ) : (
+                            <span style={{
+                              background: '#9e9e9e',
+                              color: 'white',
+                              padding: '4px 12px',
+                              borderRadius: '12px',
+                              fontSize: '12px',
+                              fontWeight: '600'
+                            }}>
+                              PAST
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    )
                   })}
                 </tbody>
               </table>
@@ -1467,10 +1355,7 @@ export default function Home() {
               color: '#666'
             }}>
               <strong>💡 Quick View:</strong> Today's performance highlighted in blue. 
-              {activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2' 
-                ? 'Shop amounts in blue, Cafe amounts in green, Combined in purple.'
-                : 'Total in blue, Receipts in green, Average in purple.'
-              }
+              Shop amounts in blue, Cafe amounts in green, Combined in purple.
             </div>
           </div>
         )}
