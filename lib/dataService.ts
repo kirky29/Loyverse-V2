@@ -181,7 +181,7 @@ export class DataService {
       
       // Cache the fresh data
       if (processedData.length > 0) {
-        await this.cache.setTemporaryCache(account.id, processedData, fromDate)
+        await this.cache.setInAllCaches(account.id, processedData, fromDate)
       }
       
       return processedData
