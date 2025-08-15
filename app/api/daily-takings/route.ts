@@ -208,7 +208,8 @@ async function fetchDailyTakings(
       fromDate = thirtyOneDaysAgo.toISOString().split('T')[0]
     }
 
-    console.log('Fetching receipts from:', fromDate, 'for store:', storeId)
+    console.log('📅 Fetching receipts from:', fromDate, 'for store:', storeId)
+    console.log('🎯 Priority:', priority, '| DaysToLoad:', daysToLoad)
 
     let receipts: LoyverseReceipt[] = []
 
@@ -218,7 +219,7 @@ async function fetchDailyTakings(
       let cursor = null
       let hasMore = true
       
-      while (hasMore && allReceipts.length < 1000) { // Safety limit
+      while (hasMore && allReceipts.length < 10000) { // Safety limit - increased for historical data
         let url = `https://api.loyverse.com/v1.0/receipts?created_at_min=${fromDate}T00:00:00Z&limit=100`
         if (cursor) {
           url += `&cursor=${cursor}`
@@ -238,6 +239,8 @@ async function fetchDailyTakings(
         const data = await response.json()
         const batchReceipts: LoyverseReceipt[] = data.receipts || []
         
+        console.log(`📊 Multi-store progress: ${allReceipts.length} receipts loaded so far...`)
+        
         if (batchReceipts.length === 0) {
           hasMore = false
         } else {
@@ -248,20 +251,21 @@ async function fetchDailyTakings(
       }
       
       receipts = allReceipts
-      console.log('Multi-store fetch completed. Total receipts:', allReceipts.length)
+      console.log('✅ Multi-store fetch completed. Total receipts:', allReceipts.length, `(from ${fromDate})`)
     } else {
       // For single-store accounts, use pagination to get all data
       const allReceipts: LoyverseReceipt[] = []
       let cursor = null
       let hasMore = true
       
-      while (hasMore && allReceipts.length < 2000) { // Safety limit
+      while (hasMore && allReceipts.length < 15000) { // Safety limit - increased for historical data
         let url = `https://api.loyverse.com/v1.0/receipts?store_id=${storeId}&created_at_min=${fromDate}T00:00:00Z&limit=100`
         if (cursor) {
           url += `&cursor=${cursor}`
         }
         
-        console.log('Single-store API call:', url)
+        console.log('📡 Single-store API call:', url)
+        console.log(`📊 Progress: ${allReceipts.length} receipts loaded so far...`)
         
         const response = await fetch(url, {
           headers: {
@@ -289,7 +293,7 @@ async function fetchDailyTakings(
       }
       
       receipts = allReceipts
-      console.log('Single-store fetch completed. Total receipts:', allReceipts.length)
+      console.log('✅ Single-store fetch completed. Total receipts:', allReceipts.length, `(from ${fromDate})`)
     }
 
     // Filter out voided/cancelled receipts and aggregate by date
