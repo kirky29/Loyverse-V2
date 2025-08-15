@@ -66,18 +66,17 @@ export default function EnhancedLoadingScreen({
       alignItems: 'center',
       justifyContent: 'center',
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      color: 'white',
+      background: '#f8fafc',
+      color: '#1f2937',
       padding: '20px'
     }}>
       {/* Main Loading Card */}
       <div style={{
-        background: 'rgba(255, 255, 255, 0.95)',
-        backdropFilter: 'blur(20px)',
+        background: 'white',
         borderRadius: '20px',
         padding: '40px',
-        boxShadow: '0 25px 50px rgba(0, 0, 0, 0.25)',
-        border: '1px solid rgba(255, 255, 255, 0.3)',
+        boxShadow: '0 25px 50px rgba(0, 0, 0, 0.15)',
+        border: '1px solid #e5e7eb',
         maxWidth: '600px',
         width: '100%',
         color: '#1f2937'
