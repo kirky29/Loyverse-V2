@@ -123,7 +123,10 @@ export default function MainDashboard({
             return (
               <div
                 key={summary.account.id}
-                onClick={() => onAccountSelect(summary.account)}
+                onClick={() => {
+                  console.log('Card clicked for account:', summary.account.name)
+                  onAccountSelect(summary.account)
+                }}
                 style={{
                   background: 'white',
                   borderRadius: '16px',

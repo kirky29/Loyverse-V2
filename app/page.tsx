@@ -883,6 +883,7 @@ export default function Home() {
   }
 
   const selectAccountFromMain = (account: LoyverseAccount) => {
+    console.log('selectAccountFromMain called with:', account.name)
     // Clear any selected day when selecting an account
     setSelectedDay(null)
     setCurrentView('account')
