@@ -258,10 +258,7 @@ export default function DayDetailView({
       </div>
 
       {/* Item Breakdown */}
-      {(() => {
-        console.log('🔍 DayDetailView - itemBreakdown data:', (dayData as any).itemBreakdown)
-        return (dayData as any).itemBreakdown && (dayData as any).itemBreakdown.length > 0
-      })() && (
+      {(dayData as any).itemBreakdown && (dayData as any).itemBreakdown.length > 0 && (
         <div style={{
           background: 'white',
           padding: '24px',
@@ -278,7 +275,7 @@ export default function DayDetailView({
           {/* Category Summary */}
           <div style={{ marginBottom: '24px' }}>
             <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px', color: '#333' }}>Categories</h4>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
               {(() => {
                 const categories = (dayData as any).itemBreakdown.reduce((acc: any, item: any) => {
                   const category = item.category || 'Other'
@@ -286,17 +283,37 @@ export default function DayDetailView({
                   return acc
                 }, {})
                 
+                const categoryColors = {
+                  'Beverages': '#3b82f6',
+                  'Food': '#10b981', 
+                  'Pastries': '#f59e0b',
+                  'Gifts': '#8b5cf6',
+                  'Other': '#64748b'
+                }
+                
                 return Object.entries(categories).map(([category, total]: [string, any]) => (
                   <div key={category} style={{ 
-                    padding: '12px', 
-                    background: '#f8f9fa', 
+                    padding: '10px', 
+                    background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)', 
                     borderRadius: '8px',
-                    textAlign: 'center'
+                    textAlign: 'center',
+                    border: '1px solid #e2e8f0'
                   }}>
-                    <div style={{ fontSize: '14px', fontWeight: '600', color: '#333', marginBottom: '4px' }}>
+                    <div style={{ 
+                      fontSize: '12px', 
+                      fontWeight: '600', 
+                      color: '#475569', 
+                      marginBottom: '4px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px'
+                    }}>
                       {category}
                     </div>
-                    <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#4caf50' }}>
+                    <div style={{ 
+                      fontSize: '16px', 
+                      fontWeight: 'bold', 
+                      color: categoryColors[category as keyof typeof categoryColors] || '#64748b'
+                    }}>
                       {formatCurrency(total)}
                     </div>
                   </div>
@@ -305,45 +322,87 @@ export default function DayDetailView({
             </div>
           </div>
 
-          {/* Top Items */}
+          {/* Top Items - Grid Layout */}
           <div>
             <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px', color: '#333' }}>Top Selling Items</h4>
-            <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-              {(dayData as any).itemBreakdown.slice(0, 10).map((item: any, index: number) => (
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
+              gap: '12px',
+              maxHeight: 'none'
+            }}>
+              {(dayData as any).itemBreakdown.slice(0, 12).map((item: any, index: number) => (
                 <div key={`${item.item_name}_${item.variant_name || 'default'}`} style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
                   padding: '12px',
-                  borderBottom: index < Math.min((dayData as any).itemBreakdown.length - 1, 9) ? '1px solid #e1e5e9' : 'none',
-                  background: index % 2 === 0 ? '#f8f9fa' : 'white',
-                  borderRadius: index === 0 ? '8px 8px 0 0' : 
-                               index === Math.min((dayData as any).itemBreakdown.length - 1, 9) ? '0 0 8px 8px' : '0'
+                  background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+                  borderRadius: '8px',
+                  border: '1px solid #e2e8f0',
+                  transition: 'all 0.2s ease',
+                  position: 'relative',
+                  overflow: 'hidden'
                 }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '14px', fontWeight: '600', color: '#333' }}>
+                  {/* Ranking badge */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '8px',
+                    right: '8px',
+                    background: index < 3 ? '#fbbf24' : '#64748b',
+                    color: 'white',
+                    fontSize: '10px',
+                    fontWeight: 'bold',
+                    padding: '2px 6px',
+                    borderRadius: '12px',
+                    minWidth: '20px',
+                    textAlign: 'center'
+                  }}>
+                    #{index + 1}
+                  </div>
+                  
+                  <div style={{ marginRight: '30px' }}>
+                    <div style={{ fontSize: '14px', fontWeight: '600', color: '#1e293b', marginBottom: '4px' }}>
                       {item.item_name}
                       {item.variant_name && (
-                        <span style={{ fontSize: '12px', color: '#666', marginLeft: '8px' }}>
+                        <span style={{ fontSize: '11px', color: '#64748b', marginLeft: '6px', fontWeight: '400' }}>
                           ({item.variant_name})
                         </span>
                       )}
                     </div>
-                    <div style={{ fontSize: '12px', color: '#666', marginTop: '2px' }}>
-                      {item.category} • Qty: {item.quantity} • Avg: {formatCurrency(item.average_price)}
+                    
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '12px', color: '#64748b' }}>
+                        {item.category}
+                      </span>
+                      <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#0f172a' }}>
+                        {formatCurrency(item.total_sales)}
+                      </span>
                     </div>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '16px', fontWeight: '600', color: '#333' }}>
-                      {formatCurrency(item.total_sales)}
-                    </div>
-                    <div style={{ fontSize: '12px', color: '#666' }}>
-                      {((item.total_sales / dayData.total) * 100).toFixed(1)}%
+                    
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#64748b' }}>
+                      <span>Qty: {item.quantity}</span>
+                      <span>Avg: {formatCurrency(item.average_price)}</span>
+                      <span style={{ fontWeight: '600', color: '#059669' }}>
+                        {((item.total_sales / dayData.total) * 100).toFixed(1)}%
+                      </span>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
+            
+            {/* Show more items indicator */}
+            {(dayData as any).itemBreakdown.length > 12 && (
+              <div style={{
+                textAlign: 'center',
+                marginTop: '12px',
+                padding: '8px',
+                background: '#f8fafc',
+                borderRadius: '6px',
+                fontSize: '12px',
+                color: '#64748b'
+              }}>
+                + {(dayData as any).itemBreakdown.length - 12} more items sold
+              </div>
+            )}
           </div>
         </div>
       )}
