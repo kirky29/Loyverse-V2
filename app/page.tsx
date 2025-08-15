@@ -1021,131 +1021,156 @@ export default function Home() {
       }}>
 
 
-        {/* Location Performance Cards */}
-        {activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2' && dailyTakings.length > 0 ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginBottom: '24px' }}>
-            {(() => {
-              const shopId = 'd5a7267b-ca6f-4490-9d66-b5ba46cc563c'
-              const cafeId = 'e2aa143e-3e91-433e-a6d8-5a5538d429e2'
-              const shopTotal = dailyTakings.reduce((sum, day) => sum + (day.locationBreakdown?.[shopId] || 0), 0)
-              const cafeTotal = dailyTakings.reduce((sum, day) => sum + (day.locationBreakdown?.[cafeId] || 0), 0)
-              const combinedTotal = shopTotal + cafeTotal
-              const shopPercentage = combinedTotal > 0 ? (shopTotal / combinedTotal * 100).toFixed(1) : '0'
-              const cafePercentage = combinedTotal > 0 ? (cafeTotal / combinedTotal * 100).toFixed(1) : '0'
-              
-              return (
-                <>
-                  <div style={{
-                    background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
-                    borderRadius: '12px',
-                    padding: '20px',
-                    color: 'white',
-                    boxShadow: '0 4px 12px rgba(33, 150, 243, 0.3)'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-                      <div style={{ fontSize: '20px', marginRight: '8px' }}>🏪</div>
-                      <div style={{ fontSize: '14px', fontWeight: '600', opacity: 0.9 }}>
-                        SHOP LOCATION
+        {/* Performance Cards - Unified Design */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginBottom: '24px' }}>
+          {/* Check if this is a multi-store account with location breakdown */}
+          {activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2' && dailyTakings.length > 0 ? (
+            <>
+              {(() => {
+                const shopId = 'd5a7267b-ca6f-4490-9d66-b5ba46cc563c'
+                const cafeId = 'e2aa143e-3e91-433e-a6d8-5a5538d429e2'
+                const shopTotal = dailyTakings.reduce((sum, day) => sum + (day.locationBreakdown?.[shopId] || 0), 0)
+                const cafeTotal = dailyTakings.reduce((sum, day) => sum + (day.locationBreakdown?.[cafeId] || 0), 0)
+                const combinedTotal = shopTotal + cafeTotal
+                const shopPercentage = combinedTotal > 0 ? (shopTotal / combinedTotal * 100).toFixed(1) : '0'
+                const cafePercentage = combinedTotal > 0 ? (cafeTotal / combinedTotal * 100).toFixed(1) : '0'
+                
+                return (
+                  <>
+                    <div style={{
+                      background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+                      borderRadius: '12px',
+                      padding: '20px',
+                      color: 'white',
+                      boxShadow: '0 4px 12px rgba(33, 150, 243, 0.3)'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+                        <div style={{ fontSize: '20px', marginRight: '8px' }}>🏪</div>
+                        <div style={{ fontSize: '14px', fontWeight: '600', opacity: 0.9 }}>
+                          SHOP LOCATION
+                        </div>
+                      </div>
+                      <div style={{ fontSize: '28px', fontWeight: '700', marginBottom: '4px' }}>
+                        {formatCurrency(shopTotal)}
+                      </div>
+                      <div style={{ fontSize: '12px', opacity: 0.8 }}>
+                        {shopPercentage}% of total revenue
                       </div>
                     </div>
-                    <div style={{ fontSize: '28px', fontWeight: '700', marginBottom: '4px' }}>
-                      {formatCurrency(shopTotal)}
-                    </div>
-                    <div style={{ fontSize: '12px', opacity: 0.8 }}>
-                      {shopPercentage}% of total revenue
-                    </div>
-                  </div>
 
-                  <div style={{
-                    background: 'linear-gradient(135deg, #4caf50 0%, #388e3c 100%)',
-                    borderRadius: '12px',
-                    padding: '20px',
-                    color: 'white',
-                    boxShadow: '0 4px 12px rgba(76, 175, 80, 0.3)'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-                      <div style={{ fontSize: '20px', marginRight: '8px' }}>☕</div>
-                      <div style={{ fontSize: '14px', fontWeight: '600', opacity: 0.9 }}>
-                        CAFE LOCATION
+                    <div style={{
+                      background: 'linear-gradient(135deg, #4caf50 0%, #388e3c 100%)',
+                      borderRadius: '12px',
+                      padding: '20px',
+                      color: 'white',
+                      boxShadow: '0 4px 12px rgba(76, 175, 80, 0.3)'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+                        <div style={{ fontSize: '20px', marginRight: '8px' }}>☕</div>
+                        <div style={{ fontSize: '14px', fontWeight: '600', opacity: 0.9 }}>
+                          CAFE LOCATION
+                        </div>
+                      </div>
+                      <div style={{ fontSize: '28px', fontWeight: '700', marginBottom: '4px' }}>
+                        {formatCurrency(cafeTotal)}
+                      </div>
+                      <div style={{ fontSize: '12px', opacity: 0.8 }}>
+                        {cafePercentage}% of total revenue
                       </div>
                     </div>
-                    <div style={{ fontSize: '28px', fontWeight: '700', marginBottom: '4px' }}>
-                      {formatCurrency(cafeTotal)}
-                    </div>
-                    <div style={{ fontSize: '12px', opacity: 0.8 }}>
-                      {cafePercentage}% of total revenue
-                    </div>
-                  </div>
 
-                  <div style={{
-                    background: 'linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%)',
-                    borderRadius: '12px',
-                    padding: '20px',
-                    color: 'white',
-                    boxShadow: '0 4px 12px rgba(156, 39, 176, 0.3)'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-                      <div style={{ fontSize: '20px', marginRight: '8px' }}>🏢</div>
-                      <div style={{ fontSize: '14px', fontWeight: '600', opacity: 0.9 }}>
-                        COMBINED TOTAL
+                    <div style={{
+                      background: 'linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%)',
+                      borderRadius: '12px',
+                      padding: '20px',
+                      color: 'white',
+                      boxShadow: '0 4px 12px rgba(156, 39, 176, 0.3)'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+                        <div style={{ fontSize: '20px', marginRight: '8px' }}>🏢</div>
+                        <div style={{ fontSize: '14px', fontWeight: '600', opacity: 0.9 }}>
+                          COMBINED TOTAL
+                        </div>
+                      </div>
+                      <div style={{ fontSize: '28px', fontWeight: '700', marginBottom: '4px' }}>
+                        {formatCurrency(combinedTotal)}
+                      </div>
+                      <div style={{ fontSize: '12px', opacity: 0.8 }}>
+                        Both locations combined
                       </div>
                     </div>
-                    <div style={{ fontSize: '28px', fontWeight: '700', marginBottom: '4px' }}>
-                      {formatCurrency(combinedTotal)}
-                    </div>
-                    <div style={{ fontSize: '12px', opacity: 0.8 }}>
-                      Both locations combined
-                    </div>
+                  </>
+                )
+              })()}
+            </>
+          ) : (
+            /* Single Store Account - Same Beautiful Design */
+            <>
+              <div style={{
+                background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+                borderRadius: '12px',
+                padding: '20px',
+                color: 'white',
+                boxShadow: '0 4px 12px rgba(33, 150, 243, 0.3)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+                  <div style={{ fontSize: '20px', marginRight: '8px' }}>💰</div>
+                  <div style={{ fontSize: '14px', fontWeight: '600', opacity: 0.9 }}>
+                    TOTAL REVENUE
                   </div>
-                </>
-              )
-            })()}
-          </div>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginBottom: '24px' }}>
-            <div style={{
-              background: 'linear-gradient(135deg, #007bff 0%, #0056b3 100%)',
-              borderRadius: '12px',
-              padding: '20px',
-              color: 'white',
-              boxShadow: '0 4px 12px rgba(0, 123, 255, 0.3)'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-                <div style={{ fontSize: '20px', marginRight: '8px' }}>💰</div>
-                <div style={{ fontSize: '14px', fontWeight: '600', opacity: 0.9 }}>
-                  TOTAL REVENUE
+                </div>
+                <div style={{ fontSize: '28px', fontWeight: '700', marginBottom: '4px' }}>
+                  {formatCurrency(totalTakings)}
+                </div>
+                <div style={{ fontSize: '12px', opacity: 0.8 }}>
+                  All sales combined
                 </div>
               </div>
-              <div style={{ fontSize: '28px', fontWeight: '700', marginBottom: '4px' }}>
-                {formatCurrency(totalTakings)}
-              </div>
-              <div style={{ fontSize: '12px', opacity: 0.8 }}>
-                All sales combined
-              </div>
-            </div>
 
-            <div style={{
-              background: 'linear-gradient(135deg, #28a745 0%, #1e7e34 100%)',
-              borderRadius: '12px',
-              padding: '20px',
-              color: 'white',
-              boxShadow: '0 4px 12px rgba(40, 167, 69, 0.3)'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-                <div style={{ fontSize: '20px', marginRight: '8px' }}>📊</div>
-                <div style={{ fontSize: '14px', fontWeight: '600', opacity: 0.9 }}>
-                  DAILY AVERAGE
+              <div style={{
+                background: 'linear-gradient(135deg, #4caf50 0%, #388e3c 100%)',
+                borderRadius: '12px',
+                padding: '20px',
+                color: 'white',
+                boxShadow: '0 4px 12px rgba(76, 175, 80, 0.3)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+                  <div style={{ fontSize: '20px', marginRight: '8px' }}>📊</div>
+                  <div style={{ fontSize: '14px', fontWeight: '600', opacity: 0.9 }}>
+                    DAILY AVERAGE
+                  </div>
+                </div>
+                <div style={{ fontSize: '28px', fontWeight: '700', marginBottom: '4px' }}>
+                  {formatCurrency(averageTakings)}
+                </div>
+                <div style={{ fontSize: '12px', opacity: 0.8 }}>
+                  Average per day
                 </div>
               </div>
-              <div style={{ fontSize: '28px', fontWeight: '700', marginBottom: '4px' }}>
-                {formatCurrency(averageTakings)}
+
+              <div style={{
+                background: 'linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%)',
+                borderRadius: '12px',
+                padding: '20px',
+                color: 'white',
+                boxShadow: '0 4px 12px rgba(156, 39, 176, 0.3)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+                  <div style={{ fontSize: '20px', marginRight: '8px' }}>🏪</div>
+                  <div style={{ fontSize: '14px', fontWeight: '600', opacity: 0.9 }}>
+                    STORE PERFORMANCE
+                  </div>
+                </div>
+                <div style={{ fontSize: '28px', fontWeight: '700', marginBottom: '4px' }}>
+                  {dailyTakings.length > 0 ? dailyTakings.length : 0} days
+                </div>
+                <div style={{ fontSize: '12px', opacity: 0.8 }}>
+                  Data collected
+                </div>
               </div>
-              <div style={{ fontSize: '12px', opacity: 0.8 }}>
-                Average per day
-              </div>
-            </div>
-          </div>
-        )}
+            </>
+          )}
+        </div>
 
 
 
