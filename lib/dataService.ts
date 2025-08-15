@@ -98,17 +98,97 @@ export class DataService {
   }
 
   // Force resync all data (clears cache and reloads)
-  async forceResync(account: LoyverseAccount): Promise<DailyTaking[]> {
+  async forceResync(
+    account: LoyverseAccount,
+    onProgress?: (progress: number, activity: string) => void
+  ): Promise<DailyTaking[]> {
     console.log('🔄 Force resync for', account.name)
     
-    // Clear all cache for this account
+    // Step 1: Clear cache (10%)
+    onProgress?.(10, 'Clearing cached data...')
     await this.cache.clearAccount(account.id)
     
-    // Load fresh historical data
-    const historicalData = await this.getHistoricalData(account)
+    // Step 2: Start data fetch (20%)
+    onProgress?.(20, 'Connecting to Loyverse API...')
     
+    // Step 3: Load fresh historical data with progress tracking
+    const historicalData = await this.getHistoricalDataWithProgress(account, onProgress)
+    
+    // Step 4: Complete (100%)
+    onProgress?.(100, 'Sync completed successfully!')
     console.log('✅ Force resync completed:', historicalData.length, 'days')
     return historicalData
+  }
+
+  // Enhanced getHistoricalData with progress tracking
+  private async getHistoricalDataWithProgress(
+    account: LoyverseAccount,
+    onProgress?: (progress: number, activity: string) => void
+  ): Promise<DailyTaking[]> {
+    try {
+      onProgress?.(30, 'Fetching receipt data...')
+      
+      // Calculate date range for progress estimation
+      const startDate = new Date()
+      startDate.setDate(startDate.getDate() - 365) // Last year
+      const fromDate = startDate.toISOString().split('T')[0]
+      
+      onProgress?.(40, 'Processing sales receipts...')
+      
+      const response = await fetch('/api/daily-takings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          apiToken: account.apiToken,
+          storeId: account.storeId,
+          includeAllStores: false,
+          fromDate,
+          daysToLoad: 365,
+          priority: 'high'
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch daily takings')
+      }
+
+      onProgress?.(60, 'Enriching with category data...')
+      
+      const data = await response.json()
+      
+      onProgress?.(80, 'Organizing data by date...')
+      
+      // Handle optimized data format
+      let processedData: DailyTaking[]
+      if (Array.isArray(data) && data.length > 0 && data[0].d) {
+        // Convert optimized format back to full format
+        processedData = data.map(item => ({
+          date: item.d,
+          total: item.t,
+          receiptCount: item.rc,
+          averageReceipt: item.ar,
+          paymentBreakdown: item.pb,
+          locationBreakdown: item.lb,
+          itemBreakdown: item.ib
+        }))
+      } else {
+        processedData = Array.isArray(data) ? data : []
+      }
+      
+      onProgress?.(90, 'Caching processed data...')
+      
+      // Cache the fresh data
+      if (processedData.length > 0) {
+        await this.cache.setTemporaryCache(account.id, processedData, fromDate)
+      }
+      
+      return processedData
+    } catch (error) {
+      onProgress?.(100, 'Error occurred during sync')
+      throw error
+    }
   }
 
   // Get data with intelligent caching

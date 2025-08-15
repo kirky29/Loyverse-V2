@@ -13,6 +13,7 @@ const AccountManager = lazy(() => import('./components/AccountManager'))
 const DayDetailView = lazy(() => import('./components/DayDetailView'))
 const SimpleMainDashboard = lazy(() => import('./components/SimpleMainDashboard'))
 const EnhancedPerformanceTable = lazy(() => import('./components/EnhancedPerformanceTable'))
+const EnhancedLoadingScreen = lazy(() => import('./components/EnhancedLoadingScreen'))
 
 // Loading fallback component
 const ComponentLoader = ({ name }: { name: string }) => (
@@ -137,6 +138,16 @@ function OptimizedPage({ user }: OptimizedPageProps) {
   const [error, setError] = useState<string | null>(null)
   const [backgroundLoading, setBackgroundLoading] = useState(false)
   const [loadingProgress, setLoadingProgress] = useState({ current: 0, total: 0, currentAccount: '' })
+  
+  // Enhanced loading state for force resync
+  const [syncProgress, setSyncProgress] = useState(0)
+  const [syncActivities, setSyncActivities] = useState<Array<{
+    id: string
+    message: string
+    status: 'pending' | 'active' | 'completed' | 'error'
+    timestamp: Date
+  }>>([])
+  const [estimatedTimeRemaining, setEstimatedTimeRemaining] = useState<number>(0)
 
   // Services
   const [dataService] = useState(() => new DataService(user.uid))
@@ -267,16 +278,64 @@ function OptimizedPage({ user }: OptimizedPageProps) {
     if (activeAccount) {
       console.log('🔄 Force resync for', activeAccount.name)
       setLoading(true)
+      setSyncProgress(0)
+      setSyncActivities([])
+      setEstimatedTimeRemaining(30) // Estimate 30 seconds
+      
+      // Initial activity
+      const addActivity = (message: string, status: 'pending' | 'active' | 'completed' | 'error' = 'active') => {
+        const activity = {
+          id: Date.now().toString(),
+          message,
+          status,
+          timestamp: new Date()
+        }
+        setSyncActivities(prev => [...prev, activity])
+      }
+      
+      // Estimate countdown
+      const startTime = Date.now()
+      const estimateInterval = setInterval(() => {
+        const elapsed = (Date.now() - startTime) / 1000
+        const remaining = Math.max(0, 30 - elapsed)
+        setEstimatedTimeRemaining(Math.round(remaining))
+        if (remaining <= 0) clearInterval(estimateInterval)
+      }, 1000)
+      
+      addActivity('Starting force resync...', 'active')
+      
       try {
-        const freshData = await dataService.forceResync(activeAccount)
+        const freshData = await dataService.forceResync(activeAccount, (progress, activity) => {
+          setSyncProgress(progress)
+          addActivity(activity, progress === 100 ? 'completed' : 'active')
+          
+          // Update time estimate based on progress
+          if (progress > 0) {
+            const elapsed = (Date.now() - startTime) / 1000
+            const estimatedTotal = (elapsed / progress) * 100
+            const remaining = Math.max(0, estimatedTotal - elapsed)
+            setEstimatedTimeRemaining(Math.round(remaining))
+          }
+        })
+        
         setDailyTakings(freshData)
         setError(null)
+        addActivity(`Sync completed! Loaded ${freshData.length} days of data.`, 'completed')
+        clearInterval(estimateInterval)
+        setEstimatedTimeRemaining(0)
         console.log('✅ Force resync completed:', freshData.length, 'days')
+        
+        // Auto-hide loading after a brief delay to show completion
+        setTimeout(() => {
+          setLoading(false)
+        }, 1500)
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Force resync failed'
         console.error('❌ Error during force resync:', err)
         setError(errorMessage)
-      } finally {
+        addActivity(`Error: ${errorMessage}`, 'error')
+        clearInterval(estimateInterval)
+        setEstimatedTimeRemaining(0)
         setLoading(false)
       }
     }
@@ -579,8 +638,20 @@ function OptimizedPage({ user }: OptimizedPageProps) {
 
             </div>
 
-            {/* Loading State */}
-            {(loading || criticalLoading) && (
+            {/* Enhanced Loading State */}
+            {loading && syncProgress > 0 && (
+              <Suspense fallback={<div>Loading...</div>}>
+                <EnhancedLoadingScreen 
+                  accountName={activeAccount.name}
+                  progress={syncProgress}
+                  activities={syncActivities}
+                  estimatedTimeRemaining={estimatedTimeRemaining}
+                />
+              </Suspense>
+            )}
+            
+            {/* Simple Loading State for other operations */}
+            {(loading && syncProgress === 0) || criticalLoading && (
               <div style={{
                 textAlign: 'center',
                 padding: '60px 20px',
