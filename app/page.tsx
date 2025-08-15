@@ -1627,7 +1627,14 @@ export default function Home() {
           margin: '0 auto'
         }}>
           {/* Logo */}
-          <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div 
+            style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+            onClick={() => {
+              setCurrentView('main')
+              setSelectedDay(null)
+              setActiveTab('dashboard')
+            }}
+          >
             <div style={{
               width: '50px',
               height: '50px',
@@ -1637,8 +1644,16 @@ export default function Home() {
               alignItems: 'center',
               justifyContent: 'center',
               marginRight: '12px',
-              boxShadow: '0 4px 8px rgba(255, 107, 53, 0.3)'
-            }}>
+              boxShadow: '0 4px 8px rgba(255, 107, 53, 0.3)',
+              transition: 'transform 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.05)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)'
+            }}
+            >
               <span style={{ color: 'white', fontSize: '24px', fontWeight: 'bold' }}>L</span>
             </div>
             <div>
@@ -1671,24 +1686,6 @@ export default function Home() {
             >
               🏠 Home
             </button>
-            <button
-              onClick={() => {
-                setCurrentView('accountManager')
-                setActiveTab('accounts')
-              }}
-              style={{
-                background: '#20c997',
-                color: 'white',
-                border: 'none',
-                padding: '8px 16px',
-                borderRadius: '6px',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer'
-              }}
-            >
-              ⚙️ Stores
-            </button>
             
             {/* Store Account Buttons */}
             {accounts.length > 0 && (
@@ -1702,7 +1699,10 @@ export default function Home() {
                   return (
                   <button
                     key={acc.id}
-                    onClick={() => switchAccount(acc)}
+                    onClick={() => {
+                      selectAccountFromMain(acc)
+                      setCurrentView('account')
+                    }}
                     style={{
                       padding: '8px 16px',
                       borderRadius: '6px',
@@ -1736,24 +1736,7 @@ export default function Home() {
                   </button>
                   )
                 })}
-                <button
-                  onClick={() => {
-                    setCurrentView('accountManager')
-                    setActiveTab('accounts')
-                  }}
-                  style={{
-                    padding: '8px 16px',
-                    borderRadius: '6px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    border: '2px dashed #20c997',
-                    background: 'white',
-                    color: '#20c997'
-                  }}
-                >
-                  + Add Store
-                </button>
+
               </>
             )}
           </nav>
