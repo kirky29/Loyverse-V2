@@ -1276,7 +1276,7 @@ export default function EnhancedPerformanceTable({
                 const allColumns = Object.keys(visibleColumns).reduce((acc, key) => ({
                   ...acc,
                   [key]: key === 'date' // Only keep date column required
-                }), {})
+                }), {} as typeof visibleColumns)
                 setFilterState(prev => ({
                   ...prev,
                   visibleColumns: allColumns,
@@ -1303,7 +1303,7 @@ export default function EnhancedPerformanceTable({
                 const allColumns = Object.keys(visibleColumns).reduce((acc, key) => ({
                   ...acc,
                   [key]: true
-                }), {})
+                }), {} as typeof visibleColumns)
                 setFilterState(prev => ({
                   ...prev,
                   visibleColumns: allColumns,
