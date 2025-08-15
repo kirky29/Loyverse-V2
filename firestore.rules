@@ -1,0 +1,26 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow authenticated users to access their own data
+    match /users/{userId} {
+      // Users can read and write their own user document
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Users can read and write their own cache subcollection
+      match /cache/{cacheId} {
+        allow read, write, create, delete: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      // Users can read and write their own accounts subcollection
+      match /accounts/{accountId} {
+        allow read, write, create, delete: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+    
+    // Deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
