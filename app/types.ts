@@ -4,6 +4,7 @@ export interface DailyTaking {
   receiptCount: number
   averageReceipt: number
   locationBreakdown?: { [locationId: string]: number }
+  paymentBreakdown?: { cash: number; card: number }
 }
 
 export interface LoyverseAccount {

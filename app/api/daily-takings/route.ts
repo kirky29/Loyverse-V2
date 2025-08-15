@@ -127,6 +127,7 @@ async function fetchDailyTakings(apiToken: string, storeId: string, includeAllSt
     // Filter out voided/cancelled receipts and aggregate by date
     const dailyTakingsMap = new Map<string, DailyTaking>()
     const locationBreakdown = new Map<string, { [locationId: string]: number }>()
+    const paymentBreakdown = new Map<string, { cash: number; card: number }>()
 
     receipts.forEach(receipt => {
       // Check if receipt is voided or cancelled
@@ -142,6 +143,23 @@ async function fetchDailyTakings(apiToken: string, storeId: string, includeAllSt
       
       const total = receipt.total_money || receipt.total || 0
       const locationId = receipt.store_id
+
+      // Calculate payment method totals for this receipt
+      let cashTotal = 0
+      let cardTotal = 0
+      
+      if (receipt.payments && Array.isArray(receipt.payments)) {
+        receipt.payments.forEach(payment => {
+          const amount = payment.amount || 0
+          const paymentType = payment.payment_type?.toLowerCase() || ''
+          
+          if (paymentType === 'cash') {
+            cashTotal += amount
+          } else if (paymentType === 'card' || paymentType === 'credit_card' || paymentType === 'debit_card') {
+            cardTotal += amount
+          }
+        })
+      }
 
       // Aggregate daily totals
       const existing = dailyTakingsMap.get(date)
@@ -164,18 +182,32 @@ async function fetchDailyTakings(apiToken: string, storeId: string, includeAllSt
       }
       const dayBreakdown = locationBreakdown.get(date)!
       dayBreakdown[locationId] = (dayBreakdown[locationId] || 0) + total
+
+      // Track payment method breakdown
+      if (!paymentBreakdown.has(date)) {
+        paymentBreakdown.set(date, { cash: 0, card: 0 })
+      }
+      const dayPaymentBreakdown = paymentBreakdown.get(date)!
+      dayPaymentBreakdown.cash += cashTotal
+      dayPaymentBreakdown.card += cardTotal
     })
 
     // Convert to array and sort by date (newest first)
     const dailyTakings: DailyTaking[] = Array.from(dailyTakingsMap.values())
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
-    // Add location breakdown to each daily taking
+    // Add location and payment breakdown to each daily taking
     dailyTakings.forEach(taking => {
       const breakdown = locationBreakdown.get(taking.date)
       if (breakdown) {
         // Add location breakdown as metadata
         ;(taking as any).locationBreakdown = breakdown
+      }
+      
+      const paymentData = paymentBreakdown.get(taking.date)
+      if (paymentData) {
+        // Add payment breakdown
+        taking.paymentBreakdown = paymentData
       }
     })
 

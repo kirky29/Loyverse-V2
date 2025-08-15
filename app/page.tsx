@@ -16,6 +16,8 @@ interface AccountFilterState {
     receipts: boolean
     average: boolean
     status: boolean
+    cash: boolean
+    card: boolean
   }
   dateFilter: { from: string; to: string }
   amountFilter: { min: string; max: string }
@@ -74,7 +76,8 @@ function PerformanceTable({
           total: 0,
           receiptCount: 0,
           averageReceipt: 0,
-          locationBreakdown: {}
+          locationBreakdown: {},
+          paymentBreakdown: { cash: 0, card: 0 }
         })
       }
     }
@@ -128,6 +131,12 @@ function PerformanceTable({
         } else if (sortColumn === 'average') {
           aVal = a.averageReceipt || 0
           bVal = b.averageReceipt || 0
+        } else if (sortColumn === 'cash') {
+          aVal = a.paymentBreakdown?.cash || 0
+          bVal = b.paymentBreakdown?.cash || 0
+        } else if (sortColumn === 'card') {
+          aVal = a.paymentBreakdown?.card || 0
+          bVal = b.paymentBreakdown?.card || 0
         }
         
         if (sortDirection === 'asc') {
@@ -194,7 +203,7 @@ function PerformanceTable({
         color: '#666'
       }}>
         <h3 style={{ fontSize: '20px', fontWeight: 'bold', color: '#333', margin: '0 0 20px 0' }}>
-          📅 Daily Performance by Location
+          📅 Daily Sales
         </h3>
         <p>No data available. Switch to an account with data to see performance metrics.</p>
       </div>
@@ -212,7 +221,7 @@ function PerformanceTable({
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h3 style={{ fontSize: '20px', fontWeight: 'bold', color: '#333', margin: 0 }}>
-          📅 Daily Performance by Location
+          📅 Daily Sales
         </h3>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button
@@ -454,17 +463,39 @@ function PerformanceTable({
                   📊 Average {getSortIcon('average')}
                 </th>
               )}
-              {visibleColumns.status && (
-                <th style={{
-                  padding: '12px 16px',
-                  textAlign: 'center',
-                  fontWeight: '600',
-                  color: '#333',
-                  borderBottom: '2px solid #dee2e6'
-                }}>
-                  Status
+              {visibleColumns.cash && (
+                <th
+                  onClick={() => handleSort('cash')}
+                  style={{
+                    padding: '12px 16px',
+                    textAlign: 'right',
+                    fontWeight: '600',
+                    color: '#333',
+                    borderBottom: '2px solid #dee2e6',
+                    cursor: 'pointer',
+                    userSelect: 'none'
+                  }}
+                >
+                  💵 Cash {getSortIcon('cash')}
                 </th>
               )}
+              {visibleColumns.card && (
+                <th
+                  onClick={() => handleSort('card')}
+                  style={{
+                    padding: '12px 16px',
+                    textAlign: 'right',
+                    fontWeight: '600',
+                    color: '#333',
+                    borderBottom: '2px solid #dee2e6',
+                    cursor: 'pointer',
+                    userSelect: 'none'
+                  }}
+                >
+                  💳 Card {getSortIcon('card')}
+                </th>
+              )}
+              {/* Status column removed - redundant with date column */}
             </tr>
           </thead>
           <tbody>
@@ -551,55 +582,27 @@ function PerformanceTable({
                       {formatCurrency(day.averageReceipt || 0)}
                     </td>
                   )}
-                  {visibleColumns.status && (
-                    <td style={{ padding: '12px 16px', textAlign: 'center' }}>
-                      {isToday ? (
-                        <span style={{
-                          background: '#2196f3',
-                          color: 'white',
-                          padding: '4px 12px',
-                          borderRadius: '12px',
-                          fontSize: '12px',
-                          fontWeight: '600'
-                        }}>
-                          TODAY
-                        </span>
-                      ) : isYesterday ? (
-                        <span style={{
-                          background: '#4caf50',
-                          color: 'white',
-                          padding: '4px 12px',
-                          borderRadius: '12px',
-                          fontSize: '12px',
-                          fontWeight: '600'
-                        }}>
-                          YESTERDAY
-                        </span>
-                      ) : combinedAmount === 0 ? (
-                        <span style={{
-                          background: '#ffc107',
-                          color: '#333',
-                          padding: '4px 12px',
-                          borderRadius: '12px',
-                          fontSize: '12px',
-                          fontWeight: '600'
-                        }}>
-                          NO SALES
-                        </span>
-                      ) : (
-                        <span style={{
-                          background: '#9e9e9e',
-                          color: 'white',
-                          padding: '4px 12px',
-                          borderRadius: '12px',
-                          fontSize: '12px',
-                          fontWeight: '600'
-                        }}>
-                          PAST
-                        </span>
-                      )}
+                  {visibleColumns.cash && (
+                    <td style={{
+                      padding: '12px 16px',
+                      textAlign: 'right',
+                      fontWeight: isToday ? '700' : '600',
+                      color: (day.paymentBreakdown?.cash || 0) === 0 ? '#999' : '#333'
+                    }}>
+                      {formatCurrency(day.paymentBreakdown?.cash || 0)}
                     </td>
                   )}
+                  {visibleColumns.card && (
+                    <td style={{
+                      padding: '12px 16px',
+                      textAlign: 'right',
+                      fontWeight: isToday ? '700' : '600',
+                      color: (day.paymentBreakdown?.card || 0) === 0 ? '#999' : '#333'
+                    }}>
+                      {formatCurrency(day.paymentBreakdown?.card || 0)}
+                    </td>
+                  )}
+                  {/* Status column removed - redundant with date column */}
                 </tr>
               )
             })}
@@ -672,7 +675,9 @@ export default function Home() {
         combined: true,
         receipts: false,
         average: false,
-        status: true
+        status: false,
+        cash: false,
+        card: false
       },
       dateFilter: { from: '', to: '' },
       amountFilter: { min: '', max: '' },
