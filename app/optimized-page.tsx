@@ -255,10 +255,22 @@ function OptimizedPage({ user }: OptimizedPageProps) {
     }
   }
 
-  const loadHistoricalData = () => {
+  const forceResync = async () => {
     if (activeAccount) {
-      console.log('📈 Loading historical data since Oct 2024')
-      fetchAccountData(activeAccount, '2024-10-01')
+      console.log('🔄 Force resync for', activeAccount.name)
+      setLoading(true)
+      try {
+        const freshData = await dataService.forceResync(activeAccount)
+        setDailyTakings(freshData)
+        setError(null)
+        console.log('✅ Force resync completed:', freshData.length, 'days')
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Force resync failed'
+        console.error('❌ Error during force resync:', err)
+        setError(errorMessage)
+      } finally {
+        setLoading(false)
+      }
     }
   }
 
@@ -487,10 +499,10 @@ function OptimizedPage({ user }: OptimizedPageProps) {
               </button>
 
               <button
-                onClick={loadHistoricalData}
+                onClick={forceResync}
                 disabled={loading}
                 style={{
-                  background: loading ? '#e5e7eb' : 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                  background: loading ? '#e5e7eb' : 'linear-gradient(135deg, #ef4444, #dc2626)',
                   color: 'white',
                   border: 'none',
                   padding: '8px 16px',
@@ -503,7 +515,7 @@ function OptimizedPage({ user }: OptimizedPageProps) {
                   opacity: loading ? 0.6 : 1
                 }}
               >
-                📊 Load All Data (Since Oct 2024)
+                🔄 Force Resync
               </button>
 
               {/* Cache status indicator */}
@@ -664,7 +676,7 @@ function OptimizedPage({ user }: OptimizedPageProps) {
                       setSelectedDay(day)
                       setCurrentView('dayDetail')
                     }}
-                    onLoadHistoricalData={loadHistoricalData}
+                    onLoadHistoricalData={forceResync}
                   />
                 </Suspense>
               </div>

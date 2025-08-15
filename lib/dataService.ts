@@ -17,7 +17,7 @@ export class DataService {
       .digest('hex')
   }
 
-  // Progressive data loading - critical data first
+  // Progressive data loading - critical data first, then historical
   async getProgressiveData(
     account: LoyverseAccount, 
     onCriticalData?: (data: DailyTaking[]) => void,
@@ -31,22 +31,23 @@ export class DataService {
       onCriticalData(criticalData)
     }
     
-    // Step 2: Load extended data (last 31 days) in background
+    // Step 2: Load ALL historical data in background (since it won't change)
     setTimeout(async () => {
       try {
-        const extendedData = await this.getData(account, undefined, 31)
+        console.log('📚 Loading historical data in background for', account.name)
+        const historicalData = await this.getHistoricalData(account)
         if (onHistoricalData) {
-          onHistoricalData(extendedData)
+          onHistoricalData(historicalData)
         }
       } catch (error) {
-        console.error('Failed to load extended data:', error)
+        console.error('Failed to load historical data:', error)
       }
-    }, 100) // Small delay to ensure critical data renders first
+    }, 200) // Small delay to ensure critical data renders first
     
     return criticalData
   }
 
-  // Get critical data only (last 7 days)
+  // Get critical data only (last 7 days) - for current day updates
   async getCriticalData(account: LoyverseAccount): Promise<DailyTaking[]> {
     console.log('⚡ Loading critical data (7 days) for', account.name)
     
@@ -64,6 +65,41 @@ export class DataService {
     await this.cache.setInAllCaches(account.id, criticalData, 'critical-7d')
     
     return criticalData
+  }
+
+  // Get historical data (all data since Oct 2024) - cached permanently
+  async getHistoricalData(account: LoyverseAccount): Promise<DailyTaking[]> {
+    console.log('📚 Loading historical data for', account.name)
+    
+    // Try cache first for historical data
+    const cachedData = await this.cache.getFromAnyCache(account.id, 'historical-all')
+    if (cachedData) {
+      console.log('✅ Using cached historical data')
+      return cachedData.data
+    }
+
+    // Fetch all historical data from API
+    const historicalData = await this.fetchFromAPI(account, '2024-10-01', undefined, 'normal')
+    
+    // Cache with special key for historical data (longer cache duration)
+    await this.cache.setInAllCaches(account.id, historicalData, 'historical-all')
+    
+    console.log('✅ Historical data loaded and cached:', historicalData.length, 'days')
+    return historicalData
+  }
+
+  // Force resync all data (clears cache and reloads)
+  async forceResync(account: LoyverseAccount): Promise<DailyTaking[]> {
+    console.log('🔄 Force resync for', account.name)
+    
+    // Clear all cache for this account
+    await this.cache.clearAccount(account.id)
+    
+    // Load fresh historical data
+    const historicalData = await this.getHistoricalData(account)
+    
+    console.log('✅ Force resync completed:', historicalData.length, 'days')
+    return historicalData
   }
 
   // Get data with intelligent caching
@@ -88,12 +124,13 @@ export class DataService {
     return freshData
   }
 
-  // Background refresh (for real-time updates)
-  async backgroundRefresh(account: LoyverseAccount, fromDate?: string): Promise<void> {
+  // Background refresh (for real-time updates) - only current day
+  async backgroundRefresh(account: LoyverseAccount): Promise<void> {
     try {
-      console.log('🔄 Background refresh for', account.name)
-      const freshData = await this.fetchFromAPI(account, fromDate)
-      await this.cache.setInAllCaches(account.id, freshData, fromDate)
+      console.log('🔄 Background refresh for current day:', account.name)
+      // Only refresh critical data (current day)
+      const freshData = await this.fetchFromAPI(account, undefined, 7, 'high')
+      await this.cache.setInAllCaches(account.id, freshData, 'critical-7d')
     } catch (error) {
       console.error('Background refresh failed:', error)
     }
