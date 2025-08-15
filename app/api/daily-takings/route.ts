@@ -22,8 +22,8 @@ function optimizeResponseData(dailyTakings: DailyTaking[]): any {
 async function createOptimizedResponse(data: any, headers: Record<string, string> = {}): Promise<NextResponse> {
   const jsonString = JSON.stringify(data)
   
-  // Add base headers
-  const responseHeaders = {
+  // Add base headers with proper typing
+  const responseHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
     ...headers
   }
@@ -35,7 +35,7 @@ async function createOptimizedResponse(data: any, headers: Record<string, string
       responseHeaders['Content-Encoding'] = 'gzip'
       responseHeaders['Content-Length'] = compressed.length.toString()
       
-      return new NextResponse(compressed, {
+      return new NextResponse(compressed as BodyInit, {
         status: 200,
         headers: responseHeaders
       })
