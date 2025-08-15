@@ -83,7 +83,8 @@ function PerformanceTable({ dailyTakings, activeAccount, formatCurrency }: Perfo
     // Apply sorting
     if (sortColumn) {
       data.sort((a, b) => {
-        let aVal, bVal
+        let aVal: number = 0
+        let bVal: number = 0
         
         if (sortColumn === 'date') {
           aVal = new Date(a.date).getTime()
@@ -98,11 +99,11 @@ function PerformanceTable({ dailyTakings, activeAccount, formatCurrency }: Perfo
           aVal = getCombinedAmount(a)
           bVal = getCombinedAmount(b)
         } else if (sortColumn === 'receipts') {
-          aVal = a.receiptCount
-          bVal = b.receiptCount
+          aVal = a.receiptCount || 0
+          bVal = b.receiptCount || 0
         } else if (sortColumn === 'average') {
-          aVal = a.averageReceipt
-          bVal = b.averageReceipt
+          aVal = a.averageReceipt || 0
+          bVal = b.averageReceipt || 0
         }
         
         if (sortDirection === 'asc') {
