@@ -94,36 +94,47 @@ export default function EnhancedPerformanceTable({
 }: EnhancedPerformanceTableProps) {
   
   // Initialize filter state with enhanced features
-  const [filterState, setFilterState] = React.useState<AccountFilterState>({
-    sortColumn: 'date',
-    sortDirection: 'desc',
-    visibleColumns: {
-      date: true,
-      shop: activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2',
-      cafe: activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2',
-      combined: true,
-      receipts: true,
-      average: true,
-      status: false,
-      cash: true,
-      card: true
-    },
-    dateFilter: { from: '', to: '', preset: 'last30days' },
-    amountFilter: { 
-      min: '', 
-      max: '', 
-      receiptsMin: '', 
-      receiptsMax: '',
-      avgReceiptMin: '',
-      avgReceiptMax: ''
-    },
-    textFilter: '',
-    showFilters: false,
-    showColumnManager: false,
-    showAdvancedFilters: false,
-    recordsToShow: 30,
-    savedColumnPresets: {},
-    activeColumnPreset: 'essential'
+  const [filterState, setFilterState] = React.useState<AccountFilterState>(() => {
+    // Calculate initial dates for last 30 days
+    const today = new Date()
+    const thirtyDaysAgo = new Date(today)
+    thirtyDaysAgo.setDate(today.getDate() - 29) // 30 days including today
+    
+    return {
+      sortColumn: 'date',
+      sortDirection: 'desc',
+      visibleColumns: {
+        date: true,
+        shop: activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2',
+        cafe: activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2',
+        combined: true,
+        receipts: true,
+        average: true,
+        status: false,
+        cash: true,
+        card: true
+      },
+      dateFilter: { 
+        from: thirtyDaysAgo.toISOString().split('T')[0], 
+        to: today.toISOString().split('T')[0], 
+        preset: 'last30days' 
+      },
+      amountFilter: { 
+        min: '', 
+        max: '', 
+        receiptsMin: '', 
+        receiptsMax: '',
+        avgReceiptMin: '',
+        avgReceiptMax: ''
+      },
+      textFilter: '',
+      showFilters: false,
+      showColumnManager: false,
+      showAdvancedFilters: false,
+      recordsToShow: 30,
+      savedColumnPresets: {},
+      activeColumnPreset: 'essential'
+    }
   })
 
   // Utility functions for date handling
@@ -223,9 +234,12 @@ export default function EnhancedPerformanceTable({
 
   // Generate complete date range including days with no sales
   const generateCompleteDataset = () => {
-    const thirtyDaysAgo = new Date()
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - recordsToShow)
+    // If we have actual data, use it first
+    if (dailyTakings.length > 0) {
+      return dailyTakings
+    }
     
+    // Otherwise, generate empty placeholders based on recordsToShow
     const completeData = []
     const dataMap = new Map(dailyTakings.map(item => [item.date, item]))
     
@@ -286,6 +300,13 @@ export default function EnhancedPerformanceTable({
       totalDays: data.length,
       daysWithSales: data.filter(d => d.total > 0).length,
       dateRange: data.length > 0 ? `${data[data.length - 1].date} to ${data[0].date}` : 'none'
+    })
+    
+    console.log('Current filter state:', {
+      dateFilter,
+      amountFilter,
+      textFilter,
+      activePreset: dateFilter.preset
     })
     
     // Apply date filters
@@ -681,12 +702,23 @@ export default function EnhancedPerformanceTable({
 
             {/* Clear all filters */}
             <button
-              onClick={() => setFilterState(prev => ({
-                ...prev,
-                dateFilter: { from: '', to: '', preset: 'last30days' },
-                amountFilter: { min: '', max: '', receiptsMin: '', receiptsMax: '', avgReceiptMin: '', avgReceiptMax: '' },
-                textFilter: ''
-              }))}
+              onClick={() => {
+                // Reset to last 30 days with proper dates
+                const today = new Date()
+                const thirtyDaysAgo = new Date(today)
+                thirtyDaysAgo.setDate(today.getDate() - 29)
+                
+                setFilterState(prev => ({
+                  ...prev,
+                  dateFilter: { 
+                    from: thirtyDaysAgo.toISOString().split('T')[0], 
+                    to: today.toISOString().split('T')[0], 
+                    preset: 'last30days' 
+                  },
+                  amountFilter: { min: '', max: '', receiptsMin: '', receiptsMax: '', avgReceiptMin: '', avgReceiptMax: '' },
+                  textFilter: ''
+                }))
+              }}
               style={{
                 background: '#ef4444',
                 color: 'white',
@@ -1040,11 +1072,22 @@ export default function EnhancedPerformanceTable({
             flexWrap: 'wrap'
           }}>
             <button
-              onClick={() => setFilterState(prev => ({
-                ...prev,
-                dateFilter: { from: '', to: '', preset: 'last30days' },
-                amountFilter: { min: '', max: '', receiptsMin: '', receiptsMax: '', avgReceiptMin: '', avgReceiptMax: '' }
-              }))}
+              onClick={() => {
+                // Reset to last 30 days with proper dates
+                const today = new Date()
+                const thirtyDaysAgo = new Date(today)
+                thirtyDaysAgo.setDate(today.getDate() - 29)
+                
+                setFilterState(prev => ({
+                  ...prev,
+                  dateFilter: { 
+                    from: thirtyDaysAgo.toISOString().split('T')[0], 
+                    to: today.toISOString().split('T')[0], 
+                    preset: 'last30days' 
+                  },
+                  amountFilter: { min: '', max: '', receiptsMin: '', receiptsMax: '', avgReceiptMin: '', avgReceiptMax: '' }
+                }))
+              }}
               style={{
                 background: '#f3f4f6',
                 color: '#374151',
