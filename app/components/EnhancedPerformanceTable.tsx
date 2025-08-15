@@ -1005,8 +1005,6 @@ export default function EnhancedPerformanceTable({
             }}>
               📋 Column Manager
             </h4>
-
-            <div style={{ padding: '20px' }}>
             
             <div style={{
               background: '#ecfdf5',
@@ -1020,6 +1018,8 @@ export default function EnhancedPerformanceTable({
               {Object.values(visibleColumns).filter(Boolean).length} of {Object.keys(visibleColumns).length} columns visible
             </div>
           </div>
+
+          <div style={{ padding: '20px' }}>
 
           {/* Column Presets */}
           <div style={{ marginBottom: '20px' }}>
