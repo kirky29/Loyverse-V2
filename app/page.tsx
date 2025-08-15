@@ -3,8 +3,6 @@
 import { useState, useEffect } from 'react'
 import { LoyverseAccount, DailyTaking } from './types'
 import AccountManager from './components/AccountManager'
-import DailyTakingsChart from './components/DailyTakingsChart'
-import DailyTakingsTable from './components/DailyTakingsTable'
 
 export default function Home() {
   const [dailyTakings, setDailyTakings] = useState<DailyTaking[]>([])
@@ -1360,80 +1358,7 @@ export default function Home() {
           </div>
         )}
 
-        {/* Charts and Table Section */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px' }}>
-          {/* Chart */}
-          <div style={{ 
-            background: 'white', 
-            borderRadius: '12px', 
-            padding: '24px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-            position: 'relative'
-          }}>
-            <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: '#333', margin: '0 0 20px 0' }}>
-              📈 Revenue Trends
-            </h2>
-            {loading && dailyTakings.length === 0 ? (
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                height: '300px',
-                color: '#666',
-                fontSize: '16px'
-              }}>
-                <span style={{ 
-                  animation: 'spin 1s linear infinite',
-                  marginRight: '12px',
-                  fontSize: '16px'
-                }}>⟳</span>
-                Loading chart data...
-              </div>
-            ) : (
-              <DailyTakingsChart data={dailyTakings} />
-            )}
-          </div>
 
-          {/* Table */}
-          <div style={{
-            background: 'white',
-            borderRadius: '12px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-            overflow: 'hidden'
-          }}>
-            <div style={{
-              padding: '24px',
-              background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-              borderBottom: '1px solid #dee2e6'
-            }}>
-              <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: '#333', margin: '0 0 8px 0' }}>
-                📋 Daily Sales Breakdown
-              </h2>
-              <p style={{ color: '#666', margin: 0, fontSize: '14px' }}>
-                Detailed view of daily performance for {activeAccount?.name || 'your store'}
-              </p>
-            </div>
-            {loading && dailyTakings.length === 0 ? (
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                height: '200px',
-                color: '#666',
-                fontSize: '16px'
-              }}>
-                <span style={{ 
-                  animation: 'spin 1s linear infinite',
-                  marginRight: '12px',
-                  fontSize: '16px'
-                }}>⟳</span>
-                Loading table data...
-              </div>
-            ) : (
-              <DailyTakingsTable data={dailyTakings} />
-            )}
-          </div>
-        </div>
       </main>
     </div>
   )
