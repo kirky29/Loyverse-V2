@@ -1026,12 +1026,22 @@ export default function Home() {
       })))
       
       // Update UI if this is for the current active account
-      if (!account || targetAccount.id === activeAccount?.id) {
-        console.log('Updating UI for:', targetAccount.name, 'activeAccount:', activeAccount?.name)
+      const shouldUpdateUI = !account || targetAccount.id === activeAccount?.id
+      console.log('UI Update Check:', {
+        account: account?.name || 'undefined',
+        targetAccount: targetAccount.name,
+        activeAccount: activeAccount?.name || 'undefined',
+        targetAccountId: targetAccount.id,
+        activeAccountId: activeAccount?.id || 'undefined',
+        shouldUpdateUI
+      })
+      
+      if (shouldUpdateUI) {
+        console.log('✅ Updating UI for:', targetAccount.name)
         setDailyTakings(dailyTakingsData)
         setError(null)
       } else {
-        console.log('Not updating UI - targetAccount:', targetAccount.name, 'activeAccount:', activeAccount?.name)
+        console.log('❌ Skipping UI update - targetAccount:', targetAccount.name, 'activeAccount:', activeAccount?.name)
       }
       console.log('Fetch completed successfully for:', targetAccount.name)
     } catch (err) {
@@ -1756,6 +1766,7 @@ export default function Home() {
 
         {currentView === 'account' && activeAccount && (
           <>
+            {console.log('Rendering account view for:', activeAccount.name, 'dailyTakings.length:', dailyTakings.length)}
             {/* Performance Cards - Unified Design */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginBottom: '24px' }}>
             {/* Check if this is a multi-store account with location breakdown */}
