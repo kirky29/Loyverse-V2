@@ -4,30 +4,52 @@ import { useState, useEffect } from 'react'
 import { LoyverseAccount, DailyTaking } from './types'
 import AccountManager from './components/AccountManager'
 
+// Account-specific filter state interface
+interface AccountFilterState {
+  sortColumn: string
+  sortDirection: 'asc' | 'desc'
+  visibleColumns: {
+    date: boolean
+    shop: boolean
+    cafe: boolean
+    combined: boolean
+    receipts: boolean
+    average: boolean
+    status: boolean
+  }
+  dateFilter: { from: string; to: string }
+  amountFilter: { min: string; max: string }
+  showFilters: boolean
+  showColumnManager: boolean
+  recordsToShow: number
+}
+
 // Enhanced Performance Table Component
 interface PerformanceTableProps {
   dailyTakings: DailyTaking[]
   activeAccount: LoyverseAccount | null
   formatCurrency: (value: number) => string
+  filterState: AccountFilterState
+  onFilterStateChange: (newState: AccountFilterState) => void
 }
 
-function PerformanceTable({ dailyTakings, activeAccount, formatCurrency }: PerformanceTableProps) {
-  const [sortColumn, setSortColumn] = useState<string>('')
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
-  const [visibleColumns, setVisibleColumns] = useState({
-    date: true,
-    shop: true,
-    cafe: true,
-    combined: true,
-    receipts: false,
-    average: false,
-    status: true
-  })
-  const [dateFilter, setDateFilter] = useState({ from: '', to: '' })
-  const [amountFilter, setAmountFilter] = useState({ min: '', max: '' })
-  const [showFilters, setShowFilters] = useState(false)
-  const [showColumnManager, setShowColumnManager] = useState(false)
-  const [recordsToShow, setRecordsToShow] = useState(30)
+function PerformanceTable({ 
+  dailyTakings, 
+  activeAccount, 
+  formatCurrency, 
+  filterState, 
+  onFilterStateChange 
+}: PerformanceTableProps) {
+  const {
+    sortColumn,
+    sortDirection,
+    visibleColumns,
+    dateFilter,
+    amountFilter,
+    showFilters,
+    showColumnManager,
+    recordsToShow
+  } = filterState
 
   // Generate complete date range including days with no sales
   const generateCompleteDataset = () => {
@@ -61,12 +83,14 @@ function PerformanceTable({ dailyTakings, activeAccount, formatCurrency }: Perfo
   }
 
   const handleSort = (column: string) => {
-    if (sortColumn === column) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
-    } else {
-      setSortColumn(column)
-      setSortDirection('desc')
-    }
+    const newSortDirection = sortColumn === column && sortDirection === 'asc' ? 'desc' : 'desc'
+    const newSortColumn = sortColumn === column ? column : column
+    
+    onFilterStateChange({
+      ...filterState,
+      sortColumn: newSortColumn,
+      sortDirection: newSortDirection
+    })
   }
 
   const processedData = () => {
@@ -149,10 +173,13 @@ function PerformanceTable({ dailyTakings, activeAccount, formatCurrency }: Perfo
   }
 
   const toggleColumn = (column: keyof typeof visibleColumns) => {
-    setVisibleColumns(prev => ({
-      ...prev,
-      [column]: !prev[column]
-    }))
+    onFilterStateChange({
+      ...filterState,
+      visibleColumns: {
+        ...visibleColumns,
+        [column]: !visibleColumns[column]
+      }
+    })
   }
 
   if (!dailyTakings || dailyTakings.length === 0) {
@@ -189,7 +216,7 @@ function PerformanceTable({ dailyTakings, activeAccount, formatCurrency }: Perfo
         </h3>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button
-            onClick={() => setShowFilters(!showFilters)}
+            onClick={() => onFilterStateChange({ ...filterState, showFilters: !showFilters })}
             style={{
               padding: '8px 16px',
               borderRadius: '6px',
@@ -204,7 +231,7 @@ function PerformanceTable({ dailyTakings, activeAccount, formatCurrency }: Perfo
             🔍 Filters
           </button>
           <button
-            onClick={() => setShowColumnManager(!showColumnManager)}
+            onClick={() => onFilterStateChange({ ...filterState, showColumnManager: !showColumnManager })}
             style={{
               padding: '8px 16px',
               borderRadius: '6px',
@@ -237,7 +264,7 @@ function PerformanceTable({ dailyTakings, activeAccount, formatCurrency }: Perfo
               </label>
               <select
                 value={recordsToShow}
-                onChange={(e) => setRecordsToShow(Number(e.target.value))}
+                onChange={(e) => onFilterStateChange({ ...filterState, recordsToShow: Number(e.target.value) })}
                 style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
               >
                 <option value={7}>Last 7 days</option>
@@ -253,7 +280,10 @@ function PerformanceTable({ dailyTakings, activeAccount, formatCurrency }: Perfo
               <input
                 type="date"
                 value={dateFilter.from}
-                onChange={(e) => setDateFilter(prev => ({ ...prev, from: e.target.value }))}
+                onChange={(e) => onFilterStateChange({ 
+                  ...filterState, 
+                  dateFilter: { ...dateFilter, from: e.target.value } 
+                })}
                 style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
               />
             </div>
@@ -264,15 +294,21 @@ function PerformanceTable({ dailyTakings, activeAccount, formatCurrency }: Perfo
               <input
                 type="date"
                 value={dateFilter.to}
-                onChange={(e) => setDateFilter(prev => ({ ...prev, to: e.target.value }))}
+                onChange={(e) => onFilterStateChange({ 
+                  ...filterState, 
+                  dateFilter: { ...dateFilter, to: e.target.value } 
+                })}
                 style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
               />
             </div>
             <div>
               <button
                 onClick={() => {
-                  setDateFilter({ from: '', to: '' })
-                  setAmountFilter({ min: '', max: '' })
+                  onFilterStateChange({
+                    ...filterState,
+                    dateFilter: { from: '', to: '' },
+                    amountFilter: { min: '', max: '' }
+                  })
                 }}
                 style={{
                   padding: '8px 16px',
@@ -605,8 +641,83 @@ export default function Home() {
     loading: boolean
   }>>(new Map())
 
+  // Account-specific filter state management
+  const [accountFilterStates, setAccountFilterStates] = useState<Map<string, AccountFilterState>>(new Map())
+
+  // Get or create default filter state for an account
+  const getAccountFilterState = (accountId: string): AccountFilterState => {
+    const existing = accountFilterStates.get(accountId)
+    if (existing) return existing
+    
+    // Try to load from localStorage first
+    try {
+      const savedFilters = JSON.parse(localStorage.getItem('loyverse-account-filters') || '{}')
+      const savedState = savedFilters[accountId]
+      if (savedState) {
+        setAccountFilterStates(prev => new Map(prev.set(accountId, savedState)))
+        return savedState
+      }
+    } catch (error) {
+      console.error('Error loading filter state from localStorage:', error)
+    }
+    
+    // Default filter state
+    const defaultState: AccountFilterState = {
+      sortColumn: 'date',
+      sortDirection: 'desc',
+      visibleColumns: {
+        date: true,
+        shop: true,
+        cafe: true,
+        combined: true,
+        receipts: false,
+        average: false,
+        status: true
+      },
+      dateFilter: { from: '', to: '' },
+      amountFilter: { min: '', max: '' },
+      showFilters: false,
+      showColumnManager: false,
+      recordsToShow: 30
+    }
+    
+    // Save the default state
+    setAccountFilterStates(prev => new Map(prev.set(accountId, defaultState)))
+    return defaultState
+  }
+
+  // Update filter state for a specific account
+  const updateAccountFilterState = (accountId: string, newState: AccountFilterState) => {
+    setAccountFilterStates(prev => new Map(prev.set(accountId, newState)))
+    
+    // Save to localStorage for persistence
+    try {
+      const existingFilters = JSON.parse(localStorage.getItem('loyverse-account-filters') || '{}')
+      existingFilters[accountId] = newState
+      localStorage.setItem('loyverse-account-filters', JSON.stringify(existingFilters))
+    } catch (error) {
+      console.error('Error saving filter state to localStorage:', error)
+    }
+  }
+
   useEffect(() => {
     loadAccounts()
+    
+    // Load saved filter states from localStorage
+    try {
+      const savedFilters = JSON.parse(localStorage.getItem('loyverse-account-filters') || '{}')
+      const loadedStates = new Map()
+      
+      Object.entries(savedFilters).forEach(([accountId, filterState]) => {
+        loadedStates.set(accountId, filterState as AccountFilterState)
+      })
+      
+      if (loadedStates.size > 0) {
+        setAccountFilterStates(loadedStates)
+      }
+    } catch (error) {
+      console.error('Error loading filter states from localStorage:', error)
+    }
     
     // Fallback timeout to prevent infinite loading
     const timeout = setTimeout(() => {
@@ -715,6 +826,22 @@ export default function Home() {
   const deleteAccount = (id: string) => {
     const updatedAccounts = accounts.filter(acc => acc.id !== id)
     saveAccounts(updatedAccounts)
+    
+    // Clear filter state for deleted account
+    setAccountFilterStates(prev => {
+      const newMap = new Map(prev)
+      newMap.delete(id)
+      return newMap
+    })
+    
+    // Remove from localStorage
+    try {
+      const savedFilters = JSON.parse(localStorage.getItem('loyverse-account-filters') || '{}')
+      delete savedFilters[id]
+      localStorage.setItem('loyverse-account-filters', JSON.stringify(savedFilters))
+    } catch (error) {
+      console.error('Error removing filter state from localStorage:', error)
+    }
     
     if (activeAccount?.id === id) {
       const newActive = updatedAccounts.find(acc => acc.isActive) || updatedAccounts[0] || null
@@ -1761,6 +1888,8 @@ export default function Home() {
           dailyTakings={dailyTakings} 
           activeAccount={activeAccount}
           formatCurrency={formatCurrency}
+          filterState={getAccountFilterState(activeAccount?.id || '')}
+          onFilterStateChange={(newState) => updateAccountFilterState(activeAccount?.id || '', newState)}
         />
 
 
