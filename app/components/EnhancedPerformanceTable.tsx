@@ -519,8 +519,6 @@ export default function EnhancedPerformanceTable({
               )}
             </p>
           </div>
-
-
         </div>
 
         {/* Clean Filter Interface */}
@@ -634,7 +632,7 @@ export default function EnhancedPerformanceTable({
                       fontWeight: '500',
                       cursor: 'pointer',
                       transition: 'all 0.2s ease',
-                      textAlign: 'center'
+                      textAlign: 'center' as const
                     }}
                   >
                     {preset.label}
@@ -718,7 +716,7 @@ export default function EnhancedPerformanceTable({
                     display: 'flex',
                     alignItems: 'center',
                     gap: '6px',
-                    whiteSpace: 'nowrap'
+                    whiteSpace: 'nowrap' as const
                   }}
                 >
                   {showFilters ? '📊 Advanced' : '⚙️ More'}
@@ -751,7 +749,7 @@ export default function EnhancedPerformanceTable({
                     display: 'flex',
                     alignItems: 'center',
                     gap: '6px',
-                    whiteSpace: 'nowrap'
+                    whiteSpace: 'nowrap' as const
                   }}
                 >
                   {showColumnManager ? '✓ Editing' : '📝 Manage'}
@@ -794,7 +792,6 @@ export default function EnhancedPerformanceTable({
           </div>
 
           <div style={{ padding: '20px' }}>
-
             {/* Custom Date Range */}
             <div style={{ marginBottom: '32px' }}>
               <h5 style={{
@@ -1020,233 +1017,233 @@ export default function EnhancedPerformanceTable({
           </div>
 
           <div style={{ padding: '20px' }}>
-
-          {/* Column Presets */}
-          <div style={{ marginBottom: '20px' }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              marginBottom: '12px'
-            }}>
-              <span style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>⚡ Quick Presets</span>
-            </div>
-            
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '12px'
-            }}>
-              {Object.entries(COLUMN_PRESETS).map(([key, preset]) => (
-                <button
-                  key={key}
-                  onClick={() => applyColumnPreset(key)}
-                  style={{
-                    background: activeColumnPreset === key ? '#10b981' : '#ffffff',
-                    color: activeColumnPreset === key ? 'white' : '#374151',
-                    border: `2px solid ${activeColumnPreset === key ? '#10b981' : '#e2e8f0'}`,
-                    padding: '12px 16px',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    textAlign: 'left'
-                  }}
-                >
-                  <div style={{
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    marginBottom: '4px'
-                  }}>
-                    {preset.name}
-                  </div>
-                  <div style={{
-                    fontSize: '12px',
-                    opacity: 0.8
-                  }}>
-                    {preset.description}
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Individual Column Controls */}
-          <div style={{ marginBottom: '20px' }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              marginBottom: '12px'
-            }}>
-              <span style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>🎛️ Individual Columns</span>
-            </div>
-            
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '12px'
-            }}>
-              {Object.entries(visibleColumns).map(([key, value]) => {
-                const isRequired = key === 'date' // Date column is always required
-                const columnInfo = {
-                  date: { icon: '📅', name: 'Date', desc: 'Transaction date' },
-                  shop: { icon: '🏪', name: 'Shop', desc: 'Shop location sales' },
-                  cafe: { icon: '☕', name: 'Café', desc: 'Café location sales' },
-                  combined: { icon: '💰', name: 'Total', desc: 'Combined total sales' },
-                  receipts: { icon: '🧾', name: 'Receipts', desc: 'Number of transactions' },
-                  average: { icon: '📊', name: 'Avg Receipt', desc: 'Average transaction value' },
-                  status: { icon: '🏷️', name: 'Status', desc: 'Sales performance status' },
-                  cash: { icon: '💵', name: 'Cash', desc: 'Cash payments only' },
-                  card: { icon: '💳', name: 'Card', desc: 'Card payments only' }
-                }[key] || { icon: '📋', name: key, desc: 'Column data' }
-
-                return (
-                  <label
+            {/* Column Presets */}
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                marginBottom: '12px'
+              }}>
+                <span style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>⚡ Quick Presets</span>
+              </div>
+              
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: '12px'
+              }}>
+                {Object.entries(COLUMN_PRESETS).map(([key, preset]) => (
+                  <button
                     key={key}
+                    onClick={() => applyColumnPreset(key)}
                     style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
+                      background: activeColumnPreset === key ? '#10b981' : '#ffffff',
+                      color: activeColumnPreset === key ? 'white' : '#374151',
+                      border: `2px solid ${activeColumnPreset === key ? '#10b981' : '#e2e8f0'}`,
                       padding: '12px 16px',
-                      background: value ? '#f0fdf4' : '#f9fafb',
-                      border: `2px solid ${value ? '#d1fae5' : '#e5e7eb'}`,
                       borderRadius: '8px',
-                      cursor: isRequired ? 'not-allowed' : 'pointer',
+                      cursor: 'pointer',
                       transition: 'all 0.2s ease',
-                      opacity: isRequired ? 0.6 : 1
+                      textAlign: 'left' as const
                     }}
                   >
-                    <input
-                      type="checkbox"
-                      checked={value}
-                      disabled={isRequired}
-                      onChange={(e) => !isRequired && setFilterState(prev => ({
-                        ...prev,
-                        visibleColumns: {
-                          ...prev.visibleColumns,
-                          [key]: e.target.checked
-                        },
-                        activeColumnPreset: 'custom'
-                      }))}
+                    <div style={{
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      marginBottom: '4px'
+                    }}>
+                      {preset.name}
+                    </div>
+                    <div style={{
+                      fontSize: '12px',
+                      opacity: 0.8
+                    }}>
+                      {preset.description}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Individual Column Controls */}
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                marginBottom: '12px'
+              }}>
+                <span style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>🎛️ Individual Columns</span>
+              </div>
+              
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: '12px'
+              }}>
+                {Object.entries(visibleColumns).map(([key, value]) => {
+                  const isRequired = key === 'date' // Date column is always required
+                  const columnInfo = {
+                    date: { icon: '📅', name: 'Date', desc: 'Transaction date' },
+                    shop: { icon: '🏪', name: 'Shop', desc: 'Shop location sales' },
+                    cafe: { icon: '☕', name: 'Café', desc: 'Café location sales' },
+                    combined: { icon: '💰', name: 'Total', desc: 'Combined total sales' },
+                    receipts: { icon: '🧾', name: 'Receipts', desc: 'Number of transactions' },
+                    average: { icon: '📊', name: 'Avg Receipt', desc: 'Average transaction value' },
+                    status: { icon: '🏷️', name: 'Status', desc: 'Sales performance status' },
+                    cash: { icon: '💵', name: 'Cash', desc: 'Cash payments only' },
+                    card: { icon: '💳', name: 'Card', desc: 'Card payments only' }
+                  }[key] || { icon: '📋', name: key, desc: 'Column data' }
+
+                  return (
+                    <label
+                      key={key}
                       style={{
-                        cursor: isRequired ? 'not-allowed' : 'pointer',
-                        transform: 'scale(1.2)'
-                      }}
-                    />
-                    <div style={{ flex: 1 }}>
-                      <div style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '6px',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        color: '#374151',
-                        marginBottom: '2px'
-                      }}>
-                        <span>{columnInfo.icon}</span>
-                        <span>{columnInfo.name}</span>
-                        {isRequired && (
-                          <span style={{
-                            background: '#fbbf24',
-                            color: '#92400e',
-                            padding: '2px 6px',
-                            borderRadius: '4px',
-                            fontSize: '10px',
-                            fontWeight: '600'
-                          }}>
-                            REQUIRED
-                          </span>
-                        )}
+                        gap: '12px',
+                        padding: '12px 16px',
+                        background: value ? '#f0fdf4' : '#f9fafb',
+                        border: `2px solid ${value ? '#d1fae5' : '#e5e7eb'}`,
+                        borderRadius: '8px',
+                        cursor: isRequired ? 'not-allowed' : 'pointer',
+                        transition: 'all 0.2s ease',
+                        opacity: isRequired ? 0.6 : 1
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={value}
+                        disabled={isRequired}
+                        onChange={(e) => !isRequired && setFilterState(prev => ({
+                          ...prev,
+                          visibleColumns: {
+                            ...prev.visibleColumns,
+                            [key]: e.target.checked
+                          },
+                          activeColumnPreset: 'custom'
+                        }))}
+                        style={{
+                          cursor: isRequired ? 'not-allowed' : 'pointer',
+                          transform: 'scale(1.2)'
+                        }}
+                      />
+                      <div style={{ flex: 1 }}>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          color: '#374151',
+                          marginBottom: '2px'
+                        }}>
+                          <span>{columnInfo.icon}</span>
+                          <span>{columnInfo.name}</span>
+                          {isRequired && (
+                            <span style={{
+                              background: '#fbbf24',
+                              color: '#92400e',
+                              padding: '2px 6px',
+                              borderRadius: '4px',
+                              fontSize: '10px',
+                              fontWeight: '600'
+                            }}>
+                              REQUIRED
+                            </span>
+                          )}
+                        </div>
+                        <div style={{
+                          fontSize: '12px',
+                          color: '#6b7280'
+                        }}>
+                          {columnInfo.desc}
+                        </div>
                       </div>
-                      <div style={{
-                        fontSize: '12px',
-                        color: '#6b7280'
-                      }}>
-                        {columnInfo.desc}
-                      </div>
-                    </div>
-                  </label>
-                )
-              })}
+                    </label>
+                  )
+                })}
+              </div>
             </div>
-          </div>
 
-          {/* Column Actions */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            flexWrap: 'wrap'
-          }}>
-            <button
-              onClick={() => {
-                const allColumns = Object.keys(visibleColumns).reduce((acc, key) => ({
-                  ...acc,
-                  [key]: key === 'date' // Only keep date column required
-                }), {} as typeof visibleColumns)
-                setFilterState(prev => ({
-                  ...prev,
-                  visibleColumns: allColumns,
-                  activeColumnPreset: 'custom'
-                }))
-              }}
-              style={{
-                background: '#f3f4f6',
-                color: '#374151',
-                border: '1px solid #d1d5db',
-                padding: '8px 16px',
-                borderRadius: '6px',
-                fontSize: '13px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease'
-              }}
-            >
-              📤 Hide All
-            </button>
-
-            <button
-              onClick={() => {
-                const allColumns = Object.keys(visibleColumns).reduce((acc, key) => ({
-                  ...acc,
-                  [key]: true
-                }), {} as typeof visibleColumns)
-                setFilterState(prev => ({
-                  ...prev,
-                  visibleColumns: allColumns,
-                  activeColumnPreset: 'detailed'
-                }))
-              }}
-              style={{
-                background: '#10b981',
-                color: 'white',
-                border: 'none',
-                padding: '8px 16px',
-                borderRadius: '6px',
-                fontSize: '13px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                boxShadow: '0 2px 4px rgba(16, 185, 129, 0.2)'
-              }}
-            >
-              📥 Show All
-            </button>
-
+            {/* Column Actions */}
             <div style={{
-              background: '#ecfdf5',
-              color: '#065f46',
-              padding: '8px 12px',
-              borderRadius: '6px',
-              fontSize: '12px',
-              fontWeight: '500',
-              border: '1px solid #d1fae5'
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              flexWrap: 'wrap'
             }}>
-              Using: {COLUMN_PRESETS[activeColumnPreset as keyof typeof COLUMN_PRESETS]?.name || 'Custom'} preset
+              <button
+                onClick={() => {
+                  const allColumns = Object.keys(visibleColumns).reduce((acc, key) => ({
+                    ...acc,
+                    [key]: key === 'date' // Only keep date column required
+                  }), {} as typeof visibleColumns)
+                  setFilterState(prev => ({
+                    ...prev,
+                    visibleColumns: allColumns,
+                    activeColumnPreset: 'custom'
+                  }))
+                }}
+                style={{
+                  background: '#f3f4f6',
+                  color: '#374151',
+                  border: '1px solid #d1d5db',
+                  padding: '8px 16px',
+                  borderRadius: '6px',
+                  fontSize: '13px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                📤 Hide All
+              </button>
+
+              <button
+                onClick={() => {
+                  const allColumns = Object.keys(visibleColumns).reduce((acc, key) => ({
+                    ...acc,
+                    [key]: true
+                  }), {} as typeof visibleColumns)
+                  setFilterState(prev => ({
+                    ...prev,
+                    visibleColumns: allColumns,
+                    activeColumnPreset: 'detailed'
+                  }))
+                }}
+                style={{
+                  background: '#10b981',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '6px',
+                  fontSize: '13px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 2px 4px rgba(16, 185, 129, 0.2)'
+                }}
+              >
+                📥 Show All
+              </button>
+
+              <div style={{
+                background: '#ecfdf5',
+                color: '#065f46',
+                padding: '8px 12px',
+                borderRadius: '6px',
+                fontSize: '12px',
+                fontWeight: '500',
+                border: '1px solid #d1fae5'
+              }}>
+                Using: {COLUMN_PRESETS[activeColumnPreset as keyof typeof COLUMN_PRESETS]?.name || 'Custom'} preset
+              </div>
             </div>
           </div>
         </div>
-        )}
+      )}
 
       {/* Table */}
       <div style={{ overflowX: 'auto' }}>
@@ -1258,11 +1255,11 @@ export default function EnhancedPerformanceTable({
                   onClick={() => handleSort('date')}
                   style={{
                     padding: '12px 16px',
-                    textAlign: 'left',
+                    textAlign: 'left' as const,
                     fontSize: '12px',
                     fontWeight: '600',
                     color: '#6b7280',
-                    textTransform: 'uppercase',
+                    textTransform: 'uppercase' as const,
                     cursor: 'pointer',
                     borderBottom: '1px solid #e2e8f0',
                     position: 'sticky',
@@ -1280,11 +1277,11 @@ export default function EnhancedPerformanceTable({
                   onClick={() => handleSort('shop')}
                   style={{
                     padding: '12px 16px',
-                    textAlign: 'right',
+                    textAlign: 'right' as const,
                     fontSize: '12px',
                     fontWeight: '600',
                     color: '#6b7280',
-                    textTransform: 'uppercase',
+                    textTransform: 'uppercase' as const,
                     cursor: 'pointer',
                     borderBottom: '1px solid #e2e8f0'
                   }}
@@ -1298,11 +1295,11 @@ export default function EnhancedPerformanceTable({
                   onClick={() => handleSort('cafe')}
                   style={{
                     padding: '12px 16px',
-                    textAlign: 'right',
+                    textAlign: 'right' as const,
                     fontSize: '12px',
                     fontWeight: '600',
                     color: '#6b7280',
-                    textTransform: 'uppercase',
+                    textTransform: 'uppercase' as const,
                     cursor: 'pointer',
                     borderBottom: '1px solid #e2e8f0'
                   }}
@@ -1316,11 +1313,11 @@ export default function EnhancedPerformanceTable({
                   onClick={() => handleSort('combined')}
                   style={{
                     padding: '12px 16px',
-                    textAlign: 'right',
+                    textAlign: 'right' as const,
                     fontSize: '12px',
                     fontWeight: '600',
                     color: '#6b7280',
-                    textTransform: 'uppercase',
+                    textTransform: 'uppercase' as const,
                     cursor: 'pointer',
                     borderBottom: '1px solid #e2e8f0'
                   }}
@@ -1334,11 +1331,11 @@ export default function EnhancedPerformanceTable({
                   onClick={() => handleSort('cash')}
                   style={{
                     padding: '12px 16px',
-                    textAlign: 'right',
+                    textAlign: 'right' as const,
                     fontSize: '12px',
                     fontWeight: '600',
                     color: '#6b7280',
-                    textTransform: 'uppercase',
+                    textTransform: 'uppercase' as const,
                     cursor: 'pointer',
                     borderBottom: '1px solid #e2e8f0'
                   }}
@@ -1352,11 +1349,11 @@ export default function EnhancedPerformanceTable({
                   onClick={() => handleSort('card')}
                   style={{
                     padding: '12px 16px',
-                    textAlign: 'right',
+                    textAlign: 'right' as const,
                     fontSize: '12px',
                     fontWeight: '600',
                     color: '#6b7280',
-                    textTransform: 'uppercase',
+                    textTransform: 'uppercase' as const,
                     cursor: 'pointer',
                     borderBottom: '1px solid #e2e8f0'
                   }}
@@ -1370,11 +1367,11 @@ export default function EnhancedPerformanceTable({
                   onClick={() => handleSort('receipts')}
                   style={{
                     padding: '12px 16px',
-                    textAlign: 'right',
+                    textAlign: 'right' as const,
                     fontSize: '12px',
                     fontWeight: '600',
                     color: '#6b7280',
-                    textTransform: 'uppercase',
+                    textTransform: 'uppercase' as const,
                     cursor: 'pointer',
                     borderBottom: '1px solid #e2e8f0'
                   }}
@@ -1388,11 +1385,11 @@ export default function EnhancedPerformanceTable({
                   onClick={() => handleSort('average')}
                   style={{
                     padding: '12px 16px',
-                    textAlign: 'right',
+                    textAlign: 'right' as const,
                     fontSize: '12px',
                     fontWeight: '600',
                     color: '#6b7280',
-                    textTransform: 'uppercase',
+                    textTransform: 'uppercase' as const,
                     cursor: 'pointer',
                     borderBottom: '1px solid #e2e8f0'
                   }}
@@ -1404,11 +1401,11 @@ export default function EnhancedPerformanceTable({
               {visibleColumns.status && (
                 <th style={{
                   padding: '12px 16px',
-                  textAlign: 'center',
+                  textAlign: 'center' as const,
                   fontSize: '12px',
                   fontWeight: '600',
                   color: '#6b7280',
-                  textTransform: 'uppercase',
+                  textTransform: 'uppercase' as const,
                   borderBottom: '1px solid #e2e8f0'
                 }}>
                   Status
@@ -1455,7 +1452,7 @@ export default function EnhancedPerformanceTable({
                   {visibleColumns.shop && activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2' && (
                     <td style={{
                       padding: '12px 16px',
-                      textAlign: 'right',
+                      textAlign: 'right' as const,
                       fontSize: '14px',
                       color: '#059669',
                       fontWeight: '600'
@@ -1467,7 +1464,7 @@ export default function EnhancedPerformanceTable({
                   {visibleColumns.cafe && activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2' && (
                     <td style={{
                       padding: '12px 16px',
-                      textAlign: 'right',
+                      textAlign: 'right' as const,
                       fontSize: '14px',
                       color: '#059669',
                       fontWeight: '600'
@@ -1479,7 +1476,7 @@ export default function EnhancedPerformanceTable({
                   {visibleColumns.combined && (
                     <td style={{
                       padding: '12px 16px',
-                      textAlign: 'right',
+                      textAlign: 'right' as const,
                       fontSize: '14px',
                       color: '#059669',
                       fontWeight: '700'
@@ -1491,7 +1488,7 @@ export default function EnhancedPerformanceTable({
                   {visibleColumns.cash && (
                     <td style={{
                       padding: '12px 16px',
-                      textAlign: 'right',
+                      textAlign: 'right' as const,
                       fontSize: '14px',
                       color: '#6b7280',
                       fontWeight: '500'
@@ -1503,7 +1500,7 @@ export default function EnhancedPerformanceTable({
                   {visibleColumns.card && (
                     <td style={{
                       padding: '12px 16px',
-                      textAlign: 'right',
+                      textAlign: 'right' as const,
                       fontSize: '14px',
                       color: '#6b7280',
                       fontWeight: '500'
@@ -1515,7 +1512,7 @@ export default function EnhancedPerformanceTable({
                   {visibleColumns.receipts && (
                     <td style={{
                       padding: '12px 16px',
-                      textAlign: 'right',
+                      textAlign: 'right' as const,
                       fontSize: '14px',
                       color: '#6b7280'
                     }}>
@@ -1526,7 +1523,7 @@ export default function EnhancedPerformanceTable({
                   {visibleColumns.average && (
                     <td style={{
                       padding: '12px 16px',
-                      textAlign: 'right',
+                      textAlign: 'right' as const,
                       fontSize: '14px',
                       color: '#6b7280'
                     }}>
@@ -1537,7 +1534,7 @@ export default function EnhancedPerformanceTable({
                   {visibleColumns.status && (
                     <td style={{
                       padding: '12px 16px',
-                      textAlign: 'center'
+                      textAlign: 'center' as const
                     }}>
                       <span style={{
                         background: status.bg,
@@ -1562,7 +1559,7 @@ export default function EnhancedPerformanceTable({
       {data.length === 0 && (
         <div style={{
           padding: '60px 20px',
-          textAlign: 'center',
+          textAlign: 'center' as const,
           color: '#6b7280'
         }}>
           <div style={{ fontSize: '16px', marginBottom: '8px' }}>No data found</div>
