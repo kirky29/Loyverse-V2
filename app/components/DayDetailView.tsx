@@ -283,20 +283,30 @@ export default function DayDetailView({
                   return acc
                 }, {})
                 
-                const categoryColors = {
-                  'Beverages': '#3b82f6',
-                  'Food': '#10b981', 
-                  'Pastries': '#f59e0b',
-                  'Clothing & Accessories': '#ec4899',
-                  'Home & Kitchen': '#06b6d4',
-                  'Gifts & Cards': '#8b5cf6',
-                  'Books & Media': '#84cc16',
-                  'Decorative Items': '#f97316',
-                  'Collectibles': '#6366f1',
-                  'Other': '#64748b'
+                // Generate colors dynamically for any categories
+                const colorPalette = [
+                  '#3b82f6', // Blue
+                  '#10b981', // Emerald  
+                  '#f59e0b', // Amber
+                  '#ec4899', // Pink
+                  '#06b6d4', // Cyan
+                  '#8b5cf6', // Violet
+                  '#84cc16', // Lime
+                  '#f97316', // Orange
+                  '#6366f1', // Indigo
+                  '#ef4444', // Red
+                  '#64748b', // Slate
+                  '#059669', // Green
+                  '#dc2626', // Red
+                  '#7c3aed', // Purple
+                  '#0891b2'  // Sky
+                ]
+                
+                const getCategoryColor = (category: string, index: number) => {
+                  return colorPalette[index % colorPalette.length]
                 }
                 
-                return Object.entries(categories).map(([category, total]: [string, any]) => (
+                return Object.entries(categories).map(([category, total]: [string, any], index: number) => (
                   <div key={category} style={{ 
                     padding: '10px', 
                     background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)', 
@@ -317,7 +327,7 @@ export default function DayDetailView({
                     <div style={{ 
                       fontSize: '16px', 
                       fontWeight: 'bold', 
-                      color: categoryColors[category as keyof typeof categoryColors] || '#64748b'
+                      color: getCategoryColor(category, index)
                     }}>
                       {formatCurrency(total)}
                     </div>

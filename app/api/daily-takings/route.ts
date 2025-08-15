@@ -339,64 +339,14 @@ async function fetchDailyTakings(
             existing.quantity += item.quantity
             existing.total_sales += item.total_money
           } else {
-            // Enhanced category classification based on item name
-            let category = 'Other'
-            const itemName = item.item_name.toLowerCase()
-            
-            // Beverages
-            if (itemName.includes('coffee') || itemName.includes('latte') || itemName.includes('cappuccino') || 
-                itemName.includes('espresso') || itemName.includes('americano') || itemName.includes('tea') || 
-                itemName.includes('drink') || itemName.includes('beverage')) {
-              category = 'Beverages'
-            }
-            // Food & Dining
-            else if (itemName.includes('sandwich') || itemName.includes('burger') || itemName.includes('salad') || 
-                      itemName.includes('soup') || itemName.includes('wrap') || itemName.includes('meal')) {
-              category = 'Food'
-            }
-            // Pastries & Sweets
-            else if (itemName.includes('cake') || itemName.includes('pastry') || itemName.includes('muffin') || 
-                      itemName.includes('cookie') || itemName.includes('biscuit') || itemName.includes('croissant')) {
-              category = 'Pastries'
-            }
-            // Clothing & Accessories
-            else if (itemName.includes('ladies') || itemName.includes('mens') || itemName.includes('top') || 
-                     itemName.includes('bottom') || itemName.includes('shirt') || itemName.includes('dress') ||
-                     itemName.includes('accessories') || itemName.includes('clothing') || itemName.includes('apparel')) {
-              category = 'Clothing & Accessories'
-            }
-            // Home & Kitchen
-            else if (itemName.includes('mug') || itemName.includes('glass') || itemName.includes('kitchen') || 
-                     itemName.includes('cup') || itemName.includes('bowl') || itemName.includes('plate') ||
-                     itemName.includes('home') || itemName.includes('decor')) {
-              category = 'Home & Kitchen'
-            }
-            // Gifts & Cards
-            else if (itemName.includes('gift') || itemName.includes('card') || itemName.includes('voucher')) {
-              category = 'Gifts & Cards'
-            }
-            // Books & Media
-            else if (itemName.includes('book') || itemName.includes('cd') || itemName.includes('dvd') || 
-                     itemName.includes('magazine') || itemName.includes('media')) {
-              category = 'Books & Media'
-            }
-            // Decorative Items
-            else if (itemName.includes('ornament') || itemName.includes('decoration') || itemName.includes('crystal') || 
-                     itemName.includes('picture') || itemName.includes('frame') || itemName.includes('art')) {
-              category = 'Decorative Items'
-            }
-            // Collectibles & Novelty
-            else if (itemName.includes('bric') || itemName.includes('collectible') || itemName.includes('antique') || 
-                     itemName.includes('vintage') || itemName.includes('novelty')) {
-              category = 'Collectibles'
-            }
-            
+            // Store the item without predefined category - we'll fetch from Loyverse
             dayItemBreakdown.set(itemKey, {
               item_name: item.item_name,
               variant_name: item.variant_name || undefined,
               quantity: item.quantity,
               total_sales: item.total_money,
-              category
+              item_id: item.item_id,
+              category: 'Loading...' // Placeholder until we fetch real categories
             })
           }
         })
@@ -495,6 +445,9 @@ async function fetchDailyTakings(
       totalRevenue: dailyTakings.reduce((sum, day) => sum + day.total, 0)
     })
 
+    // Fetch actual Loyverse categories and items to get real category names
+    await enrichWithRealCategories(itemBreakdown, apiToken)
+
     // Add location, payment, and item breakdown to each daily taking
     dailyTakings.forEach(taking => {
       const breakdown = locationBreakdown.get(taking.date)
@@ -557,5 +510,103 @@ async function fetchDailyTakings(
   } catch (error) {
     console.error('Error fetching daily takings:', error)
     throw error
+  }
+}
+
+// Function to enrich items with real Loyverse categories
+async function enrichWithRealCategories(
+  itemBreakdown: Map<string, Map<string, any>>, 
+  apiToken: string
+): Promise<void> {
+  try {
+    console.log('🏷️ Fetching real Loyverse categories and items...')
+    
+    // Get all unique item IDs from the breakdown
+    const itemIds = new Set<string>()
+    itemBreakdown.forEach(dayItems => {
+      dayItems.forEach(item => {
+        if (item.item_id) {
+          itemIds.add(item.item_id)
+        }
+      })
+    })
+
+    if (itemIds.size === 0) {
+      console.log('No item IDs found to fetch categories for')
+      return
+    }
+
+    console.log(`📦 Fetching details for ${itemIds.size} unique items...`)
+
+    // Fetch categories first
+    const categoriesResponse = await fetch('https://api.loyverse.com/v1.0/categories', {
+      headers: {
+        'Authorization': `Bearer ${apiToken}`,
+        'Content-Type': 'application/json',
+      },
+    })
+
+    let categories: { [id: string]: string } = {}
+    if (categoriesResponse.ok) {
+      const categoriesData = await categoriesResponse.json()
+      if (categoriesData.categories) {
+        categories = categoriesData.categories.reduce((acc: any, cat: any) => {
+          acc[cat.id] = cat.name
+          return acc
+        }, {})
+        console.log(`✅ Fetched ${Object.keys(categories).length} categories`)
+      }
+    }
+
+    // Fetch items to get their category assignments
+    const itemsResponse = await fetch('https://api.loyverse.com/v1.0/items?limit=250', {
+      headers: {
+        'Authorization': `Bearer ${apiToken}`,
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (itemsResponse.ok) {
+      const itemsData = await itemsResponse.json()
+      const itemCategoryMap: { [itemId: string]: string } = {}
+      
+      if (itemsData.items) {
+        itemsData.items.forEach((item: any) => {
+          if (item.category_id && categories[item.category_id]) {
+            itemCategoryMap[item.id] = categories[item.category_id]
+          }
+        })
+        console.log(`✅ Mapped ${Object.keys(itemCategoryMap).length} items to categories`)
+      }
+
+      // Update the item breakdown with real categories
+      itemBreakdown.forEach(dayItems => {
+        dayItems.forEach(item => {
+          if (item.item_id && itemCategoryMap[item.item_id]) {
+            item.category = itemCategoryMap[item.item_id]
+          } else {
+            item.category = 'Uncategorized'
+          }
+        })
+      })
+
+      console.log('✅ Items enriched with real Loyverse categories')
+    } else {
+      console.error('Failed to fetch items from Loyverse:', itemsResponse.status)
+      // Fallback to 'Uncategorized' for all items
+      itemBreakdown.forEach(dayItems => {
+        dayItems.forEach(item => {
+          item.category = 'Uncategorized'
+        })
+      })
+    }
+  } catch (error) {
+    console.error('Error fetching real categories:', error)
+    // Fallback to 'Uncategorized' for all items
+    itemBreakdown.forEach(dayItems => {
+      dayItems.forEach(item => {
+        item.category = 'Uncategorized'
+      })
+    })
   }
 }
