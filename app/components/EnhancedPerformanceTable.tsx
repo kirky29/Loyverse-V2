@@ -523,130 +523,52 @@ export default function EnhancedPerformanceTable({
 
         </div>
 
-        {/* Quick Date Presets */}
+        {/* Clean Filter Interface */}
         <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          marginBottom: '16px',
-          flexWrap: 'wrap'
+          background: 'white',
+          borderRadius: '12px',
+          border: '1px solid #e5e7eb',
+          overflow: 'hidden'
         }}>
-          <span style={{ fontSize: '12px', fontWeight: '600', color: '#6b7280', marginRight: '8px' }}>
-            Quick filters:
-          </span>
-          {DATE_PRESETS.slice(0, 8).map((preset) => (
-            <button
-              key={preset.id}
-              onClick={() => applyDatePreset(preset.id)}
-              style={{
-                background: dateFilter.preset === preset.id ? '#3b82f6' : '#ffffff',
-                color: dateFilter.preset === preset.id ? 'white' : '#374151',
-                border: '1px solid #d1d5db',
-                padding: '6px 12px',
-                borderRadius: '6px',
-                fontSize: '12px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                whiteSpace: 'nowrap'
-              }}
-            >
-              {preset.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Main Controls */}
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '12px', 
-          flexWrap: 'wrap',
-          justifyContent: 'space-between'
-        }}>
-          {/* Left side controls */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-            {/* Search */}
-            <div style={{ position: 'relative' }}>
-              <input
-                type="text"
-                placeholder="Search dates, amounts..."
-                value={textFilter}
-                onChange={(e) => setFilterState(prev => ({ ...prev, textFilter: e.target.value }))}
-                style={{
-                  background: 'white',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '8px',
-                  padding: '8px 12px 8px 36px',
-                  fontSize: '14px',
-                  color: '#374151',
-                  width: '200px',
-                  outline: 'none'
-                }}
-              />
-              <div style={{
-                position: 'absolute',
-                left: '12px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                color: '#9ca3af',
-                fontSize: '16px'
+          {/* Header Bar */}
+          <div style={{
+            background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+            padding: '16px 20px',
+            borderBottom: '1px solid #e5e7eb',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <h3 style={{
+                margin: 0,
+                fontSize: '16px',
+                fontWeight: '600',
+                color: '#1f2937',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
               }}>
-                🔍
-              </div>
+                🔍 Filter & Search
+              </h3>
+              
+              {/* Active Filter Count */}
+              {(textFilter || dateFilter.preset !== 'last30days' || amountFilter.min || amountFilter.max) && (
+                <div style={{
+                  background: '#3b82f6',
+                  color: 'white',
+                  padding: '2px 8px',
+                  borderRadius: '12px',
+                  fontSize: '11px',
+                  fontWeight: '600'
+                }}>
+                  {[textFilter, dateFilter.preset !== 'last30days', amountFilter.min, amountFilter.max].filter(Boolean).length} active
+                </div>
+              )}
             </div>
-
-            <button
-              onClick={() => setFilterState(prev => ({ ...prev, showFilters: !prev.showFilters }))}
-              style={{
-                background: showFilters ? '#3b82f6' : '#ffffff',
-                color: showFilters ? 'white' : '#374151',
-                border: '1px solid #d1d5db',
-                padding: '8px 14px',
-                borderRadius: '8px',
-                fontSize: '13px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                boxShadow: showFilters ? '0 2px 4px rgba(59, 130, 246, 0.2)' : 'none'
-              }}
-            >
-              🔧 Filters {showFilters && '•'}
-            </button>
-
-            <button
-              onClick={() => setFilterState(prev => ({ ...prev, showColumnManager: !prev.showColumnManager }))}
-              style={{
-                background: showColumnManager ? '#10b981' : '#ffffff',
-                color: showColumnManager ? 'white' : '#374151',
-                border: '1px solid #d1d5db',
-                padding: '8px 14px',
-                borderRadius: '8px',
-                fontSize: '13px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                boxShadow: showColumnManager ? '0 2px 4px rgba(16, 185, 129, 0.2)' : 'none'
-              }}
-            >
-              📋 Columns {showColumnManager && '•'}
-            </button>
-          </div>
-
-          {/* Right side controls */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-
-
-            {/* Clear all filters */}
+            
             <button
               onClick={() => {
-                // Reset to last 30 days with proper dates
                 const today = new Date()
                 const thirtyDaysAgo = new Date(today)
                 thirtyDaysAgo.setDate(today.getDate() - 29)
@@ -663,43 +585,203 @@ export default function EnhancedPerformanceTable({
                 }))
               }}
               style={{
-                background: '#ef4444',
-                color: 'white',
-                border: 'none',
-                padding: '8px 14px',
-                borderRadius: '8px',
-                fontSize: '13px',
-                fontWeight: '600',
+                background: 'transparent',
+                color: '#6b7280',
+                border: '1px solid #d1d5db',
+                padding: '6px 12px',
+                borderRadius: '6px',
+                fontSize: '12px',
                 cursor: 'pointer',
-                transition: 'all 0.2s ease',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
-                boxShadow: '0 2px 4px rgba(239, 68, 68, 0.2)'
+                gap: '4px',
+                transition: 'all 0.2s ease'
               }}
             >
-              🗑️ Clear All
+              ↻ Reset
             </button>
+          </div>
+
+          {/* Main Filter Controls */}
+          <div style={{ padding: '20px' }}>
+            {/* Quick Date Filters */}
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '13px',
+                fontWeight: '600',
+                color: '#374151',
+                marginBottom: '8px'
+              }}>
+                📅 Time Period
+              </label>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+                gap: '8px'
+              }}>
+                {DATE_PRESETS.slice(0, 8).map((preset) => (
+                  <button
+                    key={preset.id}
+                    onClick={() => applyDatePreset(preset.id)}
+                    style={{
+                      background: dateFilter.preset === preset.id ? '#3b82f6' : '#f9fafb',
+                      color: dateFilter.preset === preset.id ? 'white' : '#374151',
+                      border: dateFilter.preset === preset.id ? '1px solid #3b82f6' : '1px solid #e5e7eb',
+                      padding: '8px 12px',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      textAlign: 'center'
+                    }}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Search and Actions Row */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr auto auto',
+              gap: '12px',
+              alignItems: 'center'
+            }}>
+              {/* Search */}
+              <div>
+                <label style={{
+                  display: 'block',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  color: '#374151',
+                  marginBottom: '6px'
+                }}>
+                  🔍 Search
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type="text"
+                    placeholder="Search dates, amounts..."
+                    value={textFilter}
+                    onChange={(e) => setFilterState(prev => ({ ...prev, textFilter: e.target.value }))}
+                    style={{
+                      width: '100%',
+                      background: '#f9fafb',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      padding: '10px 12px 10px 36px',
+                      fontSize: '14px',
+                      color: '#374151',
+                      outline: 'none',
+                      transition: 'all 0.2s ease'
+                    }}
+                  />
+                  <div style={{
+                    position: 'absolute',
+                    left: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: '#9ca3af',
+                    fontSize: '14px'
+                  }}>
+                    🔍
+                  </div>
+                </div>
+              </div>
+
+              {/* Advanced Filters Toggle */}
+              <div>
+                <label style={{
+                  display: 'block',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  color: '#374151',
+                  marginBottom: '6px'
+                }}>
+                  🔧 Filters
+                </label>
+                <button
+                  onClick={() => setFilterState(prev => ({ ...prev, showFilters: !prev.showFilters }))}
+                  style={{
+                    background: showFilters ? '#3b82f6' : '#f9fafb',
+                    color: showFilters ? 'white' : '#374151',
+                    border: showFilters ? '1px solid #3b82f6' : '1px solid #e5e7eb',
+                    padding: '10px 16px',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {showFilters ? '📊 Advanced' : '⚙️ More'}
+                </button>
+              </div>
+
+              {/* Columns Toggle */}
+              <div>
+                <label style={{
+                  display: 'block',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  color: '#374151',
+                  marginBottom: '6px'
+                }}>
+                  📋 Columns
+                </label>
+                <button
+                  onClick={() => setFilterState(prev => ({ ...prev, showColumnManager: !prev.showColumnManager }))}
+                  style={{
+                    background: showColumnManager ? '#10b981' : '#f9fafb',
+                    color: showColumnManager ? 'white' : '#374151',
+                    border: showColumnManager ? '1px solid #10b981' : '1px solid #e5e7eb',
+                    padding: '10px 16px',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {showColumnManager ? '✓ Editing' : '📝 Manage'}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Enhanced Filters Panel */}
+      {/* Advanced Filters Panel */}
       {showFilters && (
         <div style={{
-          padding: '24px',
-          borderBottom: '1px solid #e2e8f0',
-          background: 'linear-gradient(135deg, #fafbfc 0%, #f1f5f9 100%)'
+          background: 'white',
+          border: '1px solid #e5e7eb',
+          borderRadius: '12px',
+          marginTop: '16px',
+          overflow: 'hidden'
         }}>
-          {/* Filter Header */}
+          {/* Advanced Header */}
           <div style={{
+            background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)',
+            padding: '16px 20px',
+            borderBottom: '1px solid #e5e7eb',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '20px'
+            justifyContent: 'space-between'
           }}>
             <h4 style={{
-              fontSize: '16px',
+              fontSize: '15px',
               fontWeight: '600',
               color: '#1e293b',
               margin: 0,
@@ -707,376 +789,213 @@ export default function EnhancedPerformanceTable({
               alignItems: 'center',
               gap: '8px'
             }}>
-              🔧 Advanced Filters
+              🎛️ Advanced Options
             </h4>
-            
-            <button
-              onClick={() => setFilterState(prev => ({ ...prev, showAdvancedFilters: !prev.showAdvancedFilters }))}
-              style={{
-                background: showAdvancedFilters ? '#6366f1' : '#e2e8f0',
-                color: showAdvancedFilters ? 'white' : '#6b7280',
-                border: 'none',
-                padding: '6px 12px',
-                borderRadius: '6px',
-                fontSize: '12px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease'
-              }}
-            >
-              {showAdvancedFilters ? '📉 Simple' : '📊 Advanced'}
-            </button>
           </div>
 
-          {/* Date Range Section */}
-          <div style={{ marginBottom: '40px' }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              marginBottom: '20px'
-            }}>
-              <span style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>📅 Date Range</span>
-              <div style={{
-                background: '#ecfdf5',
-                color: '#065f46',
-                padding: '2px 8px',
-                borderRadius: '12px',
-                fontSize: '11px',
-                fontWeight: '600'
-              }}>
-                {dateFilter.preset === 'custom' ? 'Custom' : DATE_PRESETS.find(p => p.id === dateFilter.preset)?.label || 'Custom'}
-              </div>
-            </div>
-            
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-              gap: '32px'
-            }}>
-              <div style={{ marginBottom: '8px' }}>
-                <label style={{ fontSize: '12px', fontWeight: '500', color: '#6b7280', marginBottom: '6px', display: 'block' }}>
-                  From Date
-                </label>
-                <input
-                  type="date"
-                  value={dateFilter.from}
-                  onChange={(e) => setFilterState(prev => ({
-                    ...prev,
-                    dateFilter: { ...prev.dateFilter, from: e.target.value, preset: 'custom' }
-                  }))}
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    background: 'white'
-                  }}
-                />
-              </div>
+          <div style={{ padding: '20px' }}>
 
-              <div style={{ marginBottom: '8px' }}>
-                <label style={{ fontSize: '12px', fontWeight: '500', color: '#6b7280', marginBottom: '6px', display: 'block' }}>
-                  To Date
-                </label>
-                <input
-                  type="date"
-                  value={dateFilter.to}
-                  onChange={(e) => setFilterState(prev => ({
-                    ...prev,
-                    dateFilter: { ...prev.dateFilter, to: e.target.value, preset: 'custom' }
-                  }))}
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    background: 'white'
-                  }}
-                />
-              </div>
-
-              <div style={{ marginBottom: '8px' }}>
-                <label style={{ fontSize: '12px', fontWeight: '500', color: '#6b7280', marginBottom: '6px', display: 'block' }}>
-                  Quick Select
-                </label>
-                <select
-                  value={dateFilter.preset}
-                  onChange={(e) => applyDatePreset(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    background: 'white',
-                    cursor: 'pointer'
-                  }}
-                >
-                  {DATE_PRESETS.map(preset => (
-                    <option key={preset.id} value={preset.id}>
-                      {preset.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {/* Basic Filters */}
-          <div style={{ marginBottom: showAdvancedFilters ? '32px' : '0' }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              marginBottom: '20px'
-            }}>
-              <span style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>💰 Amount Filters</span>
-            </div>
-            
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-              gap: '32px'
-            }}>
-              <div style={{ marginBottom: '8px' }}>
-                <label style={{ fontSize: '12px', fontWeight: '500', color: '#6b7280', marginBottom: '6px', display: 'block' }}>
-                  Min Total Amount (£)
-                </label>
-                <input
-                  type="number"
-                  value={amountFilter.min}
-                  onChange={(e) => setFilterState(prev => ({
-                    ...prev,
-                    amountFilter: { ...prev.amountFilter, min: e.target.value }
-                  }))}
-                  placeholder="0.00"
-                  step="0.01"
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    background: 'white'
-                  }}
-                />
-              </div>
-
-              <div style={{ marginBottom: '8px' }}>
-                <label style={{ fontSize: '12px', fontWeight: '500', color: '#6b7280', marginBottom: '6px', display: 'block' }}>
-                  Max Total Amount (£)
-                </label>
-                <input
-                  type="number"
-                  value={amountFilter.max}
-                  onChange={(e) => setFilterState(prev => ({
-                    ...prev,
-                    amountFilter: { ...prev.amountFilter, max: e.target.value }
-                  }))}
-                  placeholder="1000.00"
-                  step="0.01"
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    background: 'white'
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Advanced Filters */}
-          {showAdvancedFilters && (
+            {/* Custom Date Range */}
             <div style={{ marginBottom: '32px' }}>
-              <div style={{
+              <h5 style={{
+                fontSize: '14px',
+                fontWeight: '600',
+                color: '#374151',
+                margin: '0 0 16px 0',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
-                marginBottom: '20px'
+                gap: '8px'
               }}>
-                <span style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>📊 Advanced Metrics</span>
-              </div>
+                📅 Custom Date Range
+                <div style={{
+                  background: '#e0f2fe',
+                  color: '#0369a1',
+                  padding: '2px 8px',
+                  borderRadius: '12px',
+                  fontSize: '11px',
+                  fontWeight: '500'
+                }}>
+                  Optional
+                </div>
+              </h5>
               
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                gap: '28px'
+                gridTemplateColumns: '1fr 1fr',
+                gap: '16px'
               }}>
                 <div>
-                  <label style={{ fontSize: '12px', fontWeight: '500', color: '#6b7280', marginBottom: '4px', display: 'block' }}>
-                    Min Receipts
+                  <label style={{ 
+                    fontSize: '12px', 
+                    fontWeight: '500', 
+                    color: '#6b7280', 
+                    marginBottom: '6px', 
+                    display: 'block' 
+                  }}>
+                    From Date
                   </label>
                   <input
-                    type="number"
-                    value={amountFilter.receiptsMin}
+                    type="date"
+                    value={dateFilter.from}
                     onChange={(e) => setFilterState(prev => ({
                       ...prev,
-                      amountFilter: { ...prev.amountFilter, receiptsMin: e.target.value }
+                      dateFilter: { ...prev.dateFilter, from: e.target.value, preset: 'custom' }
                     }))}
-                    placeholder="0"
-                    min="0"
                     style={{
                       width: '100%',
-                      padding: '8px 12px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '6px',
+                      padding: '10px 12px',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
                       fontSize: '14px',
-                      background: 'white'
+                      background: '#f9fafb'
                     }}
                   />
                 </div>
 
                 <div>
-                  <label style={{ fontSize: '12px', fontWeight: '500', color: '#6b7280', marginBottom: '4px', display: 'block' }}>
-                    Max Receipts
+                  <label style={{ 
+                    fontSize: '12px', 
+                    fontWeight: '500', 
+                    color: '#6b7280', 
+                    marginBottom: '6px', 
+                    display: 'block' 
+                  }}>
+                    To Date
                   </label>
                   <input
-                    type="number"
-                    value={amountFilter.receiptsMax}
+                    type="date"
+                    value={dateFilter.to}
                     onChange={(e) => setFilterState(prev => ({
                       ...prev,
-                      amountFilter: { ...prev.amountFilter, receiptsMax: e.target.value }
+                      dateFilter: { ...prev.dateFilter, to: e.target.value, preset: 'custom' }
                     }))}
-                    placeholder="100"
-                    min="0"
                     style={{
                       width: '100%',
-                      padding: '8px 12px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '6px',
+                      padding: '10px 12px',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
                       fontSize: '14px',
-                      background: 'white'
+                      background: '#f9fafb'
                     }}
                   />
                 </div>
+              </div>
+            </div>
 
+            {/* Amount Filters */}
+            <div>
+              <h5 style={{
+                fontSize: '14px',
+                fontWeight: '600',
+                color: '#374151',
+                margin: '0 0 16px 0',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                💰 Amount Range
+                <div style={{
+                  background: '#e0f2fe',
+                  color: '#0369a1',
+                  padding: '2px 8px',
+                  borderRadius: '12px',
+                  fontSize: '11px',
+                  fontWeight: '500'
+                }}>
+                  Optional
+                </div>
+              </h5>
+              
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '16px'
+              }}>
                 <div>
-                  <label style={{ fontSize: '12px', fontWeight: '500', color: '#6b7280', marginBottom: '4px', display: 'block' }}>
-                    Min Avg Receipt (£)
+                  <label style={{ 
+                    fontSize: '12px', 
+                    fontWeight: '500', 
+                    color: '#6b7280', 
+                    marginBottom: '6px', 
+                    display: 'block' 
+                  }}>
+                    Minimum Amount (£)
                   </label>
                   <input
                     type="number"
-                    value={amountFilter.avgReceiptMin}
+                    value={amountFilter.min}
                     onChange={(e) => setFilterState(prev => ({
                       ...prev,
-                      amountFilter: { ...prev.amountFilter, avgReceiptMin: e.target.value }
+                      amountFilter: { ...prev.amountFilter, min: e.target.value }
                     }))}
                     placeholder="0.00"
                     step="0.01"
                     style={{
                       width: '100%',
-                      padding: '8px 12px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '6px',
+                      padding: '10px 12px',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
                       fontSize: '14px',
-                      background: 'white'
+                      background: '#f9fafb'
                     }}
                   />
                 </div>
 
                 <div>
-                  <label style={{ fontSize: '12px', fontWeight: '500', color: '#6b7280', marginBottom: '4px', display: 'block' }}>
-                    Max Avg Receipt (£)
+                  <label style={{ 
+                    fontSize: '12px', 
+                    fontWeight: '500', 
+                    color: '#6b7280', 
+                    marginBottom: '6px', 
+                    display: 'block' 
+                  }}>
+                    Maximum Amount (£)
                   </label>
                   <input
                     type="number"
-                    value={amountFilter.avgReceiptMax}
+                    value={amountFilter.max}
                     onChange={(e) => setFilterState(prev => ({
                       ...prev,
-                      amountFilter: { ...prev.amountFilter, avgReceiptMax: e.target.value }
+                      amountFilter: { ...prev.amountFilter, max: e.target.value }
                     }))}
-                    placeholder="50.00"
+                    placeholder="1000.00"
                     step="0.01"
                     style={{
                       width: '100%',
-                      padding: '8px 12px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '6px',
+                      padding: '10px 12px',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
                       fontSize: '14px',
-                      background: 'white'
+                      background: '#f9fafb'
                     }}
                   />
                 </div>
               </div>
             </div>
-          )}
-
-          {/* Filter Actions */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            flexWrap: 'wrap'
-          }}>
-            <button
-              onClick={() => {
-                // Reset to last 30 days with proper dates
-                const today = new Date()
-                const thirtyDaysAgo = new Date(today)
-                thirtyDaysAgo.setDate(today.getDate() - 29)
-                
-                setFilterState(prev => ({
-                  ...prev,
-                  dateFilter: { 
-                    from: thirtyDaysAgo.toISOString().split('T')[0], 
-                    to: today.toISOString().split('T')[0], 
-                    preset: 'last30days' 
-                  },
-                  amountFilter: { min: '', max: '', receiptsMin: '', receiptsMax: '', avgReceiptMin: '', avgReceiptMax: '' }
-                }))
-              }}
-              style={{
-                background: '#f3f4f6',
-                color: '#374151',
-                border: '1px solid #d1d5db',
-                padding: '8px 16px',
-                borderRadius: '6px',
-                fontSize: '13px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease'
-              }}
-            >
-              🗑️ Clear Filters
-            </button>
-
-            <div style={{
-              background: '#ecfdf5',
-              color: '#065f46',
-              padding: '8px 12px',
-              borderRadius: '6px',
-              fontSize: '12px',
-              fontWeight: '500',
-              border: '1px solid #d1fae5'
-            }}>
-              {data.length} records match your filters
-            </div>
           </div>
         </div>
       )}
 
-      {/* Enhanced Column Manager */}
+      {/* Column Manager Panel */}
       {showColumnManager && (
         <div style={{
-          padding: '24px',
-          borderBottom: '1px solid #e2e8f0',
-          background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)'
+          background: 'white',
+          border: '1px solid #e5e7eb',
+          borderRadius: '12px',
+          marginTop: '16px',
+          overflow: 'hidden'
         }}>
           {/* Column Manager Header */}
           <div style={{
+            background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+            padding: '16px 20px',
+            borderBottom: '1px solid #e5e7eb',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '20px'
+            justifyContent: 'space-between'
           }}>
             <h4 style={{
-              fontSize: '16px',
+              fontSize: '15px',
               fontWeight: '600',
               color: '#1e293b',
               margin: 0,
@@ -1086,6 +1005,8 @@ export default function EnhancedPerformanceTable({
             }}>
               📋 Column Manager
             </h4>
+
+            <div style={{ padding: '20px' }}>
             
             <div style={{
               background: '#ecfdf5',
