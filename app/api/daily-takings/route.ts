@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { apiToken, storeId, includeAllStores } = body
+    const { apiToken, storeId, includeAllStores, fromDate, daysToLoad } = body
 
     if (!apiToken) {
       return NextResponse.json(
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    return await fetchDailyTakings(apiToken, storeId, includeAllStores)
+    return await fetchDailyTakings(apiToken, storeId, includeAllStores, fromDate, daysToLoad)
   } catch (error) {
     console.error('Error fetching daily takings:', error)
     return NextResponse.json(
@@ -60,12 +60,29 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function fetchDailyTakings(apiToken: string, storeId: string, includeAllStores: boolean = false) {
+async function fetchDailyTakings(
+  apiToken: string, 
+  storeId: string, 
+  includeAllStores: boolean = false, 
+  customFromDate?: string, 
+  daysToLoad?: number
+) {
   try {
-    // Get receipts from the last 90 days to ensure we get all available historical data
-    const ninetyDaysAgo = new Date()
-    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
-    const fromDate = ninetyDaysAgo.toISOString().split('T')[0]
+    // Determine date range based on parameters
+    let fromDate: string
+    
+    if (customFromDate) {
+      fromDate = customFromDate
+    } else if (daysToLoad) {
+      const startDate = new Date()
+      startDate.setDate(startDate.getDate() - daysToLoad)
+      fromDate = startDate.toISOString().split('T')[0]
+    } else {
+      // Default: last 31 days for fast initial load
+      const thirtyOneDaysAgo = new Date()
+      thirtyOneDaysAgo.setDate(thirtyOneDaysAgo.getDate() - 31)
+      fromDate = thirtyOneDaysAgo.toISOString().split('T')[0]
+    }
 
     console.log('Fetching receipts from:', fromDate, 'for store:', storeId)
 

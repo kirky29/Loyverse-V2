@@ -30,13 +30,15 @@ interface EnhancedPerformanceTableProps {
   activeAccount: LoyverseAccount | null
   formatCurrency: (value: number) => string
   onDayClick: (dayData: DailyTaking) => void
+  onLoadHistoricalData?: () => void
 }
 
 export default function EnhancedPerformanceTable({ 
   dailyTakings, 
   activeAccount, 
   formatCurrency, 
-  onDayClick
+  onDayClick,
+  onLoadHistoricalData
 }: EnhancedPerformanceTableProps) {
   
   // Initialize filter state
@@ -275,7 +277,24 @@ export default function EnhancedPerformanceTable({
             color: '#64748b',
             margin: 0
           }}>
-            {data.length} days • Showing last {recordsToShow} days
+            {data.length} days • Showing {dailyTakings.length > 40 ? 'historical data' : 'last 31 days'}
+            {dailyTakings.length <= 40 && onLoadHistoricalData && (
+              <span> • <button 
+                onClick={onLoadHistoricalData}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#3b82f6',
+                  cursor: 'pointer',
+                  textDecoration: 'underline',
+                  fontSize: '14px',
+                  padding: 0
+                }}
+              >
+                Load historical data
+              </button>
+              </span>
+            )}
           </p>
         </div>
 

@@ -73,21 +73,30 @@ export default function SimplePage() {
     await fetchAccountData(account)
   }
 
-  const fetchAccountData = async (account: LoyverseAccount) => {
-    console.log('Fetching data for:', account.name)
+  const fetchAccountData = async (account: LoyverseAccount, fromDate?: string, daysToLoad?: number) => {
+    console.log('Fetching data for:', account.name, 'fromDate:', fromDate, 'daysToLoad:', daysToLoad)
     setLoading(true)
     
     try {
+      const requestBody: any = {
+        apiToken: account.apiToken,
+        storeId: account.storeId,
+        includeAllStores: account.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2'
+      }
+      
+      if (fromDate) {
+        requestBody.fromDate = fromDate
+      }
+      if (daysToLoad) {
+        requestBody.daysToLoad = daysToLoad
+      }
+      
       const response = await fetch('/api/daily-takings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          apiToken: account.apiToken,
-          storeId: account.storeId,
-          includeAllStores: account.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2'
-        })
+        body: JSON.stringify(requestBody)
       })
 
       if (!response.ok) {
@@ -107,6 +116,13 @@ export default function SimplePage() {
       setDailyTakings([])
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadHistoricalData = () => {
+    if (activeAccount) {
+      // Load all data since October 1st, 2024
+      fetchAccountData(activeAccount, '2024-10-01')
     }
   }
 
@@ -258,25 +274,46 @@ export default function SimplePage() {
 
         {currentView === 'account' && activeAccount && (
           <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
-            {/* Back Button */}
-            <button
-              onClick={goHome}
-              style={{
-                background: '#f3f4f6',
-                color: '#374151',
-                border: '1px solid #d1d5db',
-                padding: '8px 16px',
-                borderRadius: '6px',
-                fontSize: '14px',
-                cursor: 'pointer',
-                marginBottom: '24px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}
-            >
-              ← Back to Store Selection
-            </button>
+            {/* Navigation Buttons */}
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap' }}>
+              <button
+                onClick={goHome}
+                style={{
+                  background: '#f3f4f6',
+                  color: '#374151',
+                  border: '1px solid #d1d5db',
+                  padding: '8px 16px',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
+                ← Back to Store Selection
+              </button>
+
+              <button
+                onClick={loadHistoricalData}
+                disabled={loading}
+                style={{
+                  background: loading ? '#e5e7eb' : 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  opacity: loading ? 0.6 : 1
+                }}
+              >
+                📊 Load All Data (Since Oct 2024)
+              </button>
+            </div>
 
             {/* Loading State */}
             {loading && (
@@ -381,6 +418,7 @@ export default function SimplePage() {
                     setSelectedDay(day)
                     setCurrentView('dayDetail')
                   }}
+                  onLoadHistoricalData={loadHistoricalData}
                 />
               </div>
             )}
