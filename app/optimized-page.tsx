@@ -541,14 +541,41 @@ function OptimizedPage({ user }: OptimizedPageProps) {
             )}
           </div>
 
-          {/* Date */}
-          <div style={{ fontSize: '14px', color: '#666' }}>
-            {new Date().toLocaleDateString('en-GB', {
-              weekday: 'long',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            })}
+          {/* Date and Force Resync */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ fontSize: '14px', color: '#666' }}>
+              {new Date().toLocaleDateString('en-GB', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
+            </div>
+            
+            {/* Force Resync Button - only show in account view */}
+            {currentView === 'account' && activeAccount && (
+              <button
+                onClick={forceResync}
+                disabled={loading}
+                style={{
+                  background: loading ? '#e5e7eb' : 'linear-gradient(135deg, #ef4444, #dc2626)',
+                  color: 'white',
+                  border: 'none',
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  opacity: loading ? 0.6 : 1,
+                  fontWeight: '500'
+                }}
+                title="Force resync all data"
+              >
+                🔄 Resync
+              </button>
+            )}
           </div>
         </div>
       </header>
@@ -614,28 +641,6 @@ function OptimizedPage({ user }: OptimizedPageProps) {
               >
                 ← Back to Store Selection
               </button>
-
-              <button
-                onClick={forceResync}
-                disabled={loading}
-                style={{
-                  background: loading ? '#e5e7eb' : 'linear-gradient(135deg, #ef4444, #dc2626)',
-                  color: 'white',
-                  border: 'none',
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  opacity: loading ? 0.6 : 1
-                }}
-              >
-                🔄 Force Resync
-              </button>
-
-
             </div>
 
             {/* Enhanced Loading State */}
