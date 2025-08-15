@@ -1665,81 +1665,8 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Navigation */}
+          {/* Navigation - Removed buttons as requested */}
           <nav style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <button
-              onClick={() => {
-                setCurrentView('main')
-                setSelectedDay(null)
-                setActiveTab('dashboard')
-              }}
-              style={{
-                background: '#007bff',
-                color: 'white',
-                border: 'none',
-                padding: '8px 16px',
-                borderRadius: '6px',
-                fontSize: '14px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease'
-              }}
-            >
-              🏠 Home
-            </button>
-            
-            {/* Store Account Buttons */}
-            {accounts.length > 0 && (
-              <>
-                <div style={{ width: '1px', height: '24px', background: '#dee2e6', margin: '0 8px' }} />
-                {accounts.map((acc) => {
-                  const cachedData = accountDataCache.get(acc.id)
-                  const hasCache = cachedData && cachedData.data.length > 0
-                  const isLoading = cachedData?.loading || false
-                  
-                  return (
-                  <button
-                    key={acc.id}
-                    onClick={() => {
-                      selectAccountFromMain(acc)
-                      setCurrentView('account')
-                    }}
-                    style={{
-                      padding: '8px 16px',
-                      borderRadius: '6px',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      border: '2px solid',
-                      transition: 'all 0.2s ease',
-                      background: acc.isActive ? '#6f42c1' : 'white',
-                      color: acc.isActive ? 'white' : '#6f42c1',
-                        borderColor: '#6f42c1',
-                        position: 'relative'
-                    }}
-                  >
-                    {acc.name}
-                    {acc.isActive && <span style={{ marginLeft: '8px' }}>✓</span>}
-                      {!acc.isActive && hasCache && (
-                        <span style={{ 
-                          marginLeft: '6px', 
-                          fontSize: '10px',
-                          opacity: 0.7
-                        }}>⚡</span>
-                      )}
-                      {isLoading && (
-                        <span style={{ 
-                          marginLeft: '6px', 
-                          fontSize: '10px',
-                          animation: 'spin 1s linear infinite'
-                        }}>⟳</span>
-                      )}
-                  </button>
-                  )
-                })}
-
-              </>
-            )}
           </nav>
 
           <div style={{ fontSize: '14px', color: '#666', display: 'flex', alignItems: 'center', gap: '8px' }}>
