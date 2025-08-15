@@ -322,16 +322,16 @@ export default function DayDetailView({
             </div>
           </div>
 
-          {/* Top Items - Grid Layout */}
+          {/* All Items - Grid Layout */}
           <div>
-            <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px', color: '#333' }}>Top Selling Items</h4>
+            <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px', color: '#333' }}>All Items Sold ({(dayData as any).itemBreakdown.length} items)</h4>
             <div style={{ 
               display: 'grid', 
               gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
               gap: '12px',
               maxHeight: 'none'
             }}>
-              {(dayData as any).itemBreakdown.slice(0, 12).map((item: any, index: number) => (
+              {(dayData as any).itemBreakdown.map((item: any, index: number) => (
                 <div key={`${item.item_name}_${item.variant_name || 'default'}`} style={{
                   padding: '12px',
                   background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
@@ -388,21 +388,6 @@ export default function DayDetailView({
                 </div>
               ))}
             </div>
-            
-            {/* Show more items indicator */}
-            {(dayData as any).itemBreakdown.length > 12 && (
-              <div style={{
-                textAlign: 'center',
-                marginTop: '12px',
-                padding: '8px',
-                background: '#f8fafc',
-                borderRadius: '6px',
-                fontSize: '12px',
-                color: '#64748b'
-              }}>
-                + {(dayData as any).itemBreakdown.length - 12} more items sold
-              </div>
-            )}
           </div>
         </div>
       )}
