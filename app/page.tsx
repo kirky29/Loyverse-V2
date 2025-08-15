@@ -148,7 +148,7 @@ function PerformanceTable({ dailyTakings, activeAccount, formatCurrency }: Perfo
     return sortDirection === 'asc' ? '↑' : '↓'
   }
 
-  const toggleColumn = (column: string) => {
+  const toggleColumn = (column: keyof typeof visibleColumns) => {
     setVisibleColumns(prev => ({
       ...prev,
       [column]: !prev[column]
@@ -307,7 +307,7 @@ function PerformanceTable({ dailyTakings, activeAccount, formatCurrency }: Perfo
                 <input
                   type="checkbox"
                   checked={visible}
-                  onChange={() => toggleColumn(column)}
+                  onChange={() => toggleColumn(column as keyof typeof visibleColumns)}
                   style={{ marginRight: '8px' }}
                 />
                 {column.charAt(0).toUpperCase() + column.slice(1)}
@@ -735,13 +735,13 @@ export default function Home() {
       setSwitchingAccount(true) // Show subtle switching indicator
       
       // Still update the account state
-      const updatedAccounts = accounts.map(acc => ({
-        ...acc,
-        isActive: acc.id === account.id
-      }))
-      saveAccounts(updatedAccounts)
-      setActiveAccount(account)
-      setActiveTab('dashboard')
+    const updatedAccounts = accounts.map(acc => ({
+      ...acc,
+      isActive: acc.id === account.id
+    }))
+    saveAccounts(updatedAccounts)
+    setActiveAccount(account)
+    setActiveTab('dashboard')
       
       // Clear switching indicator after a short delay
       setTimeout(() => setSwitchingAccount(false), 500)
@@ -797,7 +797,7 @@ export default function Home() {
     try {
       // Only show loading for initial load, not account switches
       if (!account) {
-        setLoading(true)
+      setLoading(true)
       }
       
       // Mark this account as loading in cache
@@ -853,8 +853,8 @@ export default function Home() {
       }
     } finally {
       if (!account) {
-        setLoading(false)
-      }
+      setLoading(false)
+    }
       setSwitchingAccount(false)
     }
   }
@@ -1298,24 +1298,24 @@ export default function Home() {
                     const isLoading = cachedData?.loading || false
                     
                     return (
-                      <button
-                        key={acc.id}
-                        onClick={() => switchAccount(acc)}
-                        style={{
-                          padding: '8px 16px',
-                          borderRadius: '6px',
-                          fontSize: '14px',
-                          fontWeight: '600',
-                          cursor: 'pointer',
-                          border: '2px solid',
-                          transition: 'all 0.2s ease',
-                          background: acc.isActive ? '#6f42c1' : 'white',
-                          color: acc.isActive ? 'white' : '#6f42c1',
-                          borderColor: '#6f42c1'
-                        }}
-                      >
-                        {acc.name}
-                        {acc.isActive && <span style={{ marginLeft: '8px' }}>✓</span>}
+                    <button
+                      key={acc.id}
+                      onClick={() => switchAccount(acc)}
+                      style={{
+                        padding: '8px 16px',
+                        borderRadius: '6px',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        border: '2px solid',
+                        transition: 'all 0.2s ease',
+                        background: acc.isActive ? '#6f42c1' : 'white',
+                        color: acc.isActive ? 'white' : '#6f42c1',
+                        borderColor: '#6f42c1'
+                      }}
+                    >
+                      {acc.name}
+                      {acc.isActive && <span style={{ marginLeft: '8px' }}>✓</span>}
                         {!acc.isActive && hasCache && (
                           <span style={{ 
                             marginLeft: '6px', 
@@ -1330,7 +1330,7 @@ export default function Home() {
                             animation: 'spin 1s linear infinite'
                           }}>⟳</span>
                         )}
-                      </button>
+                    </button>
                     )
                   })}
                 </>
@@ -1524,25 +1524,25 @@ export default function Home() {
                   const isLoading = cachedData?.loading || false
                   
                   return (
-                    <button
-                      key={acc.id}
-                      onClick={() => switchAccount(acc)}
-                      style={{
-                        padding: '8px 16px',
-                        borderRadius: '6px',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        cursor: 'pointer',
-                        border: '2px solid',
-                        transition: 'all 0.2s ease',
-                        background: acc.isActive ? '#6f42c1' : 'white',
-                        color: acc.isActive ? 'white' : '#6f42c1',
+                  <button
+                    key={acc.id}
+                    onClick={() => switchAccount(acc)}
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      border: '2px solid',
+                      transition: 'all 0.2s ease',
+                      background: acc.isActive ? '#6f42c1' : 'white',
+                      color: acc.isActive ? 'white' : '#6f42c1',
                         borderColor: '#6f42c1',
                         position: 'relative'
-                      }}
-                    >
-                      {acc.name}
-                      {acc.isActive && <span style={{ marginLeft: '8px' }}>✓</span>}
+                    }}
+                  >
+                    {acc.name}
+                    {acc.isActive && <span style={{ marginLeft: '8px' }}>✓</span>}
                       {!acc.isActive && hasCache && (
                         <span style={{ 
                           marginLeft: '6px', 
@@ -1557,7 +1557,7 @@ export default function Home() {
                           animation: 'spin 1s linear infinite'
                         }}>⟳</span>
                       )}
-                    </button>
+                  </button>
                   )
                 })}
                 <button
@@ -1604,135 +1604,135 @@ export default function Home() {
 
 
         {/* Performance Cards - Unified Design */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginBottom: '24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginBottom: '24px' }}>
           {/* Check if this is a multi-store account with location breakdown */}
           {activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2' && dailyTakings.length > 0 ? (
             <>
-              {(() => {
-                const shopId = 'd5a7267b-ca6f-4490-9d66-b5ba46cc563c'
-                const cafeId = 'e2aa143e-3e91-433e-a6d8-5a5538d429e2'
-                const shopTotal = dailyTakings.reduce((sum, day) => sum + (day.locationBreakdown?.[shopId] || 0), 0)
-                const cafeTotal = dailyTakings.reduce((sum, day) => sum + (day.locationBreakdown?.[cafeId] || 0), 0)
-                const combinedTotal = shopTotal + cafeTotal
-                const shopPercentage = combinedTotal > 0 ? (shopTotal / combinedTotal * 100).toFixed(1) : '0'
-                const cafePercentage = combinedTotal > 0 ? (cafeTotal / combinedTotal * 100).toFixed(1) : '0'
-                
-                return (
-                  <>
-                    <div style={{
-                      background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
-                      borderRadius: '12px',
-                      padding: '20px',
-                      color: 'white',
-                      boxShadow: '0 4px 12px rgba(33, 150, 243, 0.3)'
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-                        <div style={{ fontSize: '20px', marginRight: '8px' }}>🏪</div>
-                        <div style={{ fontSize: '14px', fontWeight: '600', opacity: 0.9 }}>
-                          SHOP LOCATION
-                        </div>
-                      </div>
-                      <div style={{ fontSize: '28px', fontWeight: '700', marginBottom: '4px' }}>
-                        {formatCurrency(shopTotal)}
-                      </div>
-                      <div style={{ fontSize: '12px', opacity: 0.8 }}>
-                        {shopPercentage}% of total revenue
+            {(() => {
+              const shopId = 'd5a7267b-ca6f-4490-9d66-b5ba46cc563c'
+              const cafeId = 'e2aa143e-3e91-433e-a6d8-5a5538d429e2'
+              const shopTotal = dailyTakings.reduce((sum, day) => sum + (day.locationBreakdown?.[shopId] || 0), 0)
+              const cafeTotal = dailyTakings.reduce((sum, day) => sum + (day.locationBreakdown?.[cafeId] || 0), 0)
+              const combinedTotal = shopTotal + cafeTotal
+              const shopPercentage = combinedTotal > 0 ? (shopTotal / combinedTotal * 100).toFixed(1) : '0'
+              const cafePercentage = combinedTotal > 0 ? (cafeTotal / combinedTotal * 100).toFixed(1) : '0'
+              
+              return (
+                <>
+                  <div style={{
+                    background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+                    borderRadius: '12px',
+                    padding: '20px',
+                    color: 'white',
+                    boxShadow: '0 4px 12px rgba(33, 150, 243, 0.3)'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+                      <div style={{ fontSize: '20px', marginRight: '8px' }}>🏪</div>
+                      <div style={{ fontSize: '14px', fontWeight: '600', opacity: 0.9 }}>
+                        SHOP LOCATION
                       </div>
                     </div>
+                    <div style={{ fontSize: '28px', fontWeight: '700', marginBottom: '4px' }}>
+                      {formatCurrency(shopTotal)}
+                    </div>
+                    <div style={{ fontSize: '12px', opacity: 0.8 }}>
+                      {shopPercentage}% of total revenue
+                    </div>
+                  </div>
 
-                    <div style={{
-                      background: 'linear-gradient(135deg, #4caf50 0%, #388e3c 100%)',
-                      borderRadius: '12px',
-                      padding: '20px',
-                      color: 'white',
-                      boxShadow: '0 4px 12px rgba(76, 175, 80, 0.3)'
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-                        <div style={{ fontSize: '20px', marginRight: '8px' }}>☕</div>
-                        <div style={{ fontSize: '14px', fontWeight: '600', opacity: 0.9 }}>
-                          CAFE LOCATION
-                        </div>
-                      </div>
-                      <div style={{ fontSize: '28px', fontWeight: '700', marginBottom: '4px' }}>
-                        {formatCurrency(cafeTotal)}
-                      </div>
-                      <div style={{ fontSize: '12px', opacity: 0.8 }}>
-                        {cafePercentage}% of total revenue
+                  <div style={{
+                    background: 'linear-gradient(135deg, #4caf50 0%, #388e3c 100%)',
+                    borderRadius: '12px',
+                    padding: '20px',
+                    color: 'white',
+                    boxShadow: '0 4px 12px rgba(76, 175, 80, 0.3)'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+                      <div style={{ fontSize: '20px', marginRight: '8px' }}>☕</div>
+                      <div style={{ fontSize: '14px', fontWeight: '600', opacity: 0.9 }}>
+                        CAFE LOCATION
                       </div>
                     </div>
+                    <div style={{ fontSize: '28px', fontWeight: '700', marginBottom: '4px' }}>
+                      {formatCurrency(cafeTotal)}
+                    </div>
+                    <div style={{ fontSize: '12px', opacity: 0.8 }}>
+                      {cafePercentage}% of total revenue
+                    </div>
+                  </div>
 
-                    <div style={{
-                      background: 'linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%)',
-                      borderRadius: '12px',
-                      padding: '20px',
-                      color: 'white',
-                      boxShadow: '0 4px 12px rgba(156, 39, 176, 0.3)'
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-                        <div style={{ fontSize: '20px', marginRight: '8px' }}>🏢</div>
-                        <div style={{ fontSize: '14px', fontWeight: '600', opacity: 0.9 }}>
-                          COMBINED TOTAL
-                        </div>
-                      </div>
-                      <div style={{ fontSize: '28px', fontWeight: '700', marginBottom: '4px' }}>
-                        {formatCurrency(combinedTotal)}
-                      </div>
-                      <div style={{ fontSize: '12px', opacity: 0.8 }}>
-                        Both locations combined
+                  <div style={{
+                    background: 'linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%)',
+                    borderRadius: '12px',
+                    padding: '20px',
+                    color: 'white',
+                    boxShadow: '0 4px 12px rgba(156, 39, 176, 0.3)'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+                      <div style={{ fontSize: '20px', marginRight: '8px' }}>🏢</div>
+                      <div style={{ fontSize: '14px', fontWeight: '600', opacity: 0.9 }}>
+                        COMBINED TOTAL
                       </div>
                     </div>
-                  </>
-                )
-              })()}
+                    <div style={{ fontSize: '28px', fontWeight: '700', marginBottom: '4px' }}>
+                      {formatCurrency(combinedTotal)}
+                    </div>
+                    <div style={{ fontSize: '12px', opacity: 0.8 }}>
+                      Both locations combined
+                    </div>
+                  </div>
+                </>
+              )
+            })()}
             </>
-          ) : (
+        ) : (
             /* Single Store Account - Same Beautiful Design */
             <>
-              <div style={{
+            <div style={{
                 background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
-                borderRadius: '12px',
-                padding: '20px',
-                color: 'white',
+              borderRadius: '12px',
+              padding: '20px',
+              color: 'white',
                 boxShadow: '0 4px 12px rgba(33, 150, 243, 0.3)'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-                  <div style={{ fontSize: '20px', marginRight: '8px' }}>💰</div>
-                  <div style={{ fontSize: '14px', fontWeight: '600', opacity: 0.9 }}>
-                    TOTAL REVENUE
-                  </div>
-                </div>
-                <div style={{ fontSize: '28px', fontWeight: '700', marginBottom: '4px' }}>
-                  {formatCurrency(totalTakings)}
-                </div>
-                <div style={{ fontSize: '12px', opacity: 0.8 }}>
-                  All sales combined
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+                <div style={{ fontSize: '20px', marginRight: '8px' }}>💰</div>
+                <div style={{ fontSize: '14px', fontWeight: '600', opacity: 0.9 }}>
+                  TOTAL REVENUE
                 </div>
               </div>
+              <div style={{ fontSize: '28px', fontWeight: '700', marginBottom: '4px' }}>
+                {formatCurrency(totalTakings)}
+              </div>
+              <div style={{ fontSize: '12px', opacity: 0.8 }}>
+                All sales combined
+              </div>
+            </div>
 
-              <div style={{
+            <div style={{
                 background: 'linear-gradient(135deg, #4caf50 0%, #388e3c 100%)',
-                borderRadius: '12px',
-                padding: '20px',
-                color: 'white',
+              borderRadius: '12px',
+              padding: '20px',
+              color: 'white',
                 boxShadow: '0 4px 12px rgba(76, 175, 80, 0.3)'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
-                  <div style={{ fontSize: '20px', marginRight: '8px' }}>📊</div>
-                  <div style={{ fontSize: '14px', fontWeight: '600', opacity: 0.9 }}>
-                    DAILY AVERAGE
-                  </div>
-                </div>
-                <div style={{ fontSize: '28px', fontWeight: '700', marginBottom: '4px' }}>
-                  {formatCurrency(averageTakings)}
-                </div>
-                <div style={{ fontSize: '12px', opacity: 0.8 }}>
-                  Average per day
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
+                <div style={{ fontSize: '20px', marginRight: '8px' }}>📊</div>
+                <div style={{ fontSize: '14px', fontWeight: '600', opacity: 0.9 }}>
+                  DAILY AVERAGE
                 </div>
               </div>
+              <div style={{ fontSize: '28px', fontWeight: '700', marginBottom: '4px' }}>
+                {formatCurrency(averageTakings)}
+              </div>
+              <div style={{ fontSize: '12px', opacity: 0.8 }}>
+                Average per day
+              </div>
+            </div>
 
-              <div style={{
+          <div style={{
                 background: 'linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%)',
-                borderRadius: '12px',
+            borderRadius: '12px',
                 padding: '20px',
                 color: 'white',
                 boxShadow: '0 4px 12px rgba(156, 39, 176, 0.3)'
@@ -1741,18 +1741,18 @@ export default function Home() {
                   <div style={{ fontSize: '20px', marginRight: '8px' }}>🏪</div>
                   <div style={{ fontSize: '14px', fontWeight: '600', opacity: 0.9 }}>
                     STORE PERFORMANCE
-                  </div>
-                </div>
+                            </div>
+                            </div>
                 <div style={{ fontSize: '28px', fontWeight: '700', marginBottom: '4px' }}>
                   {dailyTakings.length > 0 ? dailyTakings.length : 0} days
-                </div>
+                          </div>
                 <div style={{ fontSize: '12px', opacity: 0.8 }}>
                   Data collected
-                </div>
-              </div>
+            </div>
+            </div>
             </>
           )}
-        </div>
+          </div>
 
 
 
