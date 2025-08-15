@@ -751,11 +751,11 @@ export default function EnhancedPerformanceTable({
             
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-              gap: '24px'
+              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+              gap: '32px'
             }}>
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: '500', color: '#6b7280', marginBottom: '4px', display: 'block' }}>
+              <div style={{ marginBottom: '8px' }}>
+                <label style={{ fontSize: '12px', fontWeight: '500', color: '#6b7280', marginBottom: '6px', display: 'block' }}>
                   From Date
                 </label>
                 <input
@@ -776,8 +776,8 @@ export default function EnhancedPerformanceTable({
                 />
               </div>
 
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: '500', color: '#6b7280', marginBottom: '4px', display: 'block' }}>
+              <div style={{ marginBottom: '8px' }}>
+                <label style={{ fontSize: '12px', fontWeight: '500', color: '#6b7280', marginBottom: '6px', display: 'block' }}>
                   To Date
                 </label>
                 <input
@@ -798,8 +798,8 @@ export default function EnhancedPerformanceTable({
                 />
               </div>
 
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: '500', color: '#6b7280', marginBottom: '4px', display: 'block' }}>
+              <div style={{ marginBottom: '8px' }}>
+                <label style={{ fontSize: '12px', fontWeight: '500', color: '#6b7280', marginBottom: '6px', display: 'block' }}>
                   Quick Select
                 </label>
                 <select
@@ -838,11 +838,11 @@ export default function EnhancedPerformanceTable({
             
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-              gap: '24px'
+              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+              gap: '32px'
             }}>
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: '500', color: '#6b7280', marginBottom: '4px', display: 'block' }}>
+              <div style={{ marginBottom: '8px' }}>
+                <label style={{ fontSize: '12px', fontWeight: '500', color: '#6b7280', marginBottom: '6px', display: 'block' }}>
                   Min Total Amount (£)
                 </label>
                 <input
@@ -865,8 +865,8 @@ export default function EnhancedPerformanceTable({
                 />
               </div>
 
-              <div>
-                <label style={{ fontSize: '12px', fontWeight: '500', color: '#6b7280', marginBottom: '4px', display: 'block' }}>
+              <div style={{ marginBottom: '8px' }}>
+                <label style={{ fontSize: '12px', fontWeight: '500', color: '#6b7280', marginBottom: '6px', display: 'block' }}>
                   Max Total Amount (£)
                 </label>
                 <input
@@ -905,8 +905,8 @@ export default function EnhancedPerformanceTable({
               
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-                gap: '20px'
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: '28px'
               }}>
                 <div>
                   <label style={{ fontSize: '12px', fontWeight: '500', color: '#6b7280', marginBottom: '4px', display: 'block' }}>
