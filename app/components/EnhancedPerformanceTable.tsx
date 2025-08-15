@@ -1246,7 +1246,7 @@ export default function EnhancedPerformanceTable({
             </div>
           </div>
         </div>
-      )}
+        )}
 
       {/* Table */}
       <div style={{ overflowX: 'auto' }}>
