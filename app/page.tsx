@@ -977,9 +977,14 @@ export default function Home() {
 
   const fetchDailyTakings = async (account?: LoyverseAccount) => {
     const targetAccount = account || activeAccount
-    if (!targetAccount) return
+    console.log('fetchDailyTakings called for account:', targetAccount?.name, 'account param:', account?.name)
+    if (!targetAccount) {
+      console.log('No targetAccount, returning early')
+      return
+    }
     
     try {
+      console.log('Starting fetch for:', targetAccount.name)
       // Only show loading for initial load, not account switches
       if (!account) {
       setLoading(true)
@@ -992,6 +997,7 @@ export default function Home() {
         loading: true
       })))
       
+      console.log('Making API request for:', targetAccount.name)
       const response = await fetch('/api/daily-takings', {
         method: 'POST',
         headers: {
@@ -1004,11 +1010,13 @@ export default function Home() {
         })
       })
       
+      console.log('API response status:', response.status, 'for:', targetAccount.name)
       if (!response.ok) {
         throw new Error('Failed to fetch daily takings')
       }
       const data = await response.json()
       const dailyTakingsData = Array.isArray(data) ? data : []
+      console.log('Received data for:', targetAccount.name, 'length:', dailyTakingsData.length)
       
       // Update cache
       setAccountDataCache(prev => new Map(prev.set(targetAccount.id, {
@@ -1019,10 +1027,15 @@ export default function Home() {
       
       // Update UI if this is for the current active account
       if (!account || targetAccount.id === activeAccount?.id) {
+        console.log('Updating UI for:', targetAccount.name, 'activeAccount:', activeAccount?.name)
         setDailyTakings(dailyTakingsData)
         setError(null)
+      } else {
+        console.log('Not updating UI - targetAccount:', targetAccount.name, 'activeAccount:', activeAccount?.name)
       }
+      console.log('Fetch completed successfully for:', targetAccount.name)
     } catch (err) {
+      console.error('Error fetching data for:', targetAccount.name, err)
       const errorMessage = err instanceof Error ? err.message : 'An error occurred'
       
       // Update cache with error state
@@ -1041,6 +1054,7 @@ export default function Home() {
       setLoading(false)
     }
       setSwitchingAccount(false)
+      console.log('Fetch finally block completed for:', targetAccount.name)
     }
   }
 
