@@ -150,8 +150,8 @@ async function fetchDailyTakings(apiToken: string, storeId: string, includeAllSt
       
       if (receipt.payments && Array.isArray(receipt.payments)) {
         receipt.payments.forEach(payment => {
-          const amount = payment.amount || 0
-          const paymentType = payment.payment_type?.toLowerCase() || ''
+          const amount = payment.money_amount || 0
+          const paymentType = payment.type?.toLowerCase() || ''
           
           if (paymentType === 'cash') {
             cashTotal += amount
