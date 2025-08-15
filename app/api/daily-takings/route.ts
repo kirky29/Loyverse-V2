@@ -62,10 +62,12 @@ export async function POST(request: NextRequest) {
 
 async function fetchDailyTakings(apiToken: string, storeId: string, includeAllStores: boolean = false) {
   try {
-    // Get receipts from the last 30 days
-    const thirtyDaysAgo = new Date()
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-    const fromDate = thirtyDaysAgo.toISOString().split('T')[0]
+    // Get receipts from the last 90 days to ensure we get all available historical data
+    const ninetyDaysAgo = new Date()
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
+    const fromDate = ninetyDaysAgo.toISOString().split('T')[0]
+
+    console.log('Fetching receipts from:', fromDate, 'for store:', storeId)
 
     let receipts: LoyverseReceipt[] = []
 
@@ -105,9 +107,12 @@ async function fetchDailyTakings(apiToken: string, storeId: string, includeAllSt
       }
       
       receipts = allReceipts
+      console.log('Multi-store fetch completed. Total receipts:', allReceipts.length)
     } else {
       // For single-store accounts, use the simpler approach
       const url = `https://api.loyverse.com/v1.0/receipts?store_id=${storeId}&created_at_min=${fromDate}T00:00:00Z&limit=250`
+      
+      console.log('Single-store API call:', url)
       
       const response = await fetch(url, {
         headers: {
@@ -122,6 +127,7 @@ async function fetchDailyTakings(apiToken: string, storeId: string, includeAllSt
 
       const data = await response.json()
       receipts = data.receipts || []
+      console.log('Single-store fetch completed. Total receipts:', receipts.length)
     }
 
     // Filter out voided/cancelled receipts and aggregate by date
@@ -229,6 +235,13 @@ async function fetchDailyTakings(apiToken: string, storeId: string, includeAllSt
     // Convert to array and sort by date (newest first)
     const dailyTakings: DailyTaking[] = Array.from(dailyTakingsMap.values())
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+
+    console.log('Final results for store', storeId, ':', {
+      totalReceipts: receipts.length,
+      daysWithSales: dailyTakings.length,
+      dateRange: dailyTakings.length > 0 ? `${dailyTakings[dailyTakings.length - 1].date} to ${dailyTakings[0].date}` : 'none',
+      totalRevenue: dailyTakings.reduce((sum, day) => sum + day.total, 0)
+    })
 
     // Add location and payment breakdown to each daily taking
     dailyTakings.forEach(taking => {
