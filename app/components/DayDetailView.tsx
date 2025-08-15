@@ -257,6 +257,94 @@ export default function DayDetailView({
         )}
       </div>
 
+      {/* Item Breakdown */}
+      {(dayData as any).itemBreakdown && (dayData as any).itemBreakdown.length > 0 && (
+        <div style={{
+          background: 'white',
+          padding: '24px',
+          borderRadius: '12px',
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+          border: '1px solid #e1e5e9',
+          marginBottom: '30px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
+            <span style={{ fontSize: '24px', marginRight: '12px' }}>🛍️</span>
+            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>Items Sold</h3>
+          </div>
+          
+          {/* Category Summary */}
+          <div style={{ marginBottom: '24px' }}>
+            <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px', color: '#333' }}>Categories</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px' }}>
+              {(() => {
+                const categories = (dayData as any).itemBreakdown.reduce((acc: any, item: any) => {
+                  const category = item.category || 'Other'
+                  acc[category] = (acc[category] || 0) + item.total_sales
+                  return acc
+                }, {})
+                
+                return Object.entries(categories).map(([category, total]: [string, any]) => (
+                  <div key={category} style={{ 
+                    padding: '12px', 
+                    background: '#f8f9fa', 
+                    borderRadius: '8px',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: '14px', fontWeight: '600', color: '#333', marginBottom: '4px' }}>
+                      {category}
+                    </div>
+                    <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#4caf50' }}>
+                      {formatCurrency(total)}
+                    </div>
+                  </div>
+                ))
+              })()}
+            </div>
+          </div>
+
+          {/* Top Items */}
+          <div>
+            <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px', color: '#333' }}>Top Selling Items</h4>
+            <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+              {(dayData as any).itemBreakdown.slice(0, 10).map((item: any, index: number) => (
+                <div key={`${item.item_name}_${item.variant_name || 'default'}`} style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '12px',
+                  borderBottom: index < Math.min((dayData as any).itemBreakdown.length - 1, 9) ? '1px solid #e1e5e9' : 'none',
+                  background: index % 2 === 0 ? '#f8f9fa' : 'white',
+                  borderRadius: index === 0 ? '8px 8px 0 0' : 
+                               index === Math.min((dayData as any).itemBreakdown.length - 1, 9) ? '0 0 8px 8px' : '0'
+                }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '14px', fontWeight: '600', color: '#333' }}>
+                      {item.item_name}
+                      {item.variant_name && (
+                        <span style={{ fontSize: '12px', color: '#666', marginLeft: '8px' }}>
+                          ({item.variant_name})
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#666', marginTop: '2px' }}>
+                      {item.category} • Qty: {item.quantity} • Avg: {formatCurrency(item.average_price)}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '16px', fontWeight: '600', color: '#333' }}>
+                      {formatCurrency(item.total_sales)}
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#666' }}>
+                      {((item.total_sales / dayData.total) * 100).toFixed(1)}%
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Additional Details */}
       <div style={{
         background: 'white',

@@ -300,6 +300,13 @@ async function fetchDailyTakings(
     const dailyTakingsMap = new Map<string, DailyTaking>()
     const locationBreakdown = new Map<string, { [locationId: string]: number }>()
     const paymentBreakdown = new Map<string, { cash: number; card: number }>()
+    const itemBreakdown = new Map<string, Map<string, { 
+      item_name: string
+      variant_name?: string
+      quantity: number
+      total_sales: number
+      category?: string
+    }>>()
 
     receipts.forEach(receipt => {
       // Check if receipt is voided or cancelled
@@ -315,6 +322,49 @@ async function fetchDailyTakings(
       
       const total = receipt.total_money || receipt.total || 0
       const locationId = receipt.store_id
+
+      // Process line items for item breakdown
+      if (receipt.line_items && Array.isArray(receipt.line_items)) {
+        if (!itemBreakdown.has(date)) {
+          itemBreakdown.set(date, new Map())
+        }
+        const dayItemBreakdown = itemBreakdown.get(date)!
+        
+        receipt.line_items.forEach(item => {
+          const itemKey = `${item.item_name}${item.variant_name ? `_${item.variant_name}` : ''}`
+          const existing = dayItemBreakdown.get(itemKey)
+          
+          if (existing) {
+            existing.quantity += item.quantity
+            existing.total_sales += item.total_money
+          } else {
+            // Simple category classification based on item name
+            let category = 'Other'
+            const itemName = item.item_name.toLowerCase()
+            if (itemName.includes('coffee') || itemName.includes('latte') || itemName.includes('cappuccino') || 
+                itemName.includes('espresso') || itemName.includes('americano') || itemName.includes('tea') || 
+                itemName.includes('drink') || itemName.includes('beverage')) {
+              category = 'Beverages'
+            } else if (itemName.includes('sandwich') || itemName.includes('burger') || itemName.includes('salad') || 
+                      itemName.includes('soup') || itemName.includes('wrap') || itemName.includes('meal')) {
+              category = 'Food'
+            } else if (itemName.includes('cake') || itemName.includes('pastry') || itemName.includes('muffin') || 
+                      itemName.includes('cookie') || itemName.includes('biscuit') || itemName.includes('croissant')) {
+              category = 'Pastries'
+            } else if (itemName.includes('gift') || itemName.includes('card')) {
+              category = 'Gifts'
+            }
+            
+            dayItemBreakdown.set(itemKey, {
+              item_name: item.item_name,
+              variant_name: item.variant_name || undefined,
+              quantity: item.quantity,
+              total_sales: item.total_money,
+              category
+            })
+          }
+        })
+      }
 
       // Calculate payment method totals for this receipt
       let cashTotal = 0
@@ -409,7 +459,7 @@ async function fetchDailyTakings(
       totalRevenue: dailyTakings.reduce((sum, day) => sum + day.total, 0)
     })
 
-    // Add location and payment breakdown to each daily taking
+    // Add location, payment, and item breakdown to each daily taking
     dailyTakings.forEach(taking => {
       const breakdown = locationBreakdown.get(taking.date)
       if (breakdown) {
@@ -421,6 +471,18 @@ async function fetchDailyTakings(
       if (paymentData) {
         // Add payment breakdown
         taking.paymentBreakdown = paymentData
+      }
+      
+      const itemData = itemBreakdown.get(taking.date)
+      if (itemData) {
+        // Convert Map to array and calculate average prices
+        const itemArray = Array.from(itemData.values()).map(item => ({
+          ...item,
+          average_price: item.total_sales / item.quantity
+        }))
+        // Sort by total sales descending
+        itemArray.sort((a, b) => b.total_sales - a.total_sales)
+        ;(taking as any).itemBreakdown = itemArray
       }
     })
 

@@ -5,6 +5,16 @@ export interface DailyTaking {
   averageReceipt: number
   locationBreakdown?: { [locationId: string]: number }
   paymentBreakdown?: { cash: number; card: number }
+  itemBreakdown?: ItemSalesData[]
+}
+
+export interface ItemSalesData {
+  item_name: string
+  variant_name?: string
+  quantity: number
+  total_sales: number
+  average_price: number
+  category?: string
 }
 
 export interface LoyverseAccount {
