@@ -306,6 +306,7 @@ async function fetchDailyTakings(
       variant_name?: string
       quantity: number
       total_sales: number
+      item_id: string
       category?: string
     }>>()
 
