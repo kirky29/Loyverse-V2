@@ -287,7 +287,12 @@ export default function DayDetailView({
                   'Beverages': '#3b82f6',
                   'Food': '#10b981', 
                   'Pastries': '#f59e0b',
-                  'Gifts': '#8b5cf6',
+                  'Clothing & Accessories': '#ec4899',
+                  'Home & Kitchen': '#06b6d4',
+                  'Gifts & Cards': '#8b5cf6',
+                  'Books & Media': '#84cc16',
+                  'Decorative Items': '#f97316',
+                  'Collectibles': '#6366f1',
                   'Other': '#64748b'
                 }
                 

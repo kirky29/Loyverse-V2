@@ -339,21 +339,56 @@ async function fetchDailyTakings(
             existing.quantity += item.quantity
             existing.total_sales += item.total_money
           } else {
-            // Simple category classification based on item name
+            // Enhanced category classification based on item name
             let category = 'Other'
             const itemName = item.item_name.toLowerCase()
+            
+            // Beverages
             if (itemName.includes('coffee') || itemName.includes('latte') || itemName.includes('cappuccino') || 
                 itemName.includes('espresso') || itemName.includes('americano') || itemName.includes('tea') || 
                 itemName.includes('drink') || itemName.includes('beverage')) {
               category = 'Beverages'
-            } else if (itemName.includes('sandwich') || itemName.includes('burger') || itemName.includes('salad') || 
+            }
+            // Food & Dining
+            else if (itemName.includes('sandwich') || itemName.includes('burger') || itemName.includes('salad') || 
                       itemName.includes('soup') || itemName.includes('wrap') || itemName.includes('meal')) {
               category = 'Food'
-            } else if (itemName.includes('cake') || itemName.includes('pastry') || itemName.includes('muffin') || 
+            }
+            // Pastries & Sweets
+            else if (itemName.includes('cake') || itemName.includes('pastry') || itemName.includes('muffin') || 
                       itemName.includes('cookie') || itemName.includes('biscuit') || itemName.includes('croissant')) {
               category = 'Pastries'
-            } else if (itemName.includes('gift') || itemName.includes('card')) {
-              category = 'Gifts'
+            }
+            // Clothing & Accessories
+            else if (itemName.includes('ladies') || itemName.includes('mens') || itemName.includes('top') || 
+                     itemName.includes('bottom') || itemName.includes('shirt') || itemName.includes('dress') ||
+                     itemName.includes('accessories') || itemName.includes('clothing') || itemName.includes('apparel')) {
+              category = 'Clothing & Accessories'
+            }
+            // Home & Kitchen
+            else if (itemName.includes('mug') || itemName.includes('glass') || itemName.includes('kitchen') || 
+                     itemName.includes('cup') || itemName.includes('bowl') || itemName.includes('plate') ||
+                     itemName.includes('home') || itemName.includes('decor')) {
+              category = 'Home & Kitchen'
+            }
+            // Gifts & Cards
+            else if (itemName.includes('gift') || itemName.includes('card') || itemName.includes('voucher')) {
+              category = 'Gifts & Cards'
+            }
+            // Books & Media
+            else if (itemName.includes('book') || itemName.includes('cd') || itemName.includes('dvd') || 
+                     itemName.includes('magazine') || itemName.includes('media')) {
+              category = 'Books & Media'
+            }
+            // Decorative Items
+            else if (itemName.includes('ornament') || itemName.includes('decoration') || itemName.includes('crystal') || 
+                     itemName.includes('picture') || itemName.includes('frame') || itemName.includes('art')) {
+              category = 'Decorative Items'
+            }
+            // Collectibles & Novelty
+            else if (itemName.includes('bric') || itemName.includes('collectible') || itemName.includes('antique') || 
+                     itemName.includes('vintage') || itemName.includes('novelty')) {
+              category = 'Collectibles'
             }
             
             dayItemBreakdown.set(itemKey, {
