@@ -4,6 +4,589 @@ import { useState, useEffect } from 'react'
 import { LoyverseAccount, DailyTaking } from './types'
 import AccountManager from './components/AccountManager'
 
+// Enhanced Performance Table Component
+interface PerformanceTableProps {
+  dailyTakings: DailyTaking[]
+  activeAccount: LoyverseAccount | null
+  formatCurrency: (value: number) => string
+}
+
+function PerformanceTable({ dailyTakings, activeAccount, formatCurrency }: PerformanceTableProps) {
+  const [sortColumn, setSortColumn] = useState<string>('')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
+  const [visibleColumns, setVisibleColumns] = useState({
+    date: true,
+    shop: true,
+    cafe: true,
+    combined: true,
+    receipts: false,
+    average: false,
+    status: true
+  })
+  const [dateFilter, setDateFilter] = useState({ from: '', to: '' })
+  const [amountFilter, setAmountFilter] = useState({ min: '', max: '' })
+  const [showFilters, setShowFilters] = useState(false)
+  const [showColumnManager, setShowColumnManager] = useState(false)
+  const [recordsToShow, setRecordsToShow] = useState(30)
+
+  // Generate complete date range including days with no sales
+  const generateCompleteDataset = () => {
+    const thirtyDaysAgo = new Date()
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - recordsToShow)
+    
+    const completeData = []
+    const dataMap = new Map(dailyTakings.map(item => [item.date, item]))
+    
+    for (let i = 0; i < recordsToShow; i++) {
+      const currentDate = new Date()
+      currentDate.setDate(currentDate.getDate() - i)
+      const dateString = currentDate.toISOString().split('T')[0]
+      
+      const existingData = dataMap.get(dateString)
+      if (existingData) {
+        completeData.push(existingData)
+      } else {
+        // Create empty day record
+        completeData.push({
+          date: dateString,
+          total: 0,
+          receiptCount: 0,
+          averageReceipt: 0,
+          locationBreakdown: {}
+        })
+      }
+    }
+    
+    return completeData
+  }
+
+  const handleSort = (column: string) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortColumn(column)
+      setSortDirection('desc')
+    }
+  }
+
+  const processedData = () => {
+    let data = generateCompleteDataset()
+    
+    // Apply filters
+    if (dateFilter.from) {
+      data = data.filter(item => item.date >= dateFilter.from)
+    }
+    if (dateFilter.to) {
+      data = data.filter(item => item.date <= dateFilter.to)
+    }
+    
+    // Apply sorting
+    if (sortColumn) {
+      data.sort((a, b) => {
+        let aVal, bVal
+        
+        if (sortColumn === 'date') {
+          aVal = new Date(a.date).getTime()
+          bVal = new Date(b.date).getTime()
+        } else if (sortColumn === 'shop') {
+          aVal = getShopAmount(a)
+          bVal = getShopAmount(b)
+        } else if (sortColumn === 'cafe') {
+          aVal = getCafeAmount(a)
+          bVal = getCafeAmount(b)
+        } else if (sortColumn === 'combined') {
+          aVal = getCombinedAmount(a)
+          bVal = getCombinedAmount(b)
+        } else if (sortColumn === 'receipts') {
+          aVal = a.receiptCount
+          bVal = b.receiptCount
+        } else if (sortColumn === 'average') {
+          aVal = a.averageReceipt
+          bVal = b.averageReceipt
+        }
+        
+        if (sortDirection === 'asc') {
+          return aVal < bVal ? -1 : aVal > bVal ? 1 : 0
+        } else {
+          return aVal > bVal ? -1 : aVal < bVal ? 1 : 0
+        }
+      })
+    }
+    
+    return data
+  }
+
+  const getShopAmount = (day: DailyTaking) => {
+    if (activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2') {
+      const shopId = 'd5a7267b-ca6f-4490-9d66-b5ba46cc563c'
+      return day.locationBreakdown?.[shopId] || 0
+    } else {
+      return day.total
+    }
+  }
+
+  const getCafeAmount = (day: DailyTaking) => {
+    if (activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2') {
+      const cafeId = 'e2aa143e-3e91-433e-a6d8-5a5538d429e2'
+      return day.locationBreakdown?.[cafeId] || 0
+    } else {
+      return 0
+    }
+  }
+
+  const getCombinedAmount = (day: DailyTaking) => {
+    if (activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2') {
+      return getShopAmount(day) + getCafeAmount(day)
+    } else {
+      return day.total
+    }
+  }
+
+  const getSortIcon = (column: string) => {
+    if (sortColumn !== column) return '↕️'
+    return sortDirection === 'asc' ? '↑' : '↓'
+  }
+
+  const toggleColumn = (column: string) => {
+    setVisibleColumns(prev => ({
+      ...prev,
+      [column]: !prev[column]
+    }))
+  }
+
+  if (!dailyTakings || dailyTakings.length === 0) {
+    return (
+      <div style={{
+        background: 'white',
+        borderRadius: '12px',
+        padding: '24px',
+        marginBottom: '24px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+        textAlign: 'center',
+        color: '#666'
+      }}>
+        <h3 style={{ fontSize: '20px', fontWeight: 'bold', color: '#333', margin: '0 0 20px 0' }}>
+          📅 Daily Performance by Location
+        </h3>
+        <p>No data available. Switch to an account with data to see performance metrics.</p>
+      </div>
+    )
+  }
+
+  return (
+    <div style={{
+      background: 'white',
+      borderRadius: '12px',
+      padding: '24px',
+      marginBottom: '24px',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+    }}>
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h3 style={{ fontSize: '20px', fontWeight: 'bold', color: '#333', margin: 0 }}>
+          📅 Daily Performance by Location
+        </h3>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            style={{
+              padding: '8px 16px',
+              borderRadius: '6px',
+              border: '1px solid #dee2e6',
+              background: showFilters ? '#007bff' : 'white',
+              color: showFilters ? 'white' : '#666',
+              fontSize: '14px',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+          >
+            🔍 Filters
+          </button>
+          <button
+            onClick={() => setShowColumnManager(!showColumnManager)}
+            style={{
+              padding: '8px 16px',
+              borderRadius: '6px',
+              border: '1px solid #dee2e6',
+              background: showColumnManager ? '#007bff' : 'white',
+              color: showColumnManager ? 'white' : '#666',
+              fontSize: '14px',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+          >
+            ⚙️ Columns
+          </button>
+        </div>
+      </div>
+
+      {/* Filters Panel */}
+      {showFilters && (
+        <div style={{
+          background: '#f8f9fa',
+          borderRadius: '8px',
+          padding: '16px',
+          marginBottom: '20px',
+          border: '1px solid #dee2e6'
+        }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#666', marginBottom: '4px' }}>
+                Records to Show
+              </label>
+              <select
+                value={recordsToShow}
+                onChange={(e) => setRecordsToShow(Number(e.target.value))}
+                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+              >
+                <option value={7}>Last 7 days</option>
+                <option value={14}>Last 14 days</option>
+                <option value={30}>Last 30 days</option>
+                <option value={90}>Last 90 days</option>
+              </select>
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#666', marginBottom: '4px' }}>
+                From Date
+              </label>
+              <input
+                type="date"
+                value={dateFilter.from}
+                onChange={(e) => setDateFilter(prev => ({ ...prev, from: e.target.value }))}
+                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#666', marginBottom: '4px' }}>
+                To Date
+              </label>
+              <input
+                type="date"
+                value={dateFilter.to}
+                onChange={(e) => setDateFilter(prev => ({ ...prev, to: e.target.value }))}
+                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+              />
+            </div>
+            <div>
+              <button
+                onClick={() => {
+                  setDateFilter({ from: '', to: '' })
+                  setAmountFilter({ min: '', max: '' })
+                }}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  border: '1px solid #dc3545',
+                  background: '#dc3545',
+                  color: 'white',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  marginTop: '20px'
+                }}
+              >
+                Clear Filters
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Column Manager */}
+      {showColumnManager && (
+        <div style={{
+          background: '#f8f9fa',
+          borderRadius: '8px',
+          padding: '16px',
+          marginBottom: '20px',
+          border: '1px solid #dee2e6'
+        }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px' }}>
+            {Object.entries(visibleColumns).map(([column, visible]) => (
+              <label key={column} style={{ display: 'flex', alignItems: 'center', fontSize: '14px', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={visible}
+                  onChange={() => toggleColumn(column)}
+                  style={{ marginRight: '8px' }}
+                />
+                {column.charAt(0).toUpperCase() + column.slice(1)}
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Table */}
+      <div style={{ overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ background: '#f8f9fa' }}>
+              {visibleColumns.date && (
+                <th
+                  onClick={() => handleSort('date')}
+                  style={{
+                    padding: '12px 16px',
+                    textAlign: 'left',
+                    fontWeight: '600',
+                    color: '#333',
+                    borderBottom: '2px solid #dee2e6',
+                    cursor: 'pointer',
+                    userSelect: 'none'
+                  }}
+                >
+                  Date {getSortIcon('date')}
+                </th>
+              )}
+              {visibleColumns.shop && (
+                <th
+                  onClick={() => handleSort('shop')}
+                  style={{
+                    padding: '12px 16px',
+                    textAlign: 'right',
+                    fontWeight: '600',
+                    color: '#333',
+                    borderBottom: '2px solid #dee2e6',
+                    cursor: 'pointer',
+                    userSelect: 'none'
+                  }}
+                >
+                  🏪 Shop {getSortIcon('shop')}
+                </th>
+              )}
+              {visibleColumns.cafe && (
+                <th
+                  onClick={() => handleSort('cafe')}
+                  style={{
+                    padding: '12px 16px',
+                    textAlign: 'right',
+                    fontWeight: '600',
+                    color: '#333',
+                    borderBottom: '2px solid #dee2e6',
+                    cursor: 'pointer',
+                    userSelect: 'none'
+                  }}
+                >
+                  ☕ Cafe {getSortIcon('cafe')}
+                </th>
+              )}
+              {visibleColumns.combined && (
+                <th
+                  onClick={() => handleSort('combined')}
+                  style={{
+                    padding: '12px 16px',
+                    textAlign: 'right',
+                    fontWeight: '600',
+                    color: '#333',
+                    borderBottom: '2px solid #dee2e6',
+                    cursor: 'pointer',
+                    userSelect: 'none'
+                  }}
+                >
+                  🏢 Combined {getSortIcon('combined')}
+                </th>
+              )}
+              {visibleColumns.receipts && (
+                <th
+                  onClick={() => handleSort('receipts')}
+                  style={{
+                    padding: '12px 16px',
+                    textAlign: 'right',
+                    fontWeight: '600',
+                    color: '#333',
+                    borderBottom: '2px solid #dee2e6',
+                    cursor: 'pointer',
+                    userSelect: 'none'
+                  }}
+                >
+                  🧾 Receipts {getSortIcon('receipts')}
+                </th>
+              )}
+              {visibleColumns.average && (
+                <th
+                  onClick={() => handleSort('average')}
+                  style={{
+                    padding: '12px 16px',
+                    textAlign: 'right',
+                    fontWeight: '600',
+                    color: '#333',
+                    borderBottom: '2px solid #dee2e6',
+                    cursor: 'pointer',
+                    userSelect: 'none'
+                  }}
+                >
+                  📊 Average {getSortIcon('average')}
+                </th>
+              )}
+              {visibleColumns.status && (
+                <th style={{
+                  padding: '12px 16px',
+                  textAlign: 'center',
+                  fontWeight: '600',
+                  color: '#333',
+                  borderBottom: '2px solid #dee2e6'
+                }}>
+                  Status
+                </th>
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            {processedData().map((day, index) => {
+              const isToday = new Date(day.date).toDateString() === new Date().toDateString()
+              const isYesterday = new Date(day.date).toDateString() === new Date(Date.now() - 24 * 60 * 60 * 1000).toDateString()
+              
+              const shopAmount = getShopAmount(day)
+              const cafeAmount = getCafeAmount(day)
+              const combinedAmount = getCombinedAmount(day)
+              
+              return (
+                <tr key={day.date} style={{
+                  background: isToday ? '#e3f2fd' : (index % 2 === 0 ? '#ffffff' : '#f8f9fa'),
+                  borderBottom: '1px solid #dee2e6'
+                }}>
+                  {visibleColumns.date && (
+                    <td style={{
+                      padding: '12px 16px',
+                      fontWeight: isToday ? '700' : '500',
+                      color: isToday ? '#1976d2' : '#333'
+                    }}>
+                      <div>
+                        <div style={{ fontSize: '14px' }}>
+                          {new Date(day.date).toLocaleDateString('en-US', {
+                            weekday: 'short',
+                            month: 'short',
+                            day: 'numeric'
+                          })}
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#666' }}>
+                          {new Date(day.date).getFullYear()}
+                        </div>
+                      </div>
+                    </td>
+                  )}
+                  {visibleColumns.shop && (
+                    <td style={{
+                      padding: '12px 16px',
+                      textAlign: 'right',
+                      fontWeight: isToday ? '700' : '600',
+                      color: shopAmount === 0 ? '#999' : '#1976d2'
+                    }}>
+                      {formatCurrency(shopAmount)}
+                    </td>
+                  )}
+                  {visibleColumns.cafe && (
+                    <td style={{
+                      padding: '12px 16px',
+                      textAlign: 'right',
+                      fontWeight: isToday ? '700' : '600',
+                      color: cafeAmount === 0 ? '#999' : '#388e3c'
+                    }}>
+                      {formatCurrency(cafeAmount)}
+                    </td>
+                  )}
+                  {visibleColumns.combined && (
+                    <td style={{
+                      padding: '12px 16px',
+                      textAlign: 'right',
+                      fontWeight: isToday ? '700' : '600',
+                      color: combinedAmount === 0 ? '#999' : '#7b1fa2'
+                    }}>
+                      {formatCurrency(combinedAmount)}
+                    </td>
+                  )}
+                  {visibleColumns.receipts && (
+                    <td style={{
+                      padding: '12px 16px',
+                      textAlign: 'right',
+                      fontWeight: isToday ? '700' : '600',
+                      color: day.receiptCount === 0 ? '#999' : '#333'
+                    }}>
+                      {day.receiptCount || 0}
+                    </td>
+                  )}
+                  {visibleColumns.average && (
+                    <td style={{
+                      padding: '12px 16px',
+                      textAlign: 'right',
+                      fontWeight: isToday ? '700' : '600',
+                      color: day.averageReceipt === 0 ? '#999' : '#333'
+                    }}>
+                      {formatCurrency(day.averageReceipt || 0)}
+                    </td>
+                  )}
+                  {visibleColumns.status && (
+                    <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                      {isToday ? (
+                        <span style={{
+                          background: '#2196f3',
+                          color: 'white',
+                          padding: '4px 12px',
+                          borderRadius: '12px',
+                          fontSize: '12px',
+                          fontWeight: '600'
+                        }}>
+                          TODAY
+                        </span>
+                      ) : isYesterday ? (
+                        <span style={{
+                          background: '#4caf50',
+                          color: 'white',
+                          padding: '4px 12px',
+                          borderRadius: '12px',
+                          fontSize: '12px',
+                          fontWeight: '600'
+                        }}>
+                          YESTERDAY
+                        </span>
+                      ) : combinedAmount === 0 ? (
+                        <span style={{
+                          background: '#ffc107',
+                          color: '#333',
+                          padding: '4px 12px',
+                          borderRadius: '12px',
+                          fontSize: '12px',
+                          fontWeight: '600'
+                        }}>
+                          NO SALES
+                        </span>
+                      ) : (
+                        <span style={{
+                          background: '#9e9e9e',
+                          color: 'white',
+                          padding: '4px 12px',
+                          borderRadius: '12px',
+                          fontSize: '12px',
+                          fontWeight: '600'
+                        }}>
+                          PAST
+                        </span>
+                      )}
+                    </td>
+                  )}
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Summary Info */}
+      <div style={{
+        marginTop: '16px',
+        padding: '12px',
+        background: '#f8f9fa',
+        borderRadius: '8px',
+        fontSize: '14px',
+        color: '#666'
+      }}>
+        <strong>💡 Quick View:</strong> Showing {processedData().length} days. 
+        Click column headers to sort. Use filters and column manager for custom views.
+        Days with no sales are included and shown in gray.
+      </div>
+    </div>
+  )
+}
+
 export default function Home() {
   const [dailyTakings, setDailyTakings] = useState<DailyTaking[]>([])
   const [loading, setLoading] = useState(true)
@@ -1172,191 +1755,12 @@ export default function Home() {
 
 
 
-        {/* Daily Performance by Location - For All Accounts */}
-        {dailyTakings.length > 0 && (
-          <div style={{
-            background: 'white',
-            borderRadius: '12px',
-            padding: '24px',
-            marginBottom: '24px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-          }}>
-            <h3 style={{ 
-              fontSize: '20px', 
-              fontWeight: 'bold', 
-              color: '#333', 
-              margin: '0 0 20px 0'
-            }}>
-              📅 Daily Performance by Location
-            </h3>
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ background: '#f8f9fa' }}>
-                    <th style={{ 
-                      padding: '12px 16px', 
-                      textAlign: 'left', 
-                      fontWeight: '600', 
-                      color: '#333',
-                      borderBottom: '2px solid #dee2e6'
-                    }}>Date</th>
-                    <th style={{ 
-                      padding: '12px 16px', 
-                      textAlign: 'right', 
-                      fontWeight: '600', 
-                      color: '#333',
-                      borderBottom: '2px solid #dee2e6'
-                    }}>🏪 Shop</th>
-                    <th style={{ 
-                      padding: '12px 16px', 
-                      textAlign: 'right', 
-                      fontWeight: '600', 
-                      color: '#333',
-                      borderBottom: '2px solid #dee2e6'
-                    }}>☕ Cafe</th>
-                    <th style={{ 
-                      padding: '12px 16px', 
-                      textAlign: 'right', 
-                      fontWeight: '600', 
-                      color: '#333',
-                      borderBottom: '2px solid #dee2e6'
-                    }}>🏢 Combined</th>
-                    <th style={{ 
-                      padding: '12px 16px', 
-                      textAlign: 'center', 
-                      fontWeight: '600', 
-                      color: '#333',
-                      borderBottom: '2px solid #dee2e6'
-                    }}>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {dailyTakings.slice(0, 7).map((day, index) => {
-                    const isToday = new Date(day.date).toDateString() === new Date().toDateString()
-                    const isYesterday = new Date(day.date).toDateString() === new Date(Date.now() - 24 * 60 * 60 * 1000).toDateString()
-                    
-                    // Unified template approach - same structure for all accounts
-                    let shopAmount, cafeAmount, combinedAmount
-                    
-                    if (activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2') {
-                      // Multi-store account - use actual location breakdown
-                      const shopId = 'd5a7267b-ca6f-4490-9d66-b5ba46cc563c'
-                      const cafeId = 'e2aa143e-3e91-433e-a6d8-5a5538d429e2'
-                      shopAmount = day.locationBreakdown?.[shopId] || 0
-                      cafeAmount = day.locationBreakdown?.[cafeId] || 0
-                      combinedAmount = shopAmount + cafeAmount
-                    } else {
-                      // Single-store account - map data to template structure
-                      shopAmount = day.total  // Show total as "shop" amount
-                      cafeAmount = 0          // No second location, so £0
-                      combinedAmount = day.total  // Combined is same as total
-                    }
-                    
-                    return (
-                      <tr key={day.date} style={{ 
-                        background: isToday ? '#e3f2fd' : (index % 2 === 0 ? '#ffffff' : '#f8f9fa'),
-                        borderBottom: '1px solid #dee2e6'
-                      }}>
-                        <td style={{ 
-                          padding: '12px 16px',
-                          fontWeight: isToday ? '700' : '500',
-                          color: isToday ? '#1976d2' : '#333'
-                        }}>
-                          <div>
-                            <div style={{ fontSize: '14px' }}>
-                              {new Date(day.date).toLocaleDateString('en-US', {
-                                weekday: 'short',
-                                month: 'short',
-                                day: 'numeric'
-                              })}
-                            </div>
-                            <div style={{ fontSize: '12px', color: '#666' }}>
-                              {new Date(day.date).getFullYear()}
-                            </div>
-                          </div>
-                        </td>
-                        <td style={{ 
-                          padding: '12px 16px', 
-                          textAlign: 'right',
-                          fontWeight: isToday ? '700' : '600',
-                          color: '#1976d2'
-                        }}>
-                          {formatCurrency(shopAmount)}
-                        </td>
-                        <td style={{ 
-                          padding: '12px 16px', 
-                          textAlign: 'right',
-                          fontWeight: isToday ? '700' : '600',
-                          color: '#388e3c'
-                        }}>
-                          {formatCurrency(cafeAmount)}
-                        </td>
-                        <td style={{ 
-                          padding: '12px 16px', 
-                          textAlign: 'right',
-                          fontWeight: isToday ? '700' : '600',
-                          color: '#7b1fa2'
-                        }}>
-                          {formatCurrency(combinedAmount)}
-                        </td>
-                        <td style={{ 
-                          padding: '12px 16px', 
-                          textAlign: 'center'
-                        }}>
-                          {isToday ? (
-                            <span style={{
-                              background: '#2196f3',
-                              color: 'white',
-                              padding: '4px 12px',
-                              borderRadius: '12px',
-                              fontSize: '12px',
-                              fontWeight: '600'
-                            }}>
-                              TODAY
-                            </span>
-                          ) : isYesterday ? (
-                            <span style={{
-                              background: '#4caf50',
-                              color: 'white',
-                              padding: '4px 12px',
-                              borderRadius: '12px',
-                              fontSize: '12px',
-                              fontWeight: '600'
-                            }}>
-                              YESTERDAY
-                            </span>
-                          ) : (
-                            <span style={{
-                              background: '#9e9e9e',
-                              color: 'white',
-                              padding: '4px 12px',
-                              borderRadius: '12px',
-                              fontSize: '12px',
-                              fontWeight: '600'
-                            }}>
-                              PAST
-                            </span>
-                          )}
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-            <div style={{ 
-              marginTop: '16px', 
-              padding: '12px', 
-              background: '#f8f9fa', 
-              borderRadius: '8px',
-              fontSize: '14px',
-              color: '#666'
-            }}>
-              <strong>💡 Quick View:</strong> Today's performance highlighted in blue. 
-              Shop amounts in blue, Cafe amounts in green, Combined in purple.
-            </div>
-          </div>
-        )}
+        {/* Enhanced Daily Performance Table */}
+        <PerformanceTable 
+          dailyTakings={dailyTakings} 
+          activeAccount={activeAccount}
+          formatCurrency={formatCurrency}
+        />
 
 
       </main>
