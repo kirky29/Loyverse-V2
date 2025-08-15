@@ -152,13 +152,47 @@ async function fetchDailyTakings(apiToken: string, storeId: string, includeAllSt
         receipt.payments.forEach(payment => {
           const amount = payment.money_amount || 0
           const paymentType = payment.type?.toLowerCase() || ''
+          const paymentName = payment.name?.toLowerCase() || ''
           
-          if (paymentType === 'cash') {
+          // Debug log for first few receipts to understand payment structure
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Payment data:', { 
+              type: payment.type, 
+              name: payment.name, 
+              amount: payment.money_amount,
+              paymentType,
+              paymentName
+            })
+          }
+          
+          // More comprehensive payment type detection
+          if (paymentType === 'cash' || paymentName.includes('cash')) {
             cashTotal += amount
-          } else if (paymentType === 'card' || paymentType === 'credit_card' || paymentType === 'debit_card') {
+          } else if (
+            paymentType === 'card' || 
+            paymentType === 'credit_card' || 
+            paymentType === 'debit_card' ||
+            paymentName.includes('card') ||
+            paymentName.includes('visa') ||
+            paymentName.includes('mastercard') ||
+            paymentName.includes('amex') ||
+            paymentName.includes('credit') ||
+            paymentName.includes('debit')
+          ) {
             cardTotal += amount
           }
         })
+      }
+
+      // Fallback: if cash + card doesn't equal total, assume remaining is card
+      const paymentTotal = cashTotal + cardTotal
+      if (paymentTotal > 0 && paymentTotal < total) {
+        const difference = total - paymentTotal
+        cardTotal += difference
+        
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`Payment fallback applied: ${difference} added to card total for receipt total ${total}`)
+        }
       }
 
       // Aggregate daily totals
