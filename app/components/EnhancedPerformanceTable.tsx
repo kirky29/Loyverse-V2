@@ -334,6 +334,7 @@ export default function EnhancedPerformanceTable({
     return { text: 'High', color: '#059669', bg: '#ecfdf5' }
   }
 
+  ;
   return (
     <div style={{ background: 'white', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
       {/* Header */}
