@@ -274,10 +274,7 @@ export default function EnhancedPerformanceTable({
     // Amounts
     if (amountFilter.min) data = data.filter(i => i.total >= parseFloat(amountFilter.min))
     if (amountFilter.max) data = data.filter(i => i.total <= parseFloat(amountFilter.max))
-    if (amountFilter.receiptsMin) data = data.filter(i => (i.receiptCount || 0) >= parseInt(amountFilter.receiptsMin))
-    if (amountFilter.receiptsMax) data = data.filter(i => (i.receiptCount || 0) <= parseInt(amountFilter.receiptsMax))
-    if (amountFilter.avgReceiptMin) data = data.filter(i => (i.averageReceipt || 0) >= parseFloat(amountFilter.avgReceiptMin))
-    if (amountFilter.avgReceiptMax) data = data.filter(i => (i.averageReceipt || 0) <= parseFloat(amountFilter.avgReceiptMax))
+    // Removed metrics filtering (receipts/avg) from modal for simpler UX
 
     // Sort
       data.sort((a, b) => {
@@ -313,10 +310,7 @@ export default function EnhancedPerformanceTable({
   }
   if (amountFilter.min) activeChips.push({ key: 'min', label: `Min £${amountFilter.min}`, onClear: () => setFilterState(p => ({ ...p, amountFilter: { ...p.amountFilter, min: '' } })) })
   if (amountFilter.max) activeChips.push({ key: 'max', label: `Max £${amountFilter.max}`, onClear: () => setFilterState(p => ({ ...p, amountFilter: { ...p.amountFilter, max: '' } })) })
-  if (amountFilter.receiptsMin) activeChips.push({ key: 'rmin', label: `Receipts ≥ ${amountFilter.receiptsMin}`, onClear: () => setFilterState(p => ({ ...p, amountFilter: { ...p.amountFilter, receiptsMin: '' } })) })
-  if (amountFilter.receiptsMax) activeChips.push({ key: 'rmax', label: `Receipts ≤ ${amountFilter.receiptsMax}`, onClear: () => setFilterState(p => ({ ...p, amountFilter: { ...p.amountFilter, receiptsMax: '' } })) })
-  if (amountFilter.avgReceiptMin) activeChips.push({ key: 'amin', label: `Avg ≥ £${amountFilter.avgReceiptMin}`, onClear: () => setFilterState(p => ({ ...p, amountFilter: { ...p.amountFilter, avgReceiptMin: '' } })) })
-  if (amountFilter.avgReceiptMax) activeChips.push({ key: 'amax', label: `Avg ≤ £${amountFilter.avgReceiptMax}`, onClear: () => setFilterState(p => ({ ...p, amountFilter: { ...p.amountFilter, avgReceiptMax: '' } })) })
+  // Metrics chips removed (receipts/average)
   if (textFilter.trim()) activeChips.push({ key: 'q', label: `Query: ${textFilter}`, onClear: () => setFilterState(p => ({ ...p, textFilter: '' })) })
 
   const resetAll = () => {
@@ -433,7 +427,7 @@ export default function EnhancedPerformanceTable({
                   <div style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>📅 Custom Date Range</div>
                   <button onClick={() => applyDatePreset('last30days')} style={{ background: 'transparent', border: 'none', color: '#3b82f6', cursor: 'pointer', fontSize: 12, textDecoration: 'underline' }}>Use last 30 days</button>
               </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
                   <div>
                     <label style={{ display: 'block', fontSize: 12, color: '#6b7280', marginBottom: 6 }}>From</label>
                     <input type="date" value={dateFilter.from} onChange={(e) => setFilterState(p => ({ ...p, dateFilter: { ...p.dateFilter, from: e.target.value, preset: 'custom' } }))} style={{ width: '100%', padding: '10px 12px', border: '1px solid #e5e7eb', borderRadius: 8 }} />
@@ -446,9 +440,9 @@ export default function EnhancedPerformanceTable({
             </div>
             
               {/* Amounts */}
-              <div style={{ marginBottom: 20 }}>
+              <div style={{ marginBottom: 24 }}>
                 <div style={{ fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 10 }}>💰 Amounts</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
                   <div>
                     <label style={{ display: 'block', fontSize: 12, color: '#6b7280', marginBottom: 6 }}>Min Total (£)</label>
                     <input type="number" step="0.01" placeholder="0.00" value={amountFilter.min} onChange={(e) => setFilterState(p => ({ ...p, amountFilter: { ...p.amountFilter, min: e.target.value } }))} style={{ width: '100%', padding: '10px 12px', border: '1px solid #e5e7eb', borderRadius: 8 }} />
@@ -460,27 +454,7 @@ export default function EnhancedPerformanceTable({
             </div>
           </div>
 
-              {/* Metrics */}
-              <div style={{ marginBottom: 20 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 10 }}>📊 Metrics</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: 12 }}>
-                <div>
-                    <label style={{ display: 'block', fontSize: 12, color: '#6b7280', marginBottom: 6 }}>Min Receipts</label>
-                    <input type="number" min={0} placeholder="0" value={amountFilter.receiptsMin} onChange={(e) => setFilterState(p => ({ ...p, amountFilter: { ...p.amountFilter, receiptsMin: e.target.value } }))} style={{ width: '100%', padding: '10px 12px', border: '1px solid #e5e7eb', borderRadius: 8 }} />
-                </div>
-                <div>
-                    <label style={{ display: 'block', fontSize: 12, color: '#6b7280', marginBottom: 6 }}>Max Receipts</label>
-                    <input type="number" min={0} placeholder="100" value={amountFilter.receiptsMax} onChange={(e) => setFilterState(p => ({ ...p, amountFilter: { ...p.amountFilter, receiptsMax: e.target.value } }))} style={{ width: '100%', padding: '10px 12px', border: '1px solid #e5e7eb', borderRadius: 8 }} />
-                </div>
-                <div>
-                    <label style={{ display: 'block', fontSize: 12, color: '#6b7280', marginBottom: 6 }}>Min Avg (£)</label>
-                    <input type="number" step="0.01" placeholder="0.00" value={amountFilter.avgReceiptMin} onChange={(e) => setFilterState(p => ({ ...p, amountFilter: { ...p.amountFilter, avgReceiptMin: e.target.value } }))} style={{ width: '100%', padding: '10px 12px', border: '1px solid #e5e7eb', borderRadius: 8 }} />
-                </div>
-                <div>
-                    <label style={{ display: 'block', fontSize: 12, color: '#6b7280', marginBottom: 6 }}>Max Avg (£)</label>
-                    <input type="number" step="0.01" placeholder="50.00" value={amountFilter.avgReceiptMax} onChange={(e) => setFilterState(p => ({ ...p, amountFilter: { ...p.amountFilter, avgReceiptMax: e.target.value } }))} style={{ width: '100%', padding: '10px 12px', border: '1px solid #e5e7eb', borderRadius: 8 }} />
-                </div>
-              </div>
+              
             </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginTop: 8 }}>
