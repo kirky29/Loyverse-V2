@@ -286,7 +286,8 @@ export default function SimplePerformanceTable({
               background: '#f8fafc', 
               padding: '24px', 
               borderRadius: '12px',
-              border: '1px solid #e2e8f0'
+              border: '1px solid #e2e8f0',
+              boxSizing: 'border-box'
             }}>
               <h3 style={{ 
                 fontSize: '16px', 
@@ -326,7 +327,8 @@ export default function SimplePerformanceTable({
                       background: '#ffffff',
                       color: '#374151',
                       outline: 'none',
-                      transition: 'border-color 0.2s ease'
+                      transition: 'border-color 0.2s ease',
+                      boxSizing: 'border-box'
                     }}
                     onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
                     onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
@@ -358,7 +360,8 @@ export default function SimplePerformanceTable({
                       background: '#ffffff',
                       color: '#374151',
                       outline: 'none',
-                      transition: 'border-color 0.2s ease'
+                      transition: 'border-color 0.2s ease',
+                      boxSizing: 'border-box'
                     }}
                     onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
                     onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
@@ -372,7 +375,8 @@ export default function SimplePerformanceTable({
               background: '#f8fafc', 
               padding: '24px', 
               borderRadius: '12px',
-              border: '1px solid #e2e8f0'
+              border: '1px solid #e2e8f0',
+              boxSizing: 'border-box'
             }}>
               <h3 style={{ 
                 fontSize: '16px', 
@@ -414,7 +418,8 @@ export default function SimplePerformanceTable({
                       background: '#ffffff',
                       color: '#374151',
                       outline: 'none',
-                      transition: 'border-color 0.2s ease'
+                      transition: 'border-color 0.2s ease',
+                      boxSizing: 'border-box'
                     }}
                     onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
                     onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
@@ -448,7 +453,8 @@ export default function SimplePerformanceTable({
                       background: '#ffffff',
                       color: '#374151',
                       outline: 'none',
-                      transition: 'border-color 0.2s ease'
+                      transition: 'border-color 0.2s ease',
+                      boxSizing: 'border-box'
                     }}
                     onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
                     onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
@@ -462,7 +468,8 @@ export default function SimplePerformanceTable({
               background: '#f8fafc', 
               padding: '24px', 
               borderRadius: '12px',
-              border: '1px solid #e2e8f0'
+              border: '1px solid #e2e8f0',
+              boxSizing: 'border-box'
             }}>
               <h3 style={{ 
                 fontSize: '16px', 
@@ -500,7 +507,8 @@ export default function SimplePerformanceTable({
                       background: '#ffffff',
                       color: '#374151',
                       outline: 'none',
-                      transition: 'border-color 0.2s ease'
+                      transition: 'border-color 0.2s ease',
+                      boxSizing: 'border-box'
                     }}
                     onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
                     onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
