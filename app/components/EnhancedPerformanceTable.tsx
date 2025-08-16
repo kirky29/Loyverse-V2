@@ -69,9 +69,7 @@ interface AccountFilterState {
     avgReceiptMax: string;
   }
   textFilter: string
-  showFilters: boolean
   showColumnManager: boolean
-  showAdvancedFilters: boolean
   recordsToShow: number
   savedColumnPresets: { [key: string]: any }
   activeColumnPreset: string
@@ -92,13 +90,14 @@ export default function EnhancedPerformanceTable({
   onDayClick,
   onLoadHistoricalData
 }: EnhancedPerformanceTableProps) {
+  // UI state outside data filters
+  const [isFilterModalOpen, setIsFilterModalOpen] = React.useState(false)
   
-  // Initialize filter state with enhanced features
+  // Initialize filter state
   const [filterState, setFilterState] = React.useState<AccountFilterState>(() => {
-    // Calculate initial dates for last 30 days
     const today = new Date()
     const thirtyDaysAgo = new Date(today)
-    thirtyDaysAgo.setDate(today.getDate() - 29) // 30 days including today
+    thirtyDaysAgo.setDate(today.getDate() - 29)
     
     return {
       sortColumn: 'date',
@@ -128,95 +127,12 @@ export default function EnhancedPerformanceTable({
         avgReceiptMax: ''
       },
       textFilter: '',
-      showFilters: false,
       showColumnManager: false,
-      showAdvancedFilters: false,
       recordsToShow: 30,
       savedColumnPresets: {},
       activeColumnPreset: 'essential'
     }
   })
-
-  // Utility functions for date handling
-  const getDateFromPreset = (preset: string) => {
-    const today = new Date()
-    const result = { from: '', to: '' }
-    
-    switch (preset) {
-      case 'today':
-        result.from = result.to = today.toISOString().split('T')[0]
-        break
-      case 'yesterday':
-        const yesterday = new Date(today)
-        yesterday.setDate(yesterday.getDate() - 1)
-        result.from = result.to = yesterday.toISOString().split('T')[0]
-        break
-      case 'thisweek':
-        const startOfWeek = new Date(today)
-        startOfWeek.setDate(today.getDate() - today.getDay())
-        result.from = startOfWeek.toISOString().split('T')[0]
-        result.to = today.toISOString().split('T')[0]
-        break
-      case 'lastweek':
-        const lastWeekEnd = new Date(today)
-        lastWeekEnd.setDate(today.getDate() - today.getDay() - 1)
-        const lastWeekStart = new Date(lastWeekEnd)
-        lastWeekStart.setDate(lastWeekEnd.getDate() - 6)
-        result.from = lastWeekStart.toISOString().split('T')[0]
-        result.to = lastWeekEnd.toISOString().split('T')[0]
-        break
-      case 'thismonth':
-        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
-        result.from = startOfMonth.toISOString().split('T')[0]
-        result.to = today.toISOString().split('T')[0]
-        break
-      case 'lastmonth':
-        const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0)
-        const lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1)
-        result.from = lastMonthStart.toISOString().split('T')[0]
-        result.to = lastMonthEnd.toISOString().split('T')[0]
-        break
-      default:
-        // Handle 'lastXdays' patterns
-        const daysMatch = preset.match(/last(\d+)days/)
-        if (daysMatch) {
-          const days = parseInt(daysMatch[1])
-          const startDate = new Date(today)
-          startDate.setDate(today.getDate() - days + 1)
-          result.from = startDate.toISOString().split('T')[0]
-          result.to = today.toISOString().split('T')[0]
-        }
-        break
-    }
-    
-    return result
-  }
-
-  // Apply date preset
-  const applyDatePreset = (preset: string) => {
-    if (preset === 'custom') {
-      setFilterState(prev => ({ ...prev, dateFilter: { ...prev.dateFilter, preset } }))
-      return
-    }
-    
-    const dates = getDateFromPreset(preset)
-    setFilterState(prev => ({
-      ...prev,
-      dateFilter: { from: dates.from, to: dates.to, preset }
-    }))
-  }
-
-  // Apply column preset
-  const applyColumnPreset = (presetKey: string) => {
-    const preset = COLUMN_PRESETS[presetKey as keyof typeof COLUMN_PRESETS]
-    if (preset) {
-      setFilterState(prev => ({
-        ...prev,
-        visibleColumns: { ...preset.columns },
-        activeColumnPreset: presetKey
-      }))
-    }
-  }
 
   const {
     sortColumn,
@@ -225,747 +141,353 @@ export default function EnhancedPerformanceTable({
     dateFilter,
     amountFilter,
     textFilter,
-    showFilters,
     showColumnManager,
-    showAdvancedFilters,
     recordsToShow,
     activeColumnPreset
   } = filterState
 
-  // Generate complete date range including days with no sales
-  const generateCompleteDataset = () => {
-    // If we have actual data, use it first
-    if (dailyTakings.length > 0) {
-      return dailyTakings
+  // Helpers
+  const getDateFromPreset = (preset: string) => {
+    const today = new Date()
+    const result = { from: '', to: '' }
+    
+    switch (preset) {
+      case 'today': {
+        const d = today.toISOString().split('T')[0]
+        result.from = d
+        result.to = d
+        break
+      }
+      case 'yesterday': {
+        const y = new Date(today)
+        y.setDate(today.getDate() - 1)
+        const d = y.toISOString().split('T')[0]
+        result.from = d
+        result.to = d
+        break
+      }
+      case 'thisweek': {
+        const start = new Date(today)
+        start.setDate(today.getDate() - today.getDay())
+        result.from = start.toISOString().split('T')[0]
+        result.to = today.toISOString().split('T')[0]
+        break
+      }
+      case 'lastweek': {
+        const end = new Date(today)
+        end.setDate(today.getDate() - today.getDay() - 1)
+        const start = new Date(end)
+        start.setDate(end.getDate() - 6)
+        result.from = start.toISOString().split('T')[0]
+        result.to = end.toISOString().split('T')[0]
+        break
+      }
+      case 'thismonth': {
+        const start = new Date(today.getFullYear(), today.getMonth(), 1)
+        result.from = start.toISOString().split('T')[0]
+        result.to = today.toISOString().split('T')[0]
+        break
+      }
+      case 'lastmonth': {
+        const end = new Date(today.getFullYear(), today.getMonth(), 0)
+        const start = new Date(today.getFullYear(), today.getMonth() - 1, 1)
+        result.from = start.toISOString().split('T')[0]
+        result.to = end.toISOString().split('T')[0]
+        break
+      }
+      default: {
+        const match = preset.match(/last(\d+)days/)
+        if (match) {
+          const days = parseInt(match[1])
+          const start = new Date(today)
+          start.setDate(today.getDate() - days + 1)
+          result.from = start.toISOString().split('T')[0]
+          result.to = today.toISOString().split('T')[0]
+        }
+      }
     }
     
-    // Otherwise, generate empty placeholders based on recordsToShow
-    const completeData = []
-    const dataMap = new Map(dailyTakings.map(item => [item.date, item]))
-    
+    return result
+  }
+
+  const applyDatePreset = (preset: string) => {
+    if (preset === 'custom') {
+      setFilterState(prev => ({ ...prev, dateFilter: { ...prev.dateFilter, preset } }))
+      return
+    }
+    const range = getDateFromPreset(preset)
+    setFilterState(prev => ({
+      ...prev,
+      dateFilter: { from: range.from, to: range.to, preset }
+    }))
+  }
+
+  const handleSort = (column: string) => {
+    const dir = sortColumn === column && sortDirection === 'desc' ? 'asc' : 'desc'
+    setFilterState(prev => ({ ...prev, sortColumn: column, sortDirection: dir }))
+  }
+
+  const getShopAmount = (d: DailyTaking) => d.locationBreakdown?.['d5a7267b-ca6f-4490-9d66-b5ba46cc563c'] || 0
+  const getCafeAmount = (d: DailyTaking) => d.locationBreakdown?.['e2aa143e-3e91-433e-a6d8-5a5538d429e2'] || 0
+  const getCombinedAmount = (d: DailyTaking) => d.total || 0
+
+  // Data processing
+  const generateCompleteDataset = () => {
+    if (dailyTakings.length > 0) return dailyTakings
+    const out: DailyTaking[] = []
+    const map = new Map(dailyTakings.map(i => [i.date, i]))
     for (let i = 0; i < recordsToShow; i++) {
-      const currentDate = new Date()
-      currentDate.setDate(currentDate.getDate() - i)
-      const dateString = currentDate.toISOString().split('T')[0]
-      
-      const existingData = dataMap.get(dateString)
-      if (existingData) {
-        completeData.push(existingData)
-      } else {
-        // Create empty day record
-        completeData.push({
-          date: dateString,
+      const cur = new Date()
+      cur.setDate(cur.getDate() - i)
+      const ds = cur.toISOString().split('T')[0]
+      const exists = map.get(ds)
+      out.push(
+        exists || {
+          date: ds,
           total: 0,
           receiptCount: 0,
           averageReceipt: 0,
           locationBreakdown: {},
           paymentBreakdown: { cash: 0, card: 0 }
-        })
-      }
+        }
+      )
     }
-    
-    return completeData
-  }
-
-  const handleSort = (column: string) => {
-    const newSortDirection = sortColumn === column && sortDirection === 'desc' ? 'asc' : 'desc'
-    
-    setFilterState(prev => ({
-      ...prev,
-      sortColumn: column,
-      sortDirection: newSortDirection
-    }))
-  }
-
-  // Helper functions for location-specific amounts
-  const getShopAmount = (dayData: DailyTaking) => {
-    if (!dayData.locationBreakdown) return 0
-    return dayData.locationBreakdown['d5a7267b-ca6f-4490-9d66-b5ba46cc563c'] || 0
-  }
-
-  const getCafeAmount = (dayData: DailyTaking) => {
-    if (!dayData.locationBreakdown) return 0
-    return dayData.locationBreakdown['e2aa143e-3e91-433e-a6d8-5a5538d429e2'] || 0
-  }
-
-  const getCombinedAmount = (dayData: DailyTaking) => {
-    return dayData.total || 0
+    return out
   }
 
   const processedData = () => {
     let data = generateCompleteDataset()
-    console.log('Generated complete dataset:', {
-      accountName: activeAccount?.name,
-      recordsToShow,
-      totalDays: data.length,
-      daysWithSales: data.filter(d => d.total > 0).length,
-      dateRange: data.length > 0 ? `${data[data.length - 1].date} to ${data[0].date}` : 'none'
-    })
-    
-    console.log('Current filter state:', {
-      dateFilter,
-      amountFilter,
-      textFilter,
-      activePreset: dateFilter.preset
-    })
-    
-    // Apply date filters
-    if (dateFilter.from) {
-      const beforeFilter = data.length
-      data = data.filter(item => item.date >= dateFilter.from)
-      console.log('After date from filter:', beforeFilter, '->', data.length)
-    }
-    if (dateFilter.to) {
-      const beforeFilter = data.length
-      data = data.filter(item => item.date <= dateFilter.to)
-      console.log('After date to filter:', beforeFilter, '->', data.length)
-    }
-    
-    // Apply text filter
+
+    // Dates
+    if (dateFilter.from) data = data.filter(i => i.date >= dateFilter.from)
+    if (dateFilter.to) data = data.filter(i => i.date <= dateFilter.to)
+
+    // Text
     if (textFilter.trim()) {
-      const searchTerm = textFilter.toLowerCase().trim()
-      data = data.filter(item => {
-        const dateStr = formatDate(item.date).toLowerCase()
-        const totalStr = formatCurrency(item.total).toLowerCase()
-        const receiptStr = (item.receiptCount || 0).toString()
-        return dateStr.includes(searchTerm) || 
-               totalStr.includes(searchTerm) || 
-               receiptStr.includes(searchTerm)
+      const q = textFilter.toLowerCase().trim()
+      data = data.filter(i => {
+        const ds = new Date(i.date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }).toLowerCase()
+        return ds.includes(q) || formatCurrency(i.total).toLowerCase().includes(q) || String(i.receiptCount || 0).includes(q)
       })
     }
-    
-    // Apply amount filters
-    if (amountFilter.min) {
-      const minAmount = parseFloat(amountFilter.min)
-      if (!isNaN(minAmount)) {
-        data = data.filter(item => item.total >= minAmount)
-      }
-    }
-    if (amountFilter.max) {
-      const maxAmount = parseFloat(amountFilter.max)
-      if (!isNaN(maxAmount)) {
-        data = data.filter(item => item.total <= maxAmount)
-      }
-    }
 
-    // Apply receipt count filters
-    if (amountFilter.receiptsMin) {
-      const minReceipts = parseInt(amountFilter.receiptsMin)
-      if (!isNaN(minReceipts)) {
-        data = data.filter(item => (item.receiptCount || 0) >= minReceipts)
-      }
-    }
-    if (amountFilter.receiptsMax) {
-      const maxReceipts = parseInt(amountFilter.receiptsMax)
-      if (!isNaN(maxReceipts)) {
-        data = data.filter(item => (item.receiptCount || 0) <= maxReceipts)
-      }
-    }
+    // Amounts
+    if (amountFilter.min) data = data.filter(i => i.total >= parseFloat(amountFilter.min))
+    if (amountFilter.max) data = data.filter(i => i.total <= parseFloat(amountFilter.max))
+    if (amountFilter.receiptsMin) data = data.filter(i => (i.receiptCount || 0) >= parseInt(amountFilter.receiptsMin))
+    if (amountFilter.receiptsMax) data = data.filter(i => (i.receiptCount || 0) <= parseInt(amountFilter.receiptsMax))
+    if (amountFilter.avgReceiptMin) data = data.filter(i => (i.averageReceipt || 0) >= parseFloat(amountFilter.avgReceiptMin))
+    if (amountFilter.avgReceiptMax) data = data.filter(i => (i.averageReceipt || 0) <= parseFloat(amountFilter.avgReceiptMax))
 
-    // Apply average receipt filters
-    if (amountFilter.avgReceiptMin) {
-      const minAvg = parseFloat(amountFilter.avgReceiptMin)
-      if (!isNaN(minAvg)) {
-        data = data.filter(item => (item.averageReceipt || 0) >= minAvg)
-      }
-    }
-    if (amountFilter.avgReceiptMax) {
-      const maxAvg = parseFloat(amountFilter.avgReceiptMax)
-      if (!isNaN(maxAvg)) {
-        data = data.filter(item => (item.averageReceipt || 0) <= maxAvg)
-      }
-    }
-    
-    // Apply sorting
-    if (sortColumn) {
+    // Sort
       data.sort((a, b) => {
-        let aVal: number = 0
-        let bVal: number = 0
-        
-        if (sortColumn === 'date') {
-          aVal = new Date(a.date).getTime()
-          bVal = new Date(b.date).getTime()
-        } else if (sortColumn === 'shop') {
-          aVal = getShopAmount(a)
-          bVal = getShopAmount(b)
-        } else if (sortColumn === 'cafe') {
-          aVal = getCafeAmount(a)
-          bVal = getCafeAmount(b)
-        } else if (sortColumn === 'combined') {
-          aVal = getCombinedAmount(a)
-          bVal = getCombinedAmount(b)
-        } else if (sortColumn === 'receipts') {
-          aVal = a.receiptCount || 0
-          bVal = b.receiptCount || 0
-        } else if (sortColumn === 'average') {
-          aVal = a.averageReceipt || 0
-          bVal = b.averageReceipt || 0
-        } else if (sortColumn === 'cash') {
-          aVal = a.paymentBreakdown?.cash || 0
-          bVal = b.paymentBreakdown?.cash || 0
-        } else if (sortColumn === 'card') {
-          aVal = a.paymentBreakdown?.card || 0
-          bVal = b.paymentBreakdown?.card || 0
-        }
-        
-        if (sortDirection === 'asc') {
-          return aVal < bVal ? -1 : aVal > bVal ? 1 : 0
-        } else {
-          return aVal > bVal ? -1 : aVal < bVal ? 1 : 0
-        }
-      })
-    }
+      const asc = sortDirection === 'asc' ? 1 : -1
+      switch (sortColumn) {
+        case 'date': return asc * (new Date(a.date).getTime() - new Date(b.date).getTime())
+        case 'shop': return asc * (getShopAmount(a) - getShopAmount(b))
+        case 'cafe': return asc * (getCafeAmount(a) - getCafeAmount(b))
+        case 'combined': return asc * (getCombinedAmount(a) - getCombinedAmount(b))
+        case 'receipts': return asc * ((a.receiptCount || 0) - (b.receiptCount || 0))
+        case 'average': return asc * ((a.averageReceipt || 0) - (b.averageReceipt || 0))
+        case 'cash': return asc * ((a.paymentBreakdown?.cash || 0) - (b.paymentBreakdown?.cash || 0))
+        case 'card': return asc * ((a.paymentBreakdown?.card || 0) - (b.paymentBreakdown?.card || 0))
+        default: return 0
+      }
+    })
     
     return data
   }
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
+  const data = processedData()
+
+  // Active chips
+  const activeChips: Array<{ key: string; label: string; onClear: () => void }> = []
+  if (dateFilter.preset === 'custom') {
+    activeChips.push({
+      key: 'daterange',
+      label: `Range: ${new Date(dateFilter.from).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })} – ${new Date(dateFilter.to).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}`,
+      onClear: () => applyDatePreset('last30days')
+    })
+  } else if (dateFilter.preset !== 'last30days') {
+    activeChips.push({ key: 'preset', label: DATE_PRESETS.find(p => p.id === dateFilter.preset)?.label || 'Preset', onClear: () => applyDatePreset('last30days') })
+  }
+  if (amountFilter.min) activeChips.push({ key: 'min', label: `Min £${amountFilter.min}`, onClear: () => setFilterState(p => ({ ...p, amountFilter: { ...p.amountFilter, min: '' } })) })
+  if (amountFilter.max) activeChips.push({ key: 'max', label: `Max £${amountFilter.max}`, onClear: () => setFilterState(p => ({ ...p, amountFilter: { ...p.amountFilter, max: '' } })) })
+  if (amountFilter.receiptsMin) activeChips.push({ key: 'rmin', label: `Receipts ≥ ${amountFilter.receiptsMin}`, onClear: () => setFilterState(p => ({ ...p, amountFilter: { ...p.amountFilter, receiptsMin: '' } })) })
+  if (amountFilter.receiptsMax) activeChips.push({ key: 'rmax', label: `Receipts ≤ ${amountFilter.receiptsMax}`, onClear: () => setFilterState(p => ({ ...p, amountFilter: { ...p.amountFilter, receiptsMax: '' } })) })
+  if (amountFilter.avgReceiptMin) activeChips.push({ key: 'amin', label: `Avg ≥ £${amountFilter.avgReceiptMin}`, onClear: () => setFilterState(p => ({ ...p, amountFilter: { ...p.amountFilter, avgReceiptMin: '' } })) })
+  if (amountFilter.avgReceiptMax) activeChips.push({ key: 'amax', label: `Avg ≤ £${amountFilter.avgReceiptMax}`, onClear: () => setFilterState(p => ({ ...p, amountFilter: { ...p.amountFilter, avgReceiptMax: '' } })) })
+  if (textFilter.trim()) activeChips.push({ key: 'q', label: `Query: ${textFilter}`, onClear: () => setFilterState(p => ({ ...p, textFilter: '' })) })
+
+  const resetAll = () => {
     const today = new Date()
-    const yesterday = new Date(today)
-    yesterday.setDate(yesterday.getDate() - 1)
-    
-    if (date.toDateString() === today.toDateString()) {
-      return 'Today'
-    } else if (date.toDateString() === yesterday.toDateString()) {
-      return 'Yesterday'
-    } else {
-      return date.toLocaleDateString('en-GB', {
-        weekday: 'short',
-        day: 'numeric',
-        month: 'short'
-      })
-    }
+    const thirty = new Date(today)
+    thirty.setDate(today.getDate() - 29)
+    setFilterState(prev => ({
+      ...prev,
+      dateFilter: { from: thirty.toISOString().split('T')[0], to: today.toISOString().split('T')[0], preset: 'last30days' },
+      amountFilter: { min: '', max: '', receiptsMin: '', receiptsMax: '', avgReceiptMin: '', avgReceiptMax: '' },
+      textFilter: ''
+    }))
   }
 
-  const getRowStatus = (dayData: DailyTaking) => {
-    const total = dayData.total || 0
-    if (total === 0) return { text: 'No Sales', color: '#6b7280', bg: '#f9fafb' }
-    if (total < 100) return { text: 'Low', color: '#dc2626', bg: '#fef2f2' }
-    if (total < 500) return { text: 'Medium', color: '#d97706', bg: '#fffbeb' }
+  const formatDate = (ds: string) => new Date(ds).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
+  const getRowStatus = (d: DailyTaking) => {
+    const t = d.total || 0
+    if (t === 0) return { text: 'No Sales', color: '#6b7280', bg: '#f9fafb' }
+    if (t < 100) return { text: 'Low', color: '#dc2626', bg: '#fef2f2' }
+    if (t < 500) return { text: 'Medium', color: '#d97706', bg: '#fffbeb' }
     return { text: 'High', color: '#059669', bg: '#ecfdf5' }
   }
 
-  const data = processedData()
-
   return (
-    <div style={{ 
-      background: 'white', 
-      borderRadius: '12px', 
-      overflow: 'hidden',
-      border: '1px solid #e2e8f0',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-    }}>
-      {/* Enhanced Header */}
-      <div style={{
-        padding: '24px',
-        borderBottom: '1px solid #e2e8f0',
-        background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)'
-      }}>
-        {/* Title and Summary */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: '20px',
-          flexWrap: 'wrap',
-          gap: '16px'
-        }}>
+    <div style={{ background: 'white', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+      {/* Header */}
+      <div style={{ padding: '24px', borderBottom: '1px solid #e2e8f0', background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', gap: '16px', flexWrap: 'wrap' }}>
           <div>
-            <h3 style={{
-              fontSize: '22px',
-              fontWeight: '700',
-              color: '#1e293b',
-              margin: '0 0 6px 0',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}>
-              📊 Daily Sales Analytics
-            </h3>
-            <p style={{
-              fontSize: '14px',
-              color: '#64748b',
-              margin: 0,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              flexWrap: 'wrap'
-            }}>
+            <h3 style={{ fontSize: '22px', fontWeight: 700, color: '#1e293b', margin: '0 0 6px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>📊 Daily Sales Analytics</h3>
+            <p style={{ fontSize: '14px', color: '#64748b', margin: 0, display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
               <span>{data.length} days displayed</span>
               <span style={{ color: '#cbd5e1' }}>•</span>
               <span>{data.filter(d => d.total > 0).length} days with sales</span>
               <span style={{ color: '#cbd5e1' }}>•</span>
-              <span>{formatCurrency(data.reduce((sum, d) => sum + d.total, 0))} total</span>
+              <span>{formatCurrency(data.reduce((s, d) => s + d.total, 0))} total</span>
               {dailyTakings.length <= 40 && onLoadHistoricalData && (
                 <>
                   <span style={{ color: '#cbd5e1' }}>•</span>
-                  <button 
-                    onClick={onLoadHistoricalData}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: '#3b82f6',
-                      cursor: 'pointer',
-                      textDecoration: 'underline',
-                      fontSize: '14px',
-                      padding: 0,
-                      fontWeight: '500'
-                    }}
-                  >
-                    📈 Load historical data
-                  </button>
+                  <button onClick={onLoadHistoricalData} style={{ background: 'none', border: 'none', color: '#3b82f6', cursor: 'pointer', textDecoration: 'underline', fontSize: '14px', padding: 0, fontWeight: 500 }}>📈 Load historical data</button>
                 </>
               )}
             </p>
           </div>
+
+          <button onClick={resetAll} style={{ background: 'transparent', color: '#6b7280', border: '1px solid #d1d5db', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' }}>↻ Reset</button>
         </div>
 
-        {/* Clean Filter Interface */}
-        <div style={{
-          background: 'white',
-          borderRadius: '12px',
-          border: '1px solid #e5e7eb',
-          overflow: 'hidden'
-        }}>
-          {/* Header Bar */}
-          <div style={{
-            background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
-            padding: '16px 20px',
-            borderBottom: '1px solid #e5e7eb',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <h3 style={{
-                margin: 0,
-                fontSize: '16px',
-                fontWeight: '600',
-                color: '#1f2937',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                🔍 Filter & Search
-              </h3>
-              
-              {/* Active Filter Count */}
-              {(textFilter || dateFilter.preset !== 'last30days' || amountFilter.min || amountFilter.max) && (
-                <div style={{
-                  background: '#3b82f6',
-                  color: 'white',
-                  padding: '2px 8px',
-                  borderRadius: '12px',
-                  fontSize: '11px',
-                  fontWeight: '600'
-                }}>
-                  {[textFilter, dateFilter.preset !== 'last30days', amountFilter.min, amountFilter.max].filter(Boolean).length} active
-                </div>
-              )}
+        {/* Filter & Search Bar */}
+        <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '12px' }}>
+          {/* Row 1: Time presets */}
+          <div style={{ padding: '12px 16px', borderBottom: '1px solid #f1f5f9' }}>
+            <div style={{ fontSize: '12px', fontWeight: 600, color: '#6b7280', marginBottom: '8px' }}>🗓 Time Period</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '8px' }}>
+              {DATE_PRESETS.slice(0, 8).map(p => (
+                <button key={p.id} onClick={() => applyDatePreset(p.id)}
+                  style={{ background: dateFilter.preset === p.id ? '#3b82f6' : '#f9fafb', color: dateFilter.preset === p.id ? '#fff' : '#374151', border: dateFilter.preset === p.id ? '1px solid #3b82f6' : '1px solid #e5e7eb', padding: '8px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 500, cursor: 'pointer' }}>{p.label}</button>
+              ))}
             </div>
-            
-            <button
-              onClick={() => {
-                const today = new Date()
-                const thirtyDaysAgo = new Date(today)
-                thirtyDaysAgo.setDate(today.getDate() - 29)
-                
-                setFilterState(prev => ({
-                  ...prev,
-                  dateFilter: { 
-                    from: thirtyDaysAgo.toISOString().split('T')[0], 
-                    to: today.toISOString().split('T')[0], 
-                    preset: 'last30days' 
-                  },
-                  amountFilter: { min: '', max: '', receiptsMin: '', receiptsMax: '', avgReceiptMin: '', avgReceiptMax: '' },
-                  textFilter: ''
-                }))
-              }}
-              style={{
-                background: 'transparent',
-                color: '#6b7280',
-                border: '1px solid #d1d5db',
-                padding: '6px 12px',
-                borderRadius: '6px',
-                fontSize: '12px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                transition: 'all 0.2s ease'
-              }}
-            >
-              ↻ Reset
-            </button>
+        </div>
+
+          {/* Row 2: Search + Actions */}
+          <div style={{ padding: '12px 16px', display: 'grid', gridTemplateColumns: '1fr auto auto', alignItems: 'center', gap: '12px' }}>
+            <div>
+              <div style={{ fontSize: '12px', fontWeight: 600, color: '#6b7280', marginBottom: '8px' }}>🔎 Search</div>
+            <div style={{ position: 'relative' }}>
+                <input type="text" placeholder="Search dates, totals, receipts..." value={textFilter} onChange={(e) => setFilterState(p => ({ ...p, textFilter: e.target.value }))}
+                  style={{ width: '100%', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '10px 12px 10px 36px', fontSize: '14px', color: '#374151', outline: 'none' }} />
+                <div style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }}>🔍</div>
+              </div>
+            </div>
+
+            <div style={{ alignSelf: 'end' }}>
+              <div style={{ fontSize: '12px', fontWeight: 600, color: '#6b7280', marginBottom: '8px' }}> </div>
+              <button onClick={() => setIsFilterModalOpen(true)}
+                style={{ background: '#111827', color: 'white', border: 'none', padding: '10px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>⚙️ Filters</button>
           </div>
 
-          {/* Main Filter Controls */}
-          <div style={{ padding: '20px' }}>
-            {/* Quick Date Filters */}
-            <div style={{ marginBottom: '24px' }}>
-              <label style={{
-                display: 'block',
-                fontSize: '13px',
-                fontWeight: '600',
-                color: '#374151',
-                marginBottom: '8px'
-              }}>
-                📅 Time Period
-              </label>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-                gap: '8px'
-              }}>
-                {DATE_PRESETS.slice(0, 8).map((preset) => (
-                  <button
-                    key={preset.id}
-                    onClick={() => applyDatePreset(preset.id)}
-                    style={{
-                      background: dateFilter.preset === preset.id ? '#3b82f6' : '#f9fafb',
-                      color: dateFilter.preset === preset.id ? 'white' : '#374151',
-                      border: dateFilter.preset === preset.id ? '1px solid #3b82f6' : '1px solid #e5e7eb',
-                      padding: '8px 12px',
-                      borderRadius: '8px',
-                      fontSize: '12px',
-                      fontWeight: '500',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      textAlign: 'center' as const
-                    }}
-                  >
-                    {preset.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Search and Actions Row */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr auto auto',
-              gap: '12px',
-              alignItems: 'center'
-            }}>
-              {/* Search */}
-              <div>
-                <label style={{
-                  display: 'block',
-                  fontSize: '13px',
-                  fontWeight: '600',
-                  color: '#374151',
-                  marginBottom: '6px'
-                }}>
-                  🔍 Search
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    type="text"
-                    placeholder="Search dates, amounts..."
-                    value={textFilter}
-                    onChange={(e) => setFilterState(prev => ({ ...prev, textFilter: e.target.value }))}
-                    style={{
-                      width: '100%',
-                      background: '#f9fafb',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '8px',
-                      padding: '10px 12px 10px 36px',
-                      fontSize: '14px',
-                      color: '#374151',
-                      outline: 'none',
-                      transition: 'all 0.2s ease'
-                    }}
-                  />
-                  <div style={{
-                    position: 'absolute',
-                    left: '12px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    color: '#9ca3af',
-                    fontSize: '14px'
-                  }}>
-                    🔍
-                  </div>
-                </div>
-              </div>
-
-              {/* Advanced Filters Toggle */}
-              <div>
-                <label style={{
-                  display: 'block',
-                  fontSize: '13px',
-                  fontWeight: '600',
-                  color: '#374151',
-                  marginBottom: '6px'
-                }}>
-                  🔧 Filters
-                </label>
-                <button
-                  onClick={() => setFilterState(prev => ({ ...prev, showFilters: !prev.showFilters }))}
-                  style={{
-                    background: showFilters ? '#3b82f6' : '#f9fafb',
-                    color: showFilters ? 'white' : '#374151',
-                    border: showFilters ? '1px solid #3b82f6' : '1px solid #e5e7eb',
-                    padding: '10px 16px',
-                    borderRadius: '8px',
-                    fontSize: '13px',
-                    fontWeight: '500',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    whiteSpace: 'nowrap' as const
-                  }}
-                >
-                  {showFilters ? '📊 Advanced' : '⚙️ More'}
-                </button>
-              </div>
-
-              {/* Columns Toggle */}
-              <div>
-                <label style={{
-                  display: 'block',
-                  fontSize: '13px',
-                  fontWeight: '600',
-                  color: '#374151',
-                  marginBottom: '6px'
-                }}>
-                  📋 Columns
-                </label>
-                <button
-                  onClick={() => setFilterState(prev => ({ ...prev, showColumnManager: !prev.showColumnManager }))}
-                  style={{
-                    background: showColumnManager ? '#10b981' : '#f9fafb',
-                    color: showColumnManager ? 'white' : '#374151',
-                    border: showColumnManager ? '1px solid #10b981' : '1px solid #e5e7eb',
-                    padding: '10px 16px',
-                    borderRadius: '8px',
-                    fontSize: '13px',
-                    fontWeight: '500',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    whiteSpace: 'nowrap' as const
-                  }}
-                >
-                  {showColumnManager ? '✓ Editing' : '📝 Manage'}
-                </button>
-              </div>
-            </div>
-          </div>
+            <div style={{ alignSelf: 'end' }}>
+              <div style={{ fontSize: '12px', fontWeight: 600, color: '#6b7280', marginBottom: '8px' }}> </div>
+              <button onClick={() => setFilterState(p => ({ ...p, showColumnManager: !p.showColumnManager }))}
+                style={{ background: showColumnManager ? '#10b981' : '#f9fafb', color: showColumnManager ? '#fff' : '#374151', border: showColumnManager ? '1px solid #10b981' : '1px solid #e5e7eb', padding: '10px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>{showColumnManager ? '📋 Editing' : '📋 Columns'}</button>
         </div>
       </div>
 
-      {/* Advanced Filters Panel */}
-      {showFilters && (
-        <div style={{
-          background: 'white',
-          border: '1px solid #e5e7eb',
-          borderRadius: '12px',
-          marginTop: '16px',
-          overflow: 'hidden'
-        }}>
-          {/* Advanced Header */}
-          <div style={{
-            background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)',
-            padding: '16px 20px',
-            borderBottom: '1px solid #e5e7eb',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between'
-          }}>
-            <h4 style={{
-              fontSize: '15px',
-              fontWeight: '600',
-              color: '#1e293b',
-              margin: 0,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}>
-              🎛️ Advanced Options
-            </h4>
+          {/* Row 3: Active chips */}
+          {activeChips.length > 0 && (
+            <div style={{ padding: '10px 16px', borderTop: '1px dashed #e5e7eb', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {activeChips.map(chip => (
+                <span key={chip.key} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#f1f5f9', border: '1px solid #e2e8f0', color: '#334155', fontSize: 12, padding: '6px 8px', borderRadius: 999 }}>
+                  {chip.label}
+                  <button onClick={chip.onClear} style={{ background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer' }}>✕</button>
+                </span>
+              ))}
+              <button onClick={resetAll} style={{ background: 'transparent', border: 'none', color: '#ef4444', fontSize: 12, cursor: 'pointer', textDecoration: 'underline' }}>Clear all</button>
+          </div>
+          )}
+              </div>
+            </div>
+            
+      {/* Filter Modal */}
+      {isFilterModalOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.35)', zIndex: 50 }} onClick={() => setIsFilterModalOpen(false)}>
+          <div onClick={(e) => e.stopPropagation()} style={{ maxWidth: 720, margin: '8vh auto', background: 'white', borderRadius: 12, border: '1px solid #e5e7eb', boxShadow: '0 10px 30px rgba(0,0,0,0.15)' }}>
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: '#111827' }}>Advanced Filters</div>
+              <button onClick={() => setIsFilterModalOpen(false)} style={{ background: 'transparent', border: 'none', color: '#6b7280', cursor: 'pointer' }}>✕</button>
+              </div>
+
+            <div style={{ padding: 20 }}>
+              {/* Date range */}
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>📅 Custom Date Range</div>
+                  <button onClick={() => applyDatePreset('last30days')} style={{ background: 'transparent', border: 'none', color: '#3b82f6', cursor: 'pointer', fontSize: 12, textDecoration: 'underline' }}>Use last 30 days</button>
+              </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 12, color: '#6b7280', marginBottom: 6 }}>From</label>
+                    <input type="date" value={dateFilter.from} onChange={(e) => setFilterState(p => ({ ...p, dateFilter: { ...p.dateFilter, from: e.target.value, preset: 'custom' } }))} style={{ width: '100%', padding: '10px 12px', border: '1px solid #e5e7eb', borderRadius: 8 }} />
+              </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 12, color: '#6b7280', marginBottom: 6 }}>To</label>
+                    <input type="date" value={dateFilter.to} onChange={(e) => setFilterState(p => ({ ...p, dateFilter: { ...p.dateFilter, to: e.target.value, preset: 'custom' } }))} style={{ width: '100%', padding: '10px 12px', border: '1px solid #e5e7eb', borderRadius: 8 }} />
+            </div>
+          </div>
+            </div>
+            
+              {/* Amounts */}
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 10 }}>💰 Amounts</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 12, color: '#6b7280', marginBottom: 6 }}>Min Total (£)</label>
+                    <input type="number" step="0.01" placeholder="0.00" value={amountFilter.min} onChange={(e) => setFilterState(p => ({ ...p, amountFilter: { ...p.amountFilter, min: e.target.value } }))} style={{ width: '100%', padding: '10px 12px', border: '1px solid #e5e7eb', borderRadius: 8 }} />
+              </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 12, color: '#6b7280', marginBottom: 6 }}>Max Total (£)</label>
+                    <input type="number" step="0.01" placeholder="1000.00" value={amountFilter.max} onChange={(e) => setFilterState(p => ({ ...p, amountFilter: { ...p.amountFilter, max: e.target.value } }))} style={{ width: '100%', padding: '10px 12px', border: '1px solid #e5e7eb', borderRadius: 8 }} />
+              </div>
+            </div>
           </div>
 
-          <div style={{ padding: '20px' }}>
-            {/* Custom Date Range */}
-            <div style={{ marginBottom: '32px' }}>
-              <h5 style={{
-                fontSize: '14px',
-                fontWeight: '600',
-                color: '#374151',
-                margin: '0 0 16px 0',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                📅 Custom Date Range
-                <div style={{
-                  background: '#e0f2fe',
-                  color: '#0369a1',
-                  padding: '2px 8px',
-                  borderRadius: '12px',
-                  fontSize: '11px',
-                  fontWeight: '500'
-                }}>
-                  Optional
-                </div>
-              </h5>
-              
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '16px'
-              }}>
+              {/* Metrics */}
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 10 }}>📊 Metrics</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: 12 }}>
                 <div>
-                  <label style={{ 
-                    fontSize: '12px', 
-                    fontWeight: '500', 
-                    color: '#6b7280', 
-                    marginBottom: '6px', 
-                    display: 'block' 
-                  }}>
-                    From Date
-                  </label>
-                  <input
-                    type="date"
-                    value={dateFilter.from}
-                    onChange={(e) => setFilterState(prev => ({
-                      ...prev,
-                      dateFilter: { ...prev.dateFilter, from: e.target.value, preset: 'custom' }
-                    }))}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '8px',
-                      fontSize: '14px',
-                      background: '#f9fafb'
-                    }}
-                  />
+                    <label style={{ display: 'block', fontSize: 12, color: '#6b7280', marginBottom: 6 }}>Min Receipts</label>
+                    <input type="number" min={0} placeholder="0" value={amountFilter.receiptsMin} onChange={(e) => setFilterState(p => ({ ...p, amountFilter: { ...p.amountFilter, receiptsMin: e.target.value } }))} style={{ width: '100%', padding: '10px 12px', border: '1px solid #e5e7eb', borderRadius: 8 }} />
                 </div>
-
                 <div>
-                  <label style={{ 
-                    fontSize: '12px', 
-                    fontWeight: '500', 
-                    color: '#6b7280', 
-                    marginBottom: '6px', 
-                    display: 'block' 
-                  }}>
-                    To Date
-                  </label>
-                  <input
-                    type="date"
-                    value={dateFilter.to}
-                    onChange={(e) => setFilterState(prev => ({
-                      ...prev,
-                      dateFilter: { ...prev.dateFilter, to: e.target.value, preset: 'custom' }
-                    }))}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '8px',
-                      fontSize: '14px',
-                      background: '#f9fafb'
-                    }}
-                  />
+                    <label style={{ display: 'block', fontSize: 12, color: '#6b7280', marginBottom: 6 }}>Max Receipts</label>
+                    <input type="number" min={0} placeholder="100" value={amountFilter.receiptsMax} onChange={(e) => setFilterState(p => ({ ...p, amountFilter: { ...p.amountFilter, receiptsMax: e.target.value } }))} style={{ width: '100%', padding: '10px 12px', border: '1px solid #e5e7eb', borderRadius: 8 }} />
+                </div>
+                <div>
+                    <label style={{ display: 'block', fontSize: 12, color: '#6b7280', marginBottom: 6 }}>Min Avg (£)</label>
+                    <input type="number" step="0.01" placeholder="0.00" value={amountFilter.avgReceiptMin} onChange={(e) => setFilterState(p => ({ ...p, amountFilter: { ...p.amountFilter, avgReceiptMin: e.target.value } }))} style={{ width: '100%', padding: '10px 12px', border: '1px solid #e5e7eb', borderRadius: 8 }} />
+                </div>
+                <div>
+                    <label style={{ display: 'block', fontSize: 12, color: '#6b7280', marginBottom: 6 }}>Max Avg (£)</label>
+                    <input type="number" step="0.01" placeholder="50.00" value={amountFilter.avgReceiptMax} onChange={(e) => setFilterState(p => ({ ...p, amountFilter: { ...p.amountFilter, avgReceiptMax: e.target.value } }))} style={{ width: '100%', padding: '10px 12px', border: '1px solid #e5e7eb', borderRadius: 8 }} />
                 </div>
               </div>
             </div>
 
-            {/* Amount Filters */}
-            <div>
-              <h5 style={{
-                fontSize: '14px',
-                fontWeight: '600',
-                color: '#374151',
-                margin: '0 0 16px 0',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                💰 Amount Range
-                <div style={{
-                  background: '#e0f2fe',
-                  color: '#0369a1',
-                  padding: '2px 8px',
-                  borderRadius: '12px',
-                  fontSize: '11px',
-                  fontWeight: '500'
-                }}>
-                  Optional
-                </div>
-              </h5>
-              
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '16px'
-              }}>
-                <div>
-                  <label style={{ 
-                    fontSize: '12px', 
-                    fontWeight: '500', 
-                    color: '#6b7280', 
-                    marginBottom: '6px', 
-                    display: 'block' 
-                  }}>
-                    Minimum Amount (£)
-                  </label>
-                  <input
-                    type="number"
-                    value={amountFilter.min}
-                    onChange={(e) => setFilterState(prev => ({
-                      ...prev,
-                      amountFilter: { ...prev.amountFilter, min: e.target.value }
-                    }))}
-                    placeholder="0.00"
-                    step="0.01"
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '8px',
-                      fontSize: '14px',
-                      background: '#f9fafb'
-                    }}
-                  />
-                </div>
-
-                <div>
-                  <label style={{ 
-                    fontSize: '12px', 
-                    fontWeight: '500', 
-                    color: '#6b7280', 
-                    marginBottom: '6px', 
-                    display: 'block' 
-                  }}>
-                    Maximum Amount (£)
-                  </label>
-                  <input
-                    type="number"
-                    value={amountFilter.max}
-                    onChange={(e) => setFilterState(prev => ({
-                      ...prev,
-                      amountFilter: { ...prev.amountFilter, max: e.target.value }
-                    }))}
-                    placeholder="1000.00"
-                    step="0.01"
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '8px',
-                      fontSize: '14px',
-                      background: '#f9fafb'
-                    }}
-                  />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginTop: 8 }}>
+                <button onClick={resetAll} style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', textDecoration: 'underline' }}>Clear all</button>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button onClick={() => setIsFilterModalOpen(false)} style={{ background: '#f3f4f6', color: '#374151', border: '1px solid #d1d5db', padding: '10px 16px', borderRadius: 8, cursor: 'pointer' }}>Cancel</button>
+                  <button onClick={() => setIsFilterModalOpen(false)} style={{ background: '#111827', color: 'white', border: 'none', padding: '10px 16px', borderRadius: 8, cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>Apply</button>
                 </div>
               </div>
             </div>
@@ -973,274 +495,63 @@ export default function EnhancedPerformanceTable({
         </div>
       )}
 
-      {/* Column Manager Panel */}
+      {/* Column Manager */}
       {showColumnManager && (
-        <div style={{
-          background: 'white',
-          border: '1px solid #e5e7eb',
-          borderRadius: '12px',
-          marginTop: '16px',
-          overflow: 'hidden'
-        }}>
-          {/* Column Manager Header */}
-          <div style={{
-            background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
-            padding: '16px 20px',
-            borderBottom: '1px solid #e5e7eb',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between'
-          }}>
-            <h4 style={{
-              fontSize: '15px',
-              fontWeight: '600',
-              color: '#1e293b',
-              margin: 0,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}>
-              📋 Column Manager
-            </h4>
-            
-            <div style={{
-              background: '#ecfdf5',
-              color: '#065f46',
-              padding: '6px 12px',
-              borderRadius: '8px',
-              fontSize: '12px',
-              fontWeight: '600',
-              border: '1px solid #d1fae5'
-            }}>
+        <div style={{ padding: '20px', borderBottom: '1px solid #e2e8f0', background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+            <h4 style={{ fontSize: 16, fontWeight: 600, color: '#1e293b', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>📋 Column Manager</h4>
+            <div style={{ background: '#ecfdf5', color: '#065f46', padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600, border: '1px solid #d1fae5' }}>
               {Object.values(visibleColumns).filter(Boolean).length} of {Object.keys(visibleColumns).length} columns visible
             </div>
           </div>
 
-          <div style={{ padding: '20px' }}>
-            {/* Column Presets */}
-            <div style={{ marginBottom: '20px' }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                marginBottom: '12px'
-              }}>
-                <span style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>⚡ Quick Presets</span>
-              </div>
-              
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                gap: '12px'
-              }}>
-                {Object.entries(COLUMN_PRESETS).map(([key, preset]) => (
-                  <button
-                    key={key}
-                    onClick={() => applyColumnPreset(key)}
-                    style={{
-                      background: activeColumnPreset === key ? '#10b981' : '#ffffff',
-                      color: activeColumnPreset === key ? 'white' : '#374151',
-                      border: `2px solid ${activeColumnPreset === key ? '#10b981' : '#e2e8f0'}`,
-                      padding: '12px 16px',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      textAlign: 'left' as const
-                    }}
-                  >
-                    <div style={{
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      marginBottom: '4px'
-                    }}>
-                      {preset.name}
-                    </div>
-                    <div style={{
-                      fontSize: '12px',
-                      opacity: 0.8
-                    }}>
-                      {preset.description}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
+          {/* Presets */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginBottom: 16 }}>
+              {Object.entries(COLUMN_PRESETS).map(([key, preset]) => (
+              <button key={key} onClick={() => setFilterState(p => ({ ...p, visibleColumns: { ...COLUMN_PRESETS[key as keyof typeof COLUMN_PRESETS].columns }, activeColumnPreset: key }))}
+                style={{ background: activeColumnPreset === key ? '#10b981' : '#ffffff', color: activeColumnPreset === key ? '#fff' : '#374151', border: `2px solid ${activeColumnPreset === key ? '#10b981' : '#e2e8f0'}`, padding: '12px 16px', borderRadius: 8, textAlign: 'left' }}>
+                <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{preset.name}</div>
+                <div style={{ fontSize: 12, opacity: 0.8 }}>{preset.description}</div>
+                </button>
+              ))}
+          </div>
 
-            {/* Individual Column Controls */}
-            <div style={{ marginBottom: '20px' }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                marginBottom: '12px'
-              }}>
-                <span style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>🎛️ Individual Columns</span>
-              </div>
-              
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                gap: '12px'
-              }}>
-                {Object.entries(visibleColumns).map(([key, value]) => {
-                  const isRequired = key === 'date' // Date column is always required
-                  const columnInfo = {
-                    date: { icon: '📅', name: 'Date', desc: 'Transaction date' },
-                    shop: { icon: '🏪', name: 'Shop', desc: 'Shop location sales' },
-                    cafe: { icon: '☕', name: 'Café', desc: 'Café location sales' },
-                    combined: { icon: '💰', name: 'Total', desc: 'Combined total sales' },
-                    receipts: { icon: '🧾', name: 'Receipts', desc: 'Number of transactions' },
-                    average: { icon: '📊', name: 'Avg Receipt', desc: 'Average transaction value' },
-                    status: { icon: '🏷️', name: 'Status', desc: 'Sales performance status' },
-                    cash: { icon: '💵', name: 'Cash', desc: 'Cash payments only' },
-                    card: { icon: '💳', name: 'Card', desc: 'Card payments only' }
-                  }[key] || { icon: '📋', name: key, desc: 'Column data' }
+          {/* Individual toggles */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginBottom: 16 }}>
+              {Object.entries(visibleColumns).map(([key, value]) => {
+              const isRequired = key === 'date'
+              const meta = {
+                  date: { icon: '📅', name: 'Date', desc: 'Transaction date' },
+                  shop: { icon: '🏪', name: 'Shop', desc: 'Shop location sales' },
+                  cafe: { icon: '☕', name: 'Café', desc: 'Café location sales' },
+                  combined: { icon: '💰', name: 'Total', desc: 'Combined total sales' },
+                  receipts: { icon: '🧾', name: 'Receipts', desc: 'Number of transactions' },
+                  average: { icon: '📊', name: 'Avg Receipt', desc: 'Average transaction value' },
+                  status: { icon: '🏷️', name: 'Status', desc: 'Sales performance status' },
+                  cash: { icon: '💵', name: 'Cash', desc: 'Cash payments only' },
+                  card: { icon: '💳', name: 'Card', desc: 'Card payments only' }
+                }[key] || { icon: '📋', name: key, desc: 'Column data' }
 
-                  return (
-                    <label
-                      key={key}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '12px',
-                        padding: '12px 16px',
-                        background: value ? '#f0fdf4' : '#f9fafb',
-                        border: `2px solid ${value ? '#d1fae5' : '#e5e7eb'}`,
-                        borderRadius: '8px',
-                        cursor: isRequired ? 'not-allowed' : 'pointer',
-                        transition: 'all 0.2s ease',
-                        opacity: isRequired ? 0.6 : 1
-                      }}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={value}
-                        disabled={isRequired}
-                        onChange={(e) => !isRequired && setFilterState(prev => ({
-                          ...prev,
-                          visibleColumns: {
-                            ...prev.visibleColumns,
-                            [key]: e.target.checked
-                          },
-                          activeColumnPreset: 'custom'
-                        }))}
-                        style={{
-                          cursor: isRequired ? 'not-allowed' : 'pointer',
-                          transform: 'scale(1.2)'
-                        }}
-                      />
-                      <div style={{ flex: 1 }}>
-                        <div style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          fontSize: '14px',
-                          fontWeight: '600',
-                          color: '#374151',
-                          marginBottom: '2px'
-                        }}>
-                          <span>{columnInfo.icon}</span>
-                          <span>{columnInfo.name}</span>
-                          {isRequired && (
-                            <span style={{
-                              background: '#fbbf24',
-                              color: '#92400e',
-                              padding: '2px 6px',
-                              borderRadius: '4px',
-                              fontSize: '10px',
-                              fontWeight: '600'
-                            }}>
-                              REQUIRED
-                            </span>
-                          )}
-                        </div>
-                        <div style={{
-                          fontSize: '12px',
-                          color: '#6b7280'
-                        }}>
-                          {columnInfo.desc}
-                        </div>
+                return (
+                <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: value ? '#f0fdf4' : '#f9fafb', border: `2px solid ${value ? '#d1fae5' : '#e5e7eb'}`, borderRadius: 8, cursor: isRequired ? 'not-allowed' : 'pointer', opacity: isRequired ? 0.6 : 1 }}>
+                  <input type="checkbox" checked={value} disabled={isRequired} onChange={(e) => !isRequired && setFilterState(p => ({ ...p, visibleColumns: { ...p.visibleColumns, [key]: e.target.checked }, activeColumnPreset: 'custom' }))} style={{ cursor: isRequired ? 'not-allowed' : 'pointer', transform: 'scale(1.2)' }} />
+                    <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, fontWeight: 600, color: '#374151', marginBottom: 2 }}>
+                      <span>{meta.icon}</span>
+                      <span>{meta.name}</span>
+                      {isRequired && (<span style={{ background: '#fbbf24', color: '#92400e', padding: '2px 6px', borderRadius: 4, fontSize: 10, fontWeight: 600 }}>REQUIRED</span>)}
                       </div>
-                    </label>
-                  )
-                })}
-              </div>
-            </div>
+                    <div style={{ fontSize: 12, color: '#6b7280' }}>{meta.desc}</div>
+                    </div>
+                  </label>
+                )
+              })}
+          </div>
 
-            {/* Column Actions */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              flexWrap: 'wrap'
-            }}>
-              <button
-                onClick={() => {
-                  const allColumns = Object.keys(visibleColumns).reduce((acc, key) => ({
-                    ...acc,
-                    [key]: key === 'date' // Only keep date column required
-                  }), {} as typeof visibleColumns)
-                  setFilterState(prev => ({
-                    ...prev,
-                    visibleColumns: allColumns,
-                    activeColumnPreset: 'custom'
-                  }))
-                }}
-                style={{
-                  background: '#f3f4f6',
-                  color: '#374151',
-                  border: '1px solid #d1d5db',
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  fontSize: '13px',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                📤 Hide All
-              </button>
-
-              <button
-                onClick={() => {
-                  const allColumns = Object.keys(visibleColumns).reduce((acc, key) => ({
-                    ...acc,
-                    [key]: true
-                  }), {} as typeof visibleColumns)
-                  setFilterState(prev => ({
-                    ...prev,
-                    visibleColumns: allColumns,
-                    activeColumnPreset: 'detailed'
-                  }))
-                }}
-                style={{
-                  background: '#10b981',
-                  color: 'white',
-                  border: 'none',
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  fontSize: '13px',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  boxShadow: '0 2px 4px rgba(16, 185, 129, 0.2)'
-                }}
-              >
-                📥 Show All
-              </button>
-
-              <div style={{
-                background: '#ecfdf5',
-                color: '#065f46',
-                padding: '8px 12px',
-                borderRadius: '6px',
-                fontSize: '12px',
-                fontWeight: '500',
-                border: '1px solid #d1fae5'
-              }}>
-                Using: {COLUMN_PRESETS[activeColumnPreset as keyof typeof COLUMN_PRESETS]?.name || 'Custom'} preset
-              </div>
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+            <button onClick={() => setFilterState(p => ({ ...p, visibleColumns: Object.keys(p.visibleColumns).reduce((acc, k) => ({ ...acc, [k]: k === 'date' }), {} as typeof p.visibleColumns), activeColumnPreset: 'custom' }))} style={{ background: '#f3f4f6', color: '#374151', border: '1px solid #d1d5db', padding: '8px 16px', borderRadius: 6, fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>📤 Hide All</button>
+            <button onClick={() => setFilterState(p => ({ ...p, visibleColumns: Object.keys(p.visibleColumns).reduce((acc, k) => ({ ...acc, [k]: true }), {} as typeof p.visibleColumns), activeColumnPreset: 'detailed' }))} style={{ background: '#10b981', color: 'white', border: 'none', padding: '8px 16px', borderRadius: 6, fontSize: 13, fontWeight: 500, cursor: 'pointer', boxShadow: '0 2px 4px rgba(16,185,129,0.2)' }}>📥 Show All</button>
+            <div style={{ background: '#ecfdf5', color: '#065f46', padding: '8px 12px', borderRadius: 6, fontSize: 12, fontWeight: 500, border: '1px solid #d1fae5' }}>Using: {COLUMN_PRESETS[activeColumnPreset as keyof typeof COLUMN_PRESETS]?.name || 'Custom'} preset</div>
           </div>
         </div>
       )}
@@ -1251,301 +562,52 @@ export default function EnhancedPerformanceTable({
           <thead>
             <tr style={{ background: '#f8fafc' }}>
               {visibleColumns.date && (
-                <th
-                  onClick={() => handleSort('date')}
-                  style={{
-                    padding: '12px 16px',
-                    textAlign: 'left' as const,
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    color: '#6b7280',
-                    textTransform: 'uppercase' as const,
-                    cursor: 'pointer',
-                    borderBottom: '1px solid #e2e8f0',
-                    position: 'sticky',
-                    left: 0,
-                    background: '#f8fafc',
-                    zIndex: 1
-                  }}
-                >
-                  Date {sortColumn === 'date' && (sortDirection === 'asc' ? '↑' : '↓')}
-                </th>
+                <th onClick={() => handleSort('date')} style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', cursor: 'pointer', borderBottom: '1px solid #e2e8f0', position: 'sticky', left: 0, background: '#f8fafc', zIndex: 1 }}>Date {sortColumn === 'date' && (filterState.sortDirection === 'asc' ? '↑' : '↓')}</th>
               )}
-              
               {visibleColumns.shop && activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2' && (
-                <th
-                  onClick={() => handleSort('shop')}
-                  style={{
-                    padding: '12px 16px',
-                    textAlign: 'right' as const,
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    color: '#6b7280',
-                    textTransform: 'uppercase' as const,
-                    cursor: 'pointer',
-                    borderBottom: '1px solid #e2e8f0'
-                  }}
-                >
-                  Shop {sortColumn === 'shop' && (sortDirection === 'asc' ? '↑' : '↓')}
-                </th>
+                <th onClick={() => handleSort('shop')} style={{ padding: '12px 16px', textAlign: 'right', fontSize: 12, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', cursor: 'pointer', borderBottom: '1px solid #e2e8f0' }}>Shop {sortColumn === 'shop' && (filterState.sortDirection === 'asc' ? '↑' : '↓')}</th>
               )}
-
               {visibleColumns.cafe && activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2' && (
-                <th
-                  onClick={() => handleSort('cafe')}
-                  style={{
-                    padding: '12px 16px',
-                    textAlign: 'right' as const,
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    color: '#6b7280',
-                    textTransform: 'uppercase' as const,
-                    cursor: 'pointer',
-                    borderBottom: '1px solid #e2e8f0'
-                  }}
-                >
-                  Cafe {sortColumn === 'cafe' && (sortDirection === 'asc' ? '↑' : '↓')}
-                </th>
+                <th onClick={() => handleSort('cafe')} style={{ padding: '12px 16px', textAlign: 'right', fontSize: 12, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', cursor: 'pointer', borderBottom: '1px solid #e2e8f0' }}>Cafe {sortColumn === 'cafe' && (filterState.sortDirection === 'asc' ? '↑' : '↓')}</th>
               )}
-
               {visibleColumns.combined && (
-                <th
-                  onClick={() => handleSort('combined')}
-                  style={{
-                    padding: '12px 16px',
-                    textAlign: 'right' as const,
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    color: '#6b7280',
-                    textTransform: 'uppercase' as const,
-                    cursor: 'pointer',
-                    borderBottom: '1px solid #e2e8f0'
-                  }}
-                >
-                  Total {sortColumn === 'combined' && (sortDirection === 'asc' ? '↑' : '↓')}
-                </th>
+                <th onClick={() => handleSort('combined')} style={{ padding: '12px 16px', textAlign: 'right', fontSize: 12, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', cursor: 'pointer', borderBottom: '1px solid #e2e8f0' }}>Total {sortColumn === 'combined' && (filterState.sortDirection === 'asc' ? '↑' : '↓')}</th>
               )}
-
               {visibleColumns.cash && (
-                <th
-                  onClick={() => handleSort('cash')}
-                  style={{
-                    padding: '12px 16px',
-                    textAlign: 'right' as const,
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    color: '#6b7280',
-                    textTransform: 'uppercase' as const,
-                    cursor: 'pointer',
-                    borderBottom: '1px solid #e2e8f0'
-                  }}
-                >
-                  Cash {sortColumn === 'cash' && (sortDirection === 'asc' ? '↑' : '↓')}
-                </th>
+                <th onClick={() => handleSort('cash')} style={{ padding: '12px 16px', textAlign: 'right', fontSize: 12, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', cursor: 'pointer', borderBottom: '1px solid #e2e8f0' }}>Cash {sortColumn === 'cash' && (filterState.sortDirection === 'asc' ? '↑' : '↓')}</th>
               )}
-
               {visibleColumns.card && (
-                <th
-                  onClick={() => handleSort('card')}
-                  style={{
-                    padding: '12px 16px',
-                    textAlign: 'right' as const,
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    color: '#6b7280',
-                    textTransform: 'uppercase' as const,
-                    cursor: 'pointer',
-                    borderBottom: '1px solid #e2e8f0'
-                  }}
-                >
-                  Card {sortColumn === 'card' && (sortDirection === 'asc' ? '↑' : '↓')}
-                </th>
+                <th onClick={() => handleSort('card')} style={{ padding: '12px 16px', textAlign: 'right', fontSize: 12, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', cursor: 'pointer', borderBottom: '1px solid #e2e8f0' }}>Card {sortColumn === 'card' && (filterState.sortDirection === 'asc' ? '↑' : '↓')}</th>
               )}
-
               {visibleColumns.receipts && (
-                <th
-                  onClick={() => handleSort('receipts')}
-                  style={{
-                    padding: '12px 16px',
-                    textAlign: 'right' as const,
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    color: '#6b7280',
-                    textTransform: 'uppercase' as const,
-                    cursor: 'pointer',
-                    borderBottom: '1px solid #e2e8f0'
-                  }}
-                >
-                  Receipts {sortColumn === 'receipts' && (sortDirection === 'asc' ? '↑' : '↓')}
-                </th>
+                <th onClick={() => handleSort('receipts')} style={{ padding: '12px 16px', textAlign: 'right', fontSize: 12, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', cursor: 'pointer', borderBottom: '1px solid #e2e8f0' }}>Receipts {sortColumn === 'receipts' && (filterState.sortDirection === 'asc' ? '↑' : '↓')}</th>
               )}
-
               {visibleColumns.average && (
-                <th
-                  onClick={() => handleSort('average')}
-                  style={{
-                    padding: '12px 16px',
-                    textAlign: 'right' as const,
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    color: '#6b7280',
-                    textTransform: 'uppercase' as const,
-                    cursor: 'pointer',
-                    borderBottom: '1px solid #e2e8f0'
-                  }}
-                >
-                  Avg Receipt {sortColumn === 'average' && (sortDirection === 'asc' ? '↑' : '↓')}
-                </th>
+                <th onClick={() => handleSort('average')} style={{ padding: '12px 16px', textAlign: 'right', fontSize: 12, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', cursor: 'pointer', borderBottom: '1px solid #e2e8f0' }}>Avg Receipt {sortColumn === 'average' && (filterState.sortDirection === 'asc' ? '↑' : '↓')}</th>
               )}
-
               {visibleColumns.status && (
-                <th style={{
-                  padding: '12px 16px',
-                  textAlign: 'center' as const,
-                  fontSize: '12px',
-                  fontWeight: '600',
-                  color: '#6b7280',
-                  textTransform: 'uppercase' as const,
-                  borderBottom: '1px solid #e2e8f0'
-                }}>
-                  Status
-                </th>
+                <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: 12, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', borderBottom: '1px solid #e2e8f0' }}>Status</th>
               )}
             </tr>
           </thead>
           <tbody>
-            {data.map((dayData, index) => {
-              const status = getRowStatus(dayData)
-              const isEvenRow = index % 2 === 0
-              
+            {data.map((day, idx) => {
+              const status = getRowStatus(day)
+              const even = idx % 2 === 0
               return (
-                <tr 
-                  key={dayData.date}
-                  onClick={() => onDayClick(dayData)}
-                  style={{
-                    backgroundColor: isEvenRow ? '#ffffff' : '#f9fafb',
-                    cursor: 'pointer',
-                    transition: 'background-color 0.15s ease'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#f0f9ff'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = isEvenRow ? '#ffffff' : '#f9fafb'
-                  }}
-                >
-                  {visibleColumns.date && (
-                    <td style={{
-                      padding: '12px 16px',
-                      fontSize: '14px',
-                      color: '#1e293b',
-                      fontWeight: '500',
-                      position: 'sticky',
-                      left: 0,
-                      background: 'inherit',
-                      zIndex: 1
-                    }}>
-                      {formatDate(dayData.date)}
-                    </td>
-                  )}
-
-                  {visibleColumns.shop && activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2' && (
-                    <td style={{
-                      padding: '12px 16px',
-                      textAlign: 'right' as const,
-                      fontSize: '14px',
-                      color: '#059669',
-                      fontWeight: '600'
-                    }}>
-                      {formatCurrency(getShopAmount(dayData))}
-                    </td>
-                  )}
-
-                  {visibleColumns.cafe && activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2' && (
-                    <td style={{
-                      padding: '12px 16px',
-                      textAlign: 'right' as const,
-                      fontSize: '14px',
-                      color: '#059669',
-                      fontWeight: '600'
-                    }}>
-                      {formatCurrency(getCafeAmount(dayData))}
-                    </td>
-                  )}
-
-                  {visibleColumns.combined && (
-                    <td style={{
-                      padding: '12px 16px',
-                      textAlign: 'right' as const,
-                      fontSize: '14px',
-                      color: '#059669',
-                      fontWeight: '700'
-                    }}>
-                      {formatCurrency(getCombinedAmount(dayData))}
-                    </td>
-                  )}
-
-                  {visibleColumns.cash && (
-                    <td style={{
-                      padding: '12px 16px',
-                      textAlign: 'right' as const,
-                      fontSize: '14px',
-                      color: '#6b7280',
-                      fontWeight: '500'
-                    }}>
-                      {formatCurrency(dayData.paymentBreakdown?.cash || 0)}
-                    </td>
-                  )}
-
-                  {visibleColumns.card && (
-                    <td style={{
-                      padding: '12px 16px',
-                      textAlign: 'right' as const,
-                      fontSize: '14px',
-                      color: '#6b7280',
-                      fontWeight: '500'
-                    }}>
-                      {formatCurrency(dayData.paymentBreakdown?.card || 0)}
-                    </td>
-                  )}
-
-                  {visibleColumns.receipts && (
-                    <td style={{
-                      padding: '12px 16px',
-                      textAlign: 'right' as const,
-                      fontSize: '14px',
-                      color: '#6b7280'
-                    }}>
-                      {dayData.receiptCount || 0}
-                    </td>
-                  )}
-
-                  {visibleColumns.average && (
-                    <td style={{
-                      padding: '12px 16px',
-                      textAlign: 'right' as const,
-                      fontSize: '14px',
-                      color: '#6b7280'
-                    }}>
-                      {formatCurrency(dayData.averageReceipt || 0)}
-                    </td>
-                  )}
-
+                <tr key={day.date} onClick={() => onDayClick(day)} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#f0f9ff' }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = even ? '#ffffff' : '#f9fafb' }}
+                  style={{ backgroundColor: even ? '#ffffff' : '#f9fafb', cursor: 'pointer', transition: 'background-color 0.15s ease' }}>
+                  {visibleColumns.date && (<td style={{ padding: '12px 16px', fontSize: 14, color: '#1e293b', fontWeight: 500, position: 'sticky', left: 0, background: 'inherit', zIndex: 1 }}>{formatDate(day.date)}</td>)}
+                  {visibleColumns.shop && activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2' && (<td style={{ padding: '12px 16px', textAlign: 'right', fontSize: 14, color: '#059669', fontWeight: 600 }}>{formatCurrency(getShopAmount(day))}</td>)}
+                  {visibleColumns.cafe && activeAccount?.storeId === 'e2aa143e-3e91-433e-a6d8-5a5538d429e2' && (<td style={{ padding: '12px 16px', textAlign: 'right', fontSize: 14, color: '#059669', fontWeight: 600 }}>{formatCurrency(getCafeAmount(day))}</td>)}
+                  {visibleColumns.combined && (<td style={{ padding: '12px 16px', textAlign: 'right', fontSize: 14, color: '#059669', fontWeight: 700 }}>{formatCurrency(getCombinedAmount(day))}</td>)}
+                  {visibleColumns.cash && (<td style={{ padding: '12px 16px', textAlign: 'right', fontSize: 14, color: '#6b7280', fontWeight: 500 }}>{formatCurrency(day.paymentBreakdown?.cash || 0)}</td>)}
+                  {visibleColumns.card && (<td style={{ padding: '12px 16px', textAlign: 'right', fontSize: 14, color: '#6b7280', fontWeight: 500 }}>{formatCurrency(day.paymentBreakdown?.card || 0)}</td>)}
+                  {visibleColumns.receipts && (<td style={{ padding: '12px 16px', textAlign: 'right', fontSize: 14, color: '#6b7280' }}>{day.receiptCount || 0}</td>)}
+                  {visibleColumns.average && (<td style={{ padding: '12px 16px', textAlign: 'right', fontSize: 14, color: '#6b7280' }}>{formatCurrency(day.averageReceipt || 0)}</td>)}
                   {visibleColumns.status && (
-                    <td style={{
-                      padding: '12px 16px',
-                      textAlign: 'center' as const
-                    }}>
-                      <span style={{
-                        background: status.bg,
-                        color: status.color,
-                        padding: '4px 8px',
-                        borderRadius: '12px',
-                        fontSize: '12px',
-                        fontWeight: '500'
-                      }}>
-                        {status.text}
-                      </span>
+                    <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                      <span style={{ background: status.bg, color: status.color, padding: '4px 8px', borderRadius: 12, fontSize: 12, fontWeight: 500 }}>{status.text}</span>
                     </td>
                   )}
                 </tr>
@@ -1555,15 +617,11 @@ export default function EnhancedPerformanceTable({
         </table>
       </div>
 
-      {/* No Data Message */}
+      {/* Empty state */}
       {data.length === 0 && (
-        <div style={{
-          padding: '60px 20px',
-          textAlign: 'center' as const,
-          color: '#6b7280'
-        }}>
-          <div style={{ fontSize: '16px', marginBottom: '8px' }}>No data found</div>
-          <div style={{ fontSize: '14px' }}>Try adjusting your filters or date range</div>
+        <div style={{ padding: '60px 20px', textAlign: 'center', color: '#6b7280' }}>
+          <div style={{ fontSize: 16, marginBottom: 8 }}>No data found</div>
+          <div style={{ fontSize: 14 }}>Try adjusting your filters or date range</div>
         </div>
       )}
     </div>
