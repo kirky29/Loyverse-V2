@@ -12,7 +12,7 @@ import { AccountService } from '../lib/accountService'
 const AccountManager = lazy(() => import('./components/AccountManager'))
 const DayDetailView = lazy(() => import('./components/DayDetailView'))
 const SimpleMainDashboard = lazy(() => import('./components/SimpleMainDashboard'))
-const EnhancedPerformanceTable = lazy(() => import('./components/EnhancedPerformanceTable'))
+const SimplePerformanceTable = lazy(() => import('./components/SimplePerformanceTable'))
 const EnhancedLoadingScreen = lazy(() => import('./components/EnhancedLoadingScreen'))
 
 // Loading fallback component
@@ -780,7 +780,7 @@ function OptimizedPage({ user }: OptimizedPageProps) {
 
                 {/* Enhanced Performance Table */}
                 <Suspense fallback={<SkeletonTable />}>
-                  <EnhancedPerformanceTable 
+                  <SimplePerformanceTable 
                     dailyTakings={dailyTakings}
                     activeAccount={activeAccount}
                     formatCurrency={formatCurrency}

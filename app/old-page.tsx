@@ -5,7 +5,7 @@ import { LoyverseAccount, DailyTaking } from './types'
 import AccountManager from './components/AccountManager'
 import DayDetailView from './components/DayDetailView'
 import SimpleMainDashboard from './components/SimpleMainDashboard'
-import EnhancedPerformanceTable from './components/EnhancedPerformanceTable'
+import SimplePerformanceTable from './components/SimplePerformanceTable'
 
 type ViewType = 'main' | 'account' | 'accountManager' | 'dayDetail'
 
@@ -410,7 +410,7 @@ export default function SimplePage() {
                 </div>
 
                 {/* Enhanced Performance Table */}
-                <EnhancedPerformanceTable 
+                <SimplePerformanceTable 
                   dailyTakings={dailyTakings}
                   activeAccount={activeAccount}
                   formatCurrency={formatCurrency}
